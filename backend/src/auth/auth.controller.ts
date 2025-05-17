@@ -1,13 +1,27 @@
-import { Body, Controller, Get, Post, Req, Request, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 import { RoleType, User } from '@prisma/client';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { Response } from 'express';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Roles } from './decorator/role.decorator';
+import { RolesGuard } from './guards/roles.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req: { user: User }): Promise<any> {
     return this.authService.login(req.user);
@@ -25,6 +39,7 @@ export class AuthController {
   }
 
   @Post('request-role')
+  @UseGuards(JwtAuthGuard)
   async requestRole(
     @Request() req: { user: User },
     @Body()
@@ -43,18 +58,21 @@ export class AuthController {
   }
 
   @Get('profile')
+  @UseGuards(JwtAuthGuard)
   getProfile(@Request() req: { user: User }) {
     return req.user;
   }
 
   // Step 1: Redirect to Google OAuth
   // @Get('google')
+  // @UseGuards(JWTAuthGuard('google'))
   // async googleAuth(@Req() req) {
   //   //handeled by guard
   // }
 
   // Step 2: Google OAuth Callback
   @Get('google/redirect')
+  // @UseGuards(JwtAuthGuard('google'))
   async googleAuthRedirect(@Req() req: { user: User }, @Res() res: Response) {
     const googleUser = {
       email: req.user.email,
@@ -69,8 +87,10 @@ export class AuthController {
   }
 
   @Get('admin-only')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
   adminOnly() {
-    //pendinggggggggggggggg
+    //TODO : Admin point
     return { message: 'This is an admin only endpoint' };
   }
 }

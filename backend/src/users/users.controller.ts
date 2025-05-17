@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
@@ -14,6 +15,9 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RoleType } from '@prisma/client';
+import { Roles } from 'src/auth/decorator/role.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('users')
 export class UsersController {
@@ -25,23 +29,28 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN, RoleType.RECRUITER)
   findAll() {
     return this.usersService.findAll();
   }
 
   // Get currently logged in user profile
   @Get('profile')
+  @UseGuards(JwtAuthGuard)
   getProfile(@Request() req: { user: { userId: string } }) {
     return this.usersService.findOne(req.user.userId);
   }
 
   // Get a specific user - requires authentication
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: { user: { userId: string; roles: RoleType[] } },
     @Param('id') id: string,
@@ -59,11 +68,14 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 
-  @Patch(':id/skills') // Changed from @Patch(':id')
+  @Patch(':id/skills')
+  @UseGuards(JwtAuthGuard)
   async updateSkills(
     @Request() req: { user: { userId: string; roles: RoleType[] } },
     @Param('id') id: string,
