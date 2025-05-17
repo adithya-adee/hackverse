@@ -120,7 +120,7 @@ model Skill {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String   @unique
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  User      User[]
+  User      User[]   @relation("SkillToUser")
 }
 
 model Submission {
@@ -192,7 +192,7 @@ model User {
   Team                             Team[]
   TeamMember                       TeamMember[]
   UserRole                         UserRole[]
-  Skill                            Skill[]
+  Skill                            Skill[]                 @relation("SkillToUser")
 }
 
 model UserRole {
