@@ -35,10 +35,10 @@ export class AuthService {
         return null;
       }
 
-      // CRITICAL FIX: Add await to properly compare passwords
       if (!user.password) {
         return null;
       }
+      // CRITICAL FIX: Add await to properly compare passwords
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (isPasswordValid) {
