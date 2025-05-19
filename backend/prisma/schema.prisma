@@ -33,6 +33,7 @@ model Hackathon {
   updatedAt             DateTime                @default(now()) @db.Timestamp(6)
   User                  User                    @relation(fields: [createdById], references: [id], onDelete: NoAction)
   HackathonModerator    HackathonModerator[]
+  HackathonModeratorRequest HackathonModeratorRequest[]
   HackathonRegistration HackathonRegistration[]
   HackathonTag          HackathonTag[]
   Submission            Submission[]
@@ -43,6 +44,19 @@ model HackathonModerator {
   userId      String    @db.Uuid
   hackathonId String    @db.Uuid
   assignedAt  DateTime  @default(now()) @db.Timestamp(6)
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hackathonId])
+}
+
+model HackathonModeratorRequest {
+  userId      String    @db.Uuid
+  hackathonId String    @db.Uuid
+  assignedAt  DateTime  @default(now()) @db.Timestamp(6)
+  expiresAt       DateTime   @db.Timestamp(6) //2 days ahead of requestedAt 
+  status          String     @default("PENDING") // Can be PENDING, ACCEPTED, REJECTED
+
   Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -157,6 +171,7 @@ model Team {
   User              User         @relation(fields: [createdById], references: [id], onDelete: NoAction)
   Hackathon         Hackathon    @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   TeamMember        TeamMember[]
+  TeamRequest       TeamRequest[]
 }
 
 model TeamMember {
@@ -166,6 +181,19 @@ model TeamMember {
   joinedAt DateTime @default(now()) @db.Timestamp(6)
   Team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+}
+
+model TeamRequest {
+  teamId          String     @db.Uuid
+  userId          String     @db.Uuid
+  requestedAt     DateTime   @default(now()) @db.Timestamp(6)
+  expiresAt       DateTime   @db.Timestamp(6)  // 2 days ahead of requestedAt 
+  status          String     @default("PENDING") // Can be PENDING, ACCEPTED, REJECTED
+
+  team            Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([teamId, userId])
 }
@@ -191,8 +219,10 @@ model User {
   Submission                       Submission[]
   Team                             Team[]
   TeamMember                       TeamMember[]
+  TeamRequest                      TeamRequest[]
   UserRole                         UserRole[]
   Skill                            Skill[]                 @relation("SkillToUser")
+  HackathonModeratorRequest        HackathonModeratorRequest[]
 }
 
 model UserRole {
