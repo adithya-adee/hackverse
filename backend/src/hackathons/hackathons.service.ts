@@ -2,24 +2,42 @@ import { Injectable, Param, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
+import { FindHackathonDto } from './dto/find-hackathon.dto';
 
 @Injectable()
 export class HackathonsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllHackthons() {
+  async getAllHackthons(): Promise<FindHackathonDto[]> {
     const response = await this.prisma.hackathon.findMany({});
-    return response;
+
+    return response.map((hackathon) => ({
+      ...hackathon,
+      description: hackathon.description ?? undefined,
+      rules: hackathon.rules ?? undefined,
+      prize: hackathon.prize ?? undefined,
+      bannerImageUrl: hackathon.bannerImageUrl ?? undefined,
+    }));
   }
 
-  async getHackathonById(@Param('id') id: string) {
-    const response = await this.prisma.hackathon.findFirst({
+  async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
+    const hackathon = await this.prisma.hackathon.findFirst({
       where: {
         id: id,
       },
     });
 
-    return response;
+    if (!hackathon) {
+      throw new Error('Hackathon Not found');
+    }
+
+    return {
+      ...hackathon,
+      description: hackathon.description ?? undefined,
+      rules: hackathon.rules ?? undefined,
+      prize: hackathon.prize ?? undefined,
+      bannerImageUrl: hackathon.bannerImageUrl ?? undefined,
+    };
   }
 
   async createHackathon(createHackathonDto: CreateHackathonDto) {
