@@ -25,11 +25,6 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.RECRUITER)
@@ -41,6 +36,7 @@ export class UsersController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req: { user: { userId: string } }) {
+    console.log("hitted")
     return this.usersService.findOne(req.user.userId);
   }
 
@@ -62,10 +58,12 @@ export class UsersController {
     const isAdmin = req.user.roles.includes(RoleType.ADMIN);
     const isSelf = req.user.userId === id;
 
+    console.log("req--->",req.user)
     if (!isAdmin && !isSelf) {
       throw new Error('You can only update your own profile');
     }
 
+    console.log("update 1 hit:", updateUserDto)
     return this.usersService.update(id, updateUserDto);
   }
 

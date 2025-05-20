@@ -26,6 +26,10 @@ export class CreateHackathonDto {
 
   @IsString()
   @IsNotEmpty()
+  createdById: string;
+
+  @IsString()
+  @IsNotEmpty()
   prize: string;
 
   @IsInt()
@@ -33,9 +37,11 @@ export class CreateHackathonDto {
   @Max(10)
   maxTeamSize: number;
 
+  @IsNotEmpty()
   @IsDateString()
   startDate: Date;
-
+  
+  @IsNotEmpty()
   @IsDateString()
   endDate: Date;
 
@@ -47,6 +53,4 @@ export class CreateHackathonDto {
   @IsString({ each: true })
   tags?: string[]; //DOUBT: there is no attribute named tags
 
-  @IsString()
-  User: User;
 }

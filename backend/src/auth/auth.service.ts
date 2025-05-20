@@ -38,11 +38,12 @@ export class AuthService {
       if (!user.password) {
         return null;
       }
+
       // CRITICAL FIX: Add await to properly compare passwords
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (isPasswordValid) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        
         const { password, ...result } = user;
         return result;
       }
@@ -143,31 +144,6 @@ export class AuthService {
     return user;
   }
 
-  // async requestRole(
-  //   userId: string,
-  //   roleType: RoleType,
-  //   reason: string,
-  //   supportingUrl?: string,
-  // ) {
-  //   // Find the requested role
-  //   const role = await this.prisma.role.findFirst({
-  //     where: { name: roleType },
-  //   });
-
-  //   if (!role) {
-  //     throw new Error(`Role ${roleType} not found`);
-  //   }
-
-  //   // Create the role request
-  //   return this.prisma.roleRequest.create({
-  //     data: {
-  //       userId,
-  //       roleId: role.id,
-  //       reason,
-  //       supportingUrl,
-  //     },
-  //   });
-  // }
 
   async getUserRoles(userId: string): Promise<RoleType[]> {
     const userRoles = await this.prisma.userRole.findMany({

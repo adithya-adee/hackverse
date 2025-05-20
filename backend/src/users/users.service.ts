@@ -27,12 +27,6 @@ export class UsersService {
       throw new ConflictException('Email already in use');
     }
 
-    // Hash password before creating user
-    if (createUserDto.password) {
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-      createUserDto.password = hashedPassword;
-    }
-
     return this.prisma.user.create({
       data: createUserDto,
     });
@@ -121,6 +115,11 @@ export class UsersService {
       data: updateUserDto,
     });
 
+    console.log("hitt update")
+
+    console.log(updateUser)
+
+
     if (!updateUser) {
       throw new NotFoundException('User not found');
     }
@@ -161,18 +160,18 @@ export class UsersService {
     });
   }
 
-  async getUserRoles(userId: string) {
-    const userWithRoles = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        UserRole: {
-          include: {
-            Role: true,
-          },
-        },
-      },
-    });
+  // async getUserRoles(userId: string) {
+  //   const userWithRoles = await this.prisma.user.findUnique({
+  //     where: { id: userId },
+  //     include: {
+  //       UserRole: {
+  //         include: {
+  //           Role: true,
+  //         },
+  //       },
+  //     },
+  //   });
 
-    return userWithRoles?.UserRole.map((ur) => ur.Role) || [];
-  }
+  //   return userWithRoles?.UserRole.map((ur) => ur.Role) || [];
+  // }
 }

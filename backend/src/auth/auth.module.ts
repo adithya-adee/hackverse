@@ -5,13 +5,18 @@ import { UsersModule } from 'src/users/users.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LocalStrategy } from './strategy/local.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
   imports: [
     UsersModule,
+    PassportModule,
     PrismaModule,
+    ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

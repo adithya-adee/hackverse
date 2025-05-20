@@ -114,4 +114,6 @@ export class RoleService {
 
     return { message: 'Role request processed.' };
   }
+
+  //TODO: moderator
 }

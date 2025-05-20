@@ -29,23 +29,28 @@ export class HackathonsController {
     return this.hackathonsService.getHackathonById(id);
   }
 
+  //TODO: role guard jwt+role
   @Post('create')
-  create(@Body() createHackathonDto: CreateHackathonDto) {
+  create(
+    //@req 
+    @Body() createHackathonDto: CreateHackathonDto
+  ) {
+    //user = req.user.userid
     return this.hackathonsService.createHackathon(createHackathonDto);
   }
 
-  @Patch(':id')
-  @UseGuards(RolesGuard)
-  @Roles(RoleType.ORGANIZER, RoleType.MODERATOR)
-  update(
-    @Param('id') id: string,
-    @Body() updateHackathonDto: UpdateHackathonDto,
-  ) {
-    return this.hackathonsService.updateHackathonDetails(
-      id,
-      updateHackathonDto,
-    );
-  }
+  // @Patch(':id')
+  // @UseGuards(RolesGuard)
+  // @Roles(RoleType.ORGANIZER, RoleType.MODERATOR)
+  // update(
+  //   @Param('id') id: string,
+  //   @Body() updateHackathonDto: UpdateHackathonDto,
+  // ) {
+  //   return this.hackathonsService.updateHackathonDetails(
+  //     id,
+  //     updateHackathonDto,
+  //   );
+  // }
 
   @Delete(':id')
   @UseGuards(RolesGuard)

@@ -39,31 +39,6 @@ export class AuthController {
     );
   }
 
-  // @Post('request-role')
-  // @UseGuards(JwtAuthGuard)
-  // async requestRole(
-  //   @Request() req: { user: User },
-  //   @Body()
-  //   requestDto: {
-  //     roleType: RoleType;
-  //     reason: string;
-  //     supportingUrl?: string;
-  //   },
-  // ) {
-  //   return this.authService.requestRole(
-  //     req.user.id,
-  //     requestDto.roleType,
-  //     requestDto.reason,
-  //     requestDto.supportingUrl,
-  //   );
-  // }
-
-  @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  getProfile(@Request() req: { user: User }) {
-    return req.user;
-  }
-
   // Step 1: Redirect to Google OAuth
   @Get('google')
   @UseGuards(AuthGuard('google'))
