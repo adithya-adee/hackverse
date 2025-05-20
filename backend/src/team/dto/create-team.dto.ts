@@ -20,9 +20,9 @@ export class CreateTeamDto {
   @IsNotEmpty()
   hackathonId: string;
 
-  @IsString()
-  @IsNotEmpty()
-  createdById: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // createdById: string;
 
   @IsBoolean()
   lookingForMembers: boolean;

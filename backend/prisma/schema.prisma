@@ -119,7 +119,7 @@ model RoleRequest {
   id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String        @db.Uuid
   roleId        String        @db.Uuid
-  status        RequestStatus @default(PENDING)
+  status        RequestStatus @default(PENDING) //PENDING , REJECTED , APPROVED
   reason        String
   supportingUrl String?
   reviewedById  String?       @db.Uuid

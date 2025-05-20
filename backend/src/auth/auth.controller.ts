@@ -39,24 +39,24 @@ export class AuthController {
     );
   }
 
-  @Post('request-role')
-  @UseGuards(JwtAuthGuard)
-  async requestRole(
-    @Request() req: { user: User },
-    @Body()
-    requestDto: {
-      roleType: RoleType;
-      reason: string;
-      supportingUrl?: string;
-    },
-  ) {
-    return this.authService.requestRole(
-      req.user.id,
-      requestDto.roleType,
-      requestDto.reason,
-      requestDto.supportingUrl,
-    );
-  }
+  // @Post('request-role')
+  // @UseGuards(JwtAuthGuard)
+  // async requestRole(
+  //   @Request() req: { user: User },
+  //   @Body()
+  //   requestDto: {
+  //     roleType: RoleType;
+  //     reason: string;
+  //     supportingUrl?: string;
+  //   },
+  // ) {
+  //   return this.authService.requestRole(
+  //     req.user.id,
+  //     requestDto.roleType,
+  //     requestDto.reason,
+  //     requestDto.supportingUrl,
+  //   );
+  // }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
