@@ -5,27 +5,24 @@ import { RoleType, User } from '@prisma/client';
 
 @Controller('role')
 export class RoleController {
-    constructor(private readonly roleService: RoleService){}
+  constructor(private readonly roleService: RoleService) {}
 
-    @Post('request-role')
-    @UseGuards(JwtAuthGuard)
-    async requestRole(
-      @Request() req: { user: User },
-      @Body()
-      requestDto: {
-        roleType: RoleType;
-        reason: string;
-        supportingUrl?: string;
-      },
-    ) {
-      return this.roleService.requestRole(
-        req.user.id,
-        requestDto.roleType,
-        requestDto.reason,
-        requestDto.supportingUrl,
-      );
-    }
-
-    
-
+  @Post('request-role')
+  @UseGuards(JwtAuthGuard)
+  async requestRole(
+    @Request() req: { user: User },
+    @Body()
+    requestDto: {
+      roleType: RoleType;
+      reason: string;
+      supportingUrl?: string;
+    },
+  ) {
+    return this.roleService.requestRole(
+      req.user.id,
+      requestDto.roleType,
+      requestDto.reason,
+      requestDto.supportingUrl,
+    );
+  }
 }

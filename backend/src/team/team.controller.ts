@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamService } from './team.service';
@@ -27,11 +35,10 @@ export class TeamController {
     return this.teamsService.createTeamReq(createTeamReqDto);
   }
 
-
   @Get('all-team-reqs')
   @UseGuards(JwtAuthGuard)
-  getAllTeamReq(@Request() req: { user: { userId: string } }){
-    return this.teamsService.getAllTeamReq(req.user.userId)
+  getAllTeamReq(@Request() req: { user: { userId: string } }) {
+    return this.teamsService.getAllTeamReq(req.user.userId);
   }
 
   @Get(':hackathonId/registration/')
@@ -39,8 +46,8 @@ export class TeamController {
   checkRegistration(
     @Request() req: { user: { userId: string } },
     @Param('hackathonId') hackathonId: string,
-  ){
-    return this.teamsService.checkRegistration(req.user.userId,hackathonId)
+  ) {
+    return this.teamsService.checkRegistration(req.user.userId, hackathonId);
   }
 
   @Post('create/team-member')
@@ -51,5 +58,4 @@ export class TeamController {
   ) {
     return this.teamsService.createTeamMember(req.user.userId, teamId);
   }
-
 }
