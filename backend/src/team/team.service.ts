@@ -17,27 +17,27 @@ export class TeamService {
     });
   }
 
-  async createTeamReq(data: CreateTeamReqDto){
-    const now = new Date()
-  
+  async createTeamReq(data: CreateTeamReqDto) {
+    const now = new Date();
+
     // Calculate expiration date (2 days from now)
-    const expiresAt = new Date(now)
-    expiresAt.setDate(now.getDate() + 2)
+    const expiresAt = new Date(now);
+    expiresAt.setDate(now.getDate() + 2);
     return await this.prisma.teamRequest.create({
       data: {
         ...data,
-        expiresAt
-      }
-    })
+        expiresAt,
+      },
+    });
   }
 
   async getAllTeamReq(userId: string): Promise<TeamRequest[]> {
     return this.prisma.teamRequest.findMany({
-      where: { 
+      where: {
         userId,
-        expiresAt:{
+        expiresAt: {
           gt: new Date(),
-        }
+        },
       },
       include: {
         team: true,
@@ -46,7 +46,10 @@ export class TeamService {
   }
 
   //check if participant is registered
-  async checkRegistration(userId: string, hackathonId: string): Promise<boolean> {
+  async checkRegistration(
+    userId: string,
+    hackathonId: string,
+  ): Promise<boolean> {
     const registration = await this.prisma.hackathonRegistration.findUnique({
       where: {
         userId_hackathonId: {
@@ -61,14 +64,14 @@ export class TeamService {
 
   //participant accepts the invite--->delete teamMemReq and create teamMem
   async createTeamMember(userId: string, teamId: string) {
-
-
-    const teamReq = await this.prisma.teamRequest.findUnique({where:{
-      teamId_userId:{
-        teamId,
-        userId
-      }
-    }})
+    const teamReq = await this.prisma.teamRequest.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId,
+        },
+      },
+    });
 
     // If request exists, delete it
     if (teamReq) {
@@ -98,14 +101,14 @@ export class TeamService {
     });
   }
 
-  async deleteTeamReq(userId: string, teamId: string){
+  async deleteTeamReq(userId: string, teamId: string) {
     return await this.prisma.teamRequest.delete({
-      where:{
+      where: {
         teamId_userId: {
           teamId,
-          userId
-        }
-      }
-    })
+          userId,
+        },
+      },
+    });
   }
 }

@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { CreateUserDto } from './dto/create-user.dto';
@@ -6,11 +10,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 import * as bcrypt from 'bcrypt';
 
+import { User } from '@prisma/client';
+import { FindUserDto } from './dto/find-user.dto';
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     // Check if user with email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: createUserDto.email },
@@ -31,7 +38,7 @@ export class UsersService {
     });
   }
 
-  async findAll() {
+  async findAll(): Promise<FindUserDto[]> {
     return this.prisma.user.findMany({
       select: {
         id: true,
@@ -54,8 +61,8 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string) {
-    return this.prisma.user.findUnique({
+  async findOne(id: string): Promise<FindUserDto> {
+    const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -83,25 +90,46 @@ export class UsersService {
         },
       },
     });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   //TODO: make a controller for this - will use during team finding (leader will enter email to find teammates)
   async findOneByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email },
     });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UpdateUserDto> {
     if (updateUserDto.password) {
       const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
       updateUserDto.password = hashedPassword;
     }
 
-    return this.prisma.user.update({
+    const updateUser = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
     });
+
+    if (!updateUser) {
+      throw new NotFoundException('User not found');
+    }
+    // Convert password: null to password: undefined for UpdateUserDto compatibility
+    const { password, ...rest } = updateUser;
+    return {
+      ...rest,
+      password: password === null ? undefined : password,
+    } as UpdateUserDto;
   }
 
   async remove(id: string) {
