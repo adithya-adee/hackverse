@@ -18,7 +18,7 @@ export class RegistrationsController {
   constructor(private readonly registrationsService: RegistrationsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)        //only logged in user can register for hackathon
+  @UseGuards(JwtAuthGuard) //only logged in user can register for hackathon
   create(@Body() createRegistrationDto: CreateRegistrationDto) {
     return this.registrationsService.create(
       createRegistrationDto.userId,
@@ -39,7 +39,6 @@ export class RegistrationsController {
   ) {
     return this.registrationsService.remove(userId, hackathonId);
   }
-
 
   //TODO: get req to check wheather user is registered in hackathon (can be avoided)
 }

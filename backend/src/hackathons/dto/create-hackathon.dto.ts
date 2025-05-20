@@ -45,7 +45,7 @@ export class CreateHackathonDto {
 
   @IsOptional()
   @IsString({ each: true })
-  tags?: string[];        //DOUBT: there is no attribute named tags
+  tags?: string[]; //DOUBT: there is no attribute named tags
 
   @IsString()
   User: User;

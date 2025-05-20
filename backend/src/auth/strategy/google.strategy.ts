@@ -1,24 +1,27 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
 
-interface googleClientIdProps {
-  clientID: string | undefined;
-  clientSecret: string | undefined;
+interface GoogleStrategyOptions {
+  clientID: string;
+  clientSecret: string;
   callbackURL: string;
   scope: string[];
+  passReqToCallback: true;
 }
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor() {
-    const googleClientId: googleClientIdProps = {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/auth/google-redirect',    //TODO: change this accordingly
+    const options: GoogleStrategyOptions = {
+      clientID: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      callbackURL: 'http://localhost:3000/auth/google-redirect', //TODO: change this accordingly
       scope: ['email', 'profile'],
+      passReqToCallback: true,
     };
-    super(googleClientId);
+    super(options);
   }
   async validate(
     accessToken: string,

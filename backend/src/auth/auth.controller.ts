@@ -83,12 +83,11 @@ export class AuthController {
     };
     const token = await this.authService.loginWithGoogle(googleUser);
     return res.redirect(
-      `http://localhost:3000/auth/callback?token=${token.access_token}`,      //TODO: change this when writing frontend..
+      `http://localhost:3000/auth/callback?token=${token.access_token}`, //TODO: change this when writing frontend..
     );
   }
 
-//this will redirect to a frontend url where we'll extract the token and store it in localstorage or cookie and then redirect to something like dashboard
-
+  //this will redirect to a frontend url where we'll extract the token and store it in localstorage or cookie and then redirect to something like dashboard
 
   @Get('admin-only')
   @UseGuards(JwtAuthGuard, RolesGuard)

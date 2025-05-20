@@ -5,19 +5,14 @@ import { TeamService } from './team.service';
 
 @Controller('team')
 export class TeamController {
-    constructor(private readonly teamsService: TeamService) {}
-    
-    @Post()
-    @UseGuards(JwtAuthGuard)
-    createTeam(
-        @Request() req: { user: { userId: string } },
-        @Body() createTeamDto: Omit<CreateTeamDto, 'createdById'>,
-    ) 
-    {
-        return this.teamsService.createTeam(createTeamDto, req.user.userId);
-    }
+  constructor(private readonly teamsService: TeamService) {}
 
-
-
-
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  createTeam(
+    @Request() req: { user: { userId: string } },
+    @Body() createTeamDto: Omit<CreateTeamDto, 'createdById'>,
+  ) {
+    return this.teamsService.createTeam(createTeamDto, req.user.userId);
+  }
 }

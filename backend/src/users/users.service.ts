@@ -110,7 +110,6 @@ export class UsersService {
     });
   }
 
-
   //TODO: don't know how to deal with this
   async updateSkills(userId: string, skillIds: string[]) {
     // First disconnect all existing skills

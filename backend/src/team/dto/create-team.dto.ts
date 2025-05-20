@@ -1,28 +1,33 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 
 export class CreateTeamDto {
-    @IsString()
-    @IsNotEmpty()
-    @Length(5, 100)
-    name: string;
+  @IsString()
+  @IsNotEmpty()
+  @Length(5, 100)
+  name: string;
 
-    @IsOptional()
-    @IsString()
-    description: string;
+  @IsOptional()
+  @IsString()
+  description: string;
 
-    @IsString()
-    @IsNotEmpty()
-    hackathonId: string;
+  @IsString()
+  @IsNotEmpty()
+  hackathonId: string;
 
-    @IsString()
-    @IsNotEmpty()
-    createdById: string;
-    
-    @IsBoolean()
-    lookingForMembers: boolean;
+  @IsString()
+  @IsNotEmpty()
+  createdById: string;
 
-    @IsOptional()
-    @IsString()
-    requiredSkills: string;
+  @IsBoolean()
+  lookingForMembers: boolean;
 
+  @IsOptional()
+  @IsString()
+  requiredSkills: string;
 }

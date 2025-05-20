@@ -4,28 +4,26 @@ import { CreateTeamDto } from './dto/create-team.dto';
 
 @Injectable()
 export class TeamService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-    async createTeam(data: Omit<CreateTeamDto, 'createdById'>, userId: string) {
-        return await this.prisma.team.create({
-          data: {
-            ...data,
-            createdById: userId,
-          },
-        });
-    }
-      
+  async createTeam(data: Omit<CreateTeamDto, 'createdById'>, userId: string) {
+    return await this.prisma.team.create({
+      data: {
+        ...data,
+        createdById: userId,
+      },
+    });
+  }
 
-    //async createTeamReq()
+  //async createTeamReq()
 
-    //async getAllTeamReq()
+  //async getAllTeamReq()
 
-    //check if participant is registered
-    //async checkRegistration()
+  //check if participant is registered
+  //async checkRegistration()
 
-    //participant accepts the invite--->delete teamMemReq and create teamMem 
-    //async createTeamMember()
+  //participant accepts the invite--->delete teamMemReq and create teamMem
+  //async createTeamMember()
 
-    //async deleteTeamReq()
-
+  //async deleteTeamReq()
 }
