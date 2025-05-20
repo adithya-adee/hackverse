@@ -96,7 +96,7 @@ export class AuthService {
           email,
           name: `${firstName} ${lastName}`,
           profileImageUrl: picture,
-          password: '', // leave empty or use a generated dummy password
+          password: '', //todo: leave empty or use a generated dummy password
         },
       });
     }

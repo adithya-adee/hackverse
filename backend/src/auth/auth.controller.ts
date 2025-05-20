@@ -17,6 +17,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Roles } from './decorator/role.decorator';
 import { RolesGuard } from './guards/roles.guard';
+import { AuthGuard } from '@nestjs/passport';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -64,15 +65,15 @@ export class AuthController {
   }
 
   // Step 1: Redirect to Google OAuth
-  // @Get('google')
-  // @UseGuards(JWTAuthGuard('google'))
-  // async googleAuth(@Req() req) {
-  //   //handeled by guard
-  // }
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {
+    //handeled by guard
+  }
 
   // Step 2: Google OAuth Callback
   @Get('google/redirect')
-  // @UseGuards(JwtAuthGuard('google'))
+  @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: { user: User }, @Res() res: Response) {
     const googleUser = {
       email: req.user.email,
@@ -82,9 +83,12 @@ export class AuthController {
     };
     const token = await this.authService.loginWithGoogle(googleUser);
     return res.redirect(
-      `http://localhost:3000/auth/callback?token=${token.access_token}`,
+      `http://localhost:3000/auth/callback?token=${token.access_token}`,      //TODO: change this when writing frontend..
     );
   }
+
+//this will redirect to a frontend url where we'll extract the token and store it in localstorage or cookie and then redirect to something like dashboard
+
 
   @Get('admin-only')
   @UseGuards(JwtAuthGuard, RolesGuard)

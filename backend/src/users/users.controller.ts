@@ -42,7 +42,7 @@ export class UsersController {
     return this.usersService.findOne(req.user.userId);
   }
 
-  // Get a specific user - requires authentication
+  // Get a specific user - when fetching other user
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {

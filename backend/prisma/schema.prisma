@@ -190,7 +190,7 @@ model TeamRequest {
   userId          String     @db.Uuid
   requestedAt     DateTime   @default(now()) @db.Timestamp(6)
   expiresAt       DateTime   @db.Timestamp(6)  // 2 days ahead of requestedAt 
-  status          String     @default("PENDING") // Can be PENDING, ACCEPTED, REJECTED
+  // status          String     @default("PENDING") // Can be PENDING, ACCEPTED, REJECTED (i'dont think we need this)
 
   team            Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)

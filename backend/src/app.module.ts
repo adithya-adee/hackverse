@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { RegistrationsModule } from './registrations/registrations.module';
+import { TeamModule } from './team/team.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { RegistrationsModule } from './registrations/registrations.module';
     PrismaModule,
     AuthModule,
     RegistrationsModule,
+    TeamModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -85,6 +85,7 @@ export class UsersService {
     });
   }
 
+  //TODO: make a controller for this - will use during team finding (leader will enter email to find teammates)
   async findOneByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
@@ -109,6 +110,8 @@ export class UsersService {
     });
   }
 
+
+  //TODO: don't know how to deal with this
   async updateSkills(userId: string, skillIds: string[]) {
     // First disconnect all existing skills
     await this.prisma.user.update({
