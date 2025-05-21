@@ -10,8 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RegistrationsService } from './registrations.service';
-import { CreateRegistrationDto } from './dto/create-registration.dto';
+
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+
+import { CreateRegistrationDto } from './dto/create-registration.dto';
 
 @Controller('registrations')
 export class RegistrationsController {
