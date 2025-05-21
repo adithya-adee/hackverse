@@ -115,10 +115,7 @@ export class UsersService {
       data: updateUserDto,
     });
 
-    console.log("hitt update")
-
-    console.log(updateUser)
-
+    console.log(updateUser);
 
     if (!updateUser) {
       throw new NotFoundException('User not found');

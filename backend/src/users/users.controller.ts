@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Request,
   Param,
@@ -12,7 +11,6 @@ import {
 
 import { UsersService } from './users.service';
 
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import { RoleType } from '@prisma/client';
@@ -36,7 +34,6 @@ export class UsersController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req: { user: { userId: string } }) {
-    console.log("hitted")
     return this.usersService.findOne(req.user.userId);
   }
 
@@ -58,12 +55,10 @@ export class UsersController {
     const isAdmin = req.user.roles.includes(RoleType.ADMIN);
     const isSelf = req.user.userId === id;
 
-    console.log("req--->",req.user)
     if (!isAdmin && !isSelf) {
       throw new Error('You can only update your own profile');
     }
 
-    console.log("update 1 hit:", updateUserDto)
     return this.usersService.update(id, updateUserDto);
   }
 
