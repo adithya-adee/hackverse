@@ -23,8 +23,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {
-
-    console.log("1111111")
     const jwtSecret = configService.getOrThrow<string>('JWT_SECRET');
 
     if (!jwtSecret) {
@@ -44,7 +42,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     try {
-      
       const roles = await this.authService.getUserRoles(payload.sub);
 
       return {

@@ -11,6 +11,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamService } from './team.service';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { RoleType } from '@prisma/client';
 
 @Controller('team')
 export class TeamController {
@@ -20,12 +22,12 @@ export class TeamController {
   @UseGuards(JwtAuthGuard)
   createTeam(
     @Request() req: { user: { userId: string } },
-    // @Body() createTeamDto: Omit<CreateTeamDto, 'createdById'>,
     @Body() createTeamDto: CreateTeamDto,
   ) {
     return this.teamsService.createTeam(createTeamDto, req.user.userId);
   }
 
+  //FIXME: Why is @Request used if you are not importing it in createTeamReqDto
   @Post('team-req')
   @UseGuards(JwtAuthGuard)
   createTeamReq(
@@ -36,12 +38,13 @@ export class TeamController {
   }
 
   @Get('all-team-reqs')
+  @Roles(RoleType.ORGANIZER)
   @UseGuards(JwtAuthGuard)
   getAllTeamReq(@Request() req: { user: { userId: string } }) {
     return this.teamsService.getAllTeamReq(req.user.userId);
   }
 
-  @Get(':hackathonId/registration/')
+  @Get(':hackathonId/registration')
   @UseGuards(JwtAuthGuard)
   checkRegistration(
     @Request() req: { user: { userId: string } },

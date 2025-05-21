@@ -59,6 +59,7 @@ export class TeamService {
       },
     });
 
+    //EXPLAIN : WHY !!
     return !!registration;
   }
 

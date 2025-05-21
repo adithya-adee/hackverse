@@ -43,7 +43,6 @@ export class AuthService {
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (isPasswordValid) {
-        
         const { password, ...result } = user;
         return result;
       }
@@ -143,7 +142,6 @@ export class AuthService {
     // Return user without password
     return user;
   }
-
 
   async getUserRoles(userId: string): Promise<RoleType[]> {
     const userRoles = await this.prisma.userRole.findMany({

@@ -1,8 +1,15 @@
-import { Body, Controller, Get, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { RoleService } from './role.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RoleType, User } from '@prisma/client';
-import { get } from 'http';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorator/role.decorator';
 
@@ -30,9 +37,9 @@ export class RoleController {
   }
 
   @Get('getAllReqs')
-  @UseGuards(JwtAuthGuard,RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN)
-  async getAllRoleReqs(){
+  async getAllRoleReqs() {
     return this.roleService.getAllRoleReqs();
   }
 
@@ -40,10 +47,8 @@ export class RoleController {
   // @UseGuards(JwtAuthGuard,RolesGuard)
   // @Roles(RoleType.ADMIN)
   // async updateRole(
-  //   @Body() 
+  //   @Body()
   // ){
   //   return this.roleService.updateRole()
   // }
-
-
 }
