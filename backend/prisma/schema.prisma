@@ -18,26 +18,26 @@ model Feedback {
 }
 
 model Hackathon {
-  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title                 String
-  description           String?
-  rules                 String?
-  prize                 String?
-  maxTeamSize           Int                     @default(4)
-  createdById           String                  @db.Uuid
-  startDate             DateTime                @db.Timestamp(6)
-  endDate               DateTime                @db.Timestamp(6)
-  status                HackathonStatus         @default(UPCOMING)
-  bannerImageUrl        String?
-  createdAt             DateTime                @default(now()) @db.Timestamp(6)
-  updatedAt             DateTime                @default(now()) @db.Timestamp(6)
-  User                  User                    @relation(fields: [createdById], references: [id], onDelete: NoAction)
-  HackathonModerator    HackathonModerator[]
+  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                     String
+  description               String?
+  rules                     String?
+  prize                     String?
+  maxTeamSize               Int                         @default(4)
+  createdById               String                      @db.Uuid
+  startDate                 DateTime                    @db.Timestamp(6)
+  endDate                   DateTime                    @db.Timestamp(6)
+  status                    HackathonStatus             @default(UPCOMING)
+  bannerImageUrl            String?
+  createdAt                 DateTime                    @default(now()) @db.Timestamp(6)
+  updatedAt                 DateTime                    @default(now()) @db.Timestamp(6)
+  User                      User                        @relation(fields: [createdById], references: [id], onDelete: NoAction)
+  HackathonModerator        HackathonModerator[]
   HackathonModeratorRequest HackathonModeratorRequest[]
-  HackathonRegistration HackathonRegistration[]
-  HackathonTag          HackathonTag[]
-  Submission            Submission[]
-  Team                  Team[]
+  HackathonRegistration     HackathonRegistration[]
+  HackathonTag              HackathonTag[]
+  Submission                Submission[]
+  Team                      Team[]
 }
 
 model HackathonModerator {
@@ -54,9 +54,8 @@ model HackathonModeratorRequest {
   userId      String    @db.Uuid
   hackathonId String    @db.Uuid
   assignedAt  DateTime  @default(now()) @db.Timestamp(6)
-  expiresAt       DateTime   @db.Timestamp(6) //2 days ahead of requestedAt 
-  status          String     @default("PENDING") // Can be PENDING, ACCEPTED, REJECTED
-
+  expiresAt   DateTime  @db.Timestamp(6)
+  status      String    @default("PENDING")
   Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -119,7 +118,7 @@ model RoleRequest {
   id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String        @db.Uuid
   roleId        String        @db.Uuid
-  status        RequestStatus @default(PENDING) //PENDING , REJECTED , APPROVED
+  status        RequestStatus @default(PENDING)
   reason        String
   supportingUrl String?
   reviewedById  String?       @db.Uuid
@@ -158,18 +157,18 @@ model Submission {
 }
 
 model Team {
-  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
   description       String?
-  hackathonId       String       @db.Uuid
-  createdById       String       @db.Uuid
-  lookingForMembers Boolean      @default(false)
+  hackathonId       String        @db.Uuid
+  createdById       String        @db.Uuid
+  lookingForMembers Boolean       @default(false)
   requiredSkills    String?
-  createdAt         DateTime     @default(now()) @db.Timestamp(6)
-  updatedAt         DateTime     @default(now()) @db.Timestamp(6)
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @default(now()) @db.Timestamp(6)
   Submission        Submission[]
-  User              User         @relation(fields: [createdById], references: [id], onDelete: NoAction)
-  Hackathon         Hackathon    @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  User              User          @relation(fields: [createdById], references: [id], onDelete: NoAction)
+  Hackathon         Hackathon     @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   TeamMember        TeamMember[]
   TeamRequest       TeamRequest[]
 }
@@ -186,43 +185,41 @@ model TeamMember {
 }
 
 model TeamRequest {
-  teamId          String     @db.Uuid
-  userId          String     @db.Uuid
-  requestedAt     DateTime   @default(now()) @db.Timestamp(6)
-  expiresAt       DateTime   @db.Timestamp(6)  // 2 days ahead of requestedAt 
-  // status          String     @default("PENDING") // Can be PENDING, ACCEPTED, REJECTED (i'dont think we need this)
-
-  team            Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId      String   @db.Uuid
+  userId      String   @db.Uuid
+  requestedAt DateTime @default(now()) @db.Timestamp(6)
+  expiresAt   DateTime @db.Timestamp(6)
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([teamId, userId])
 }
 
 model User {
-  id                               String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                               String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                             String
-  email                            String                  @unique
+  email                            String                      @unique
   password                         String?
   biography                        String?
   profileImageUrl                  String?
   resumeUrl                        String?
   githubUrl                        String?
   linkedinUrl                      String?
-  createdAt                        DateTime                @default(now()) @db.Timestamp(6)
-  updatedAt                        DateTime                @default(now()) @db.Timestamp(6)
+  createdAt                        DateTime                    @default(now()) @db.Timestamp(6)
+  updatedAt                        DateTime                    @default(now()) @db.Timestamp(6)
   Hackathon                        Hackathon[]
   HackathonModerator               HackathonModerator[]
+  HackathonModeratorRequest        HackathonModeratorRequest[]
   HackathonRegistration            HackathonRegistration[]
-  Message_Message_receiverIdToUser Message[]               @relation("Message_receiverIdToUser")
-  Message_Message_senderIdToUser   Message[]               @relation("Message_senderIdToUser")
+  Message_Message_receiverIdToUser Message[]                   @relation("Message_receiverIdToUser")
+  Message_Message_senderIdToUser   Message[]                   @relation("Message_senderIdToUser")
   RoleRequest                      RoleRequest[]
   Submission                       Submission[]
   Team                             Team[]
   TeamMember                       TeamMember[]
   TeamRequest                      TeamRequest[]
   UserRole                         UserRole[]
-  Skill                            Skill[]                 @relation("SkillToUser")
-  HackathonModeratorRequest        HackathonModeratorRequest[]
+  Skill                            Skill[]                     @relation("SkillToUser")
 }
 
 model UserRole {
