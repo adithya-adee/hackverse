@@ -1,0 +1,431 @@
+import React, { useState, useMemo } from "react";
+import {
+  Trophy,
+  Calendar,
+  Users,
+  Award,
+  Search,
+  Crown,
+  UserCheck,
+  Clock,
+  DollarSign,
+  Tag,
+} from "lucide-react";
+
+// Import only the array from history.json
+import historyData from "@/assets/data/history.json";
+const hackathonParticipations = historyData.hackathonParticipations;
+
+// --- Status Badge ---
+const StatusBadge = ({ status }) => {
+  const statusConfig = {
+    COMPLETED: {
+      color: "bg-chart-2 text-primary-foreground border-chart-2",
+      icon: Trophy,
+    },
+    LIVE: {
+      color: "bg-primary text-primary-foreground border-primary",
+      icon: Clock,
+    },
+    UPCOMING: {
+      color: "bg-chart-4 text-primary-foreground border-chart-4",
+      icon: Calendar,
+    },
+  };
+
+  const config = statusConfig[status] || statusConfig.COMPLETED;
+  const Icon = config.icon;
+
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.color}`}
+    >
+      <Icon className="w-3 h-3 mr-1" />
+      {status}
+    </span>
+  );
+};
+
+// --- Placement Badge ---
+const PlacementBadge = ({ placement, prizeWon }) => {
+  if (!placement)
+    return <span className="text-muted-foreground text-sm">-</span>;
+
+  const getPlacementColor = (place) => {
+    if (place === 1) return "bg-chart-4 text-primary-foreground border-chart-4";
+    if (place === 2) return "bg-chart-2 text-primary-foreground border-chart-2";
+    if (place === 3) return "bg-chart-1 text-primary-foreground border-chart-1";
+    return "bg-primary text-primary-foreground border-primary";
+  };
+
+  return (
+    <div className="flex flex-col items-start gap-1">
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPlacementColor(placement)}`}
+      >
+        <Award className="w-3 h-3 mr-1" />#{placement}
+      </span>
+      {prizeWon && prizeWon > 0 && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-chart-2 text-primary-foreground border border-chart-2">
+          <DollarSign className="w-3 h-3 mr-1" />${prizeWon.toLocaleString()}
+        </span>
+      )}
+    </div>
+  );
+};
+
+// --- Team Info Cell ---
+const TeamInfoCell = ({ teamInfo }) => {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <span className="font-medium text-sm">{teamInfo.teamName}</span>
+        {teamInfo.isLeader && (
+          <Crown className="w-4 h-4 text-chart-4" title="Team Leader" />
+        )}
+      </div>
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Users className="w-3 h-3" />
+          {teamInfo.memberCount} members
+        </span>
+        <span className="flex items-center gap-1">
+          <UserCheck className="w-3 h-3" />
+          {teamInfo.isLeader ? "Leader" : "Member"}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// --- Tags Cell ---
+const TagsCell = ({ tags }) => {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tags.slice(0, 2).map((tag) => (
+        <span
+          key={tag.id}
+          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-muted text-muted-foreground"
+        >
+          <Tag className="w-3 h-3 mr-1" />
+          {tag.name}
+        </span>
+      ))}
+      {tags.length > 2 && (
+        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-muted text-muted-foreground">
+          +{tags.length - 2} more
+        </span>
+      )}
+    </div>
+  );
+};
+
+export default function HackathonParticipationHistory() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  const filteredAndSortedData = useMemo(() => {
+    let filtered = hackathonParticipations.filter((participation) => {
+      const matchesSearch =
+        participation.hackathon.title
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        participation.teamInfo.teamName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        participation.hackathon.createdBy.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        participation.hackathon.status === statusFilter;
+      const matchesRole =
+        roleFilter === "ALL" ||
+        (roleFilter === "LEADER" && participation.teamInfo.isLeader) ||
+        (roleFilter === "MEMBER" && !participation.teamInfo.isLeader);
+
+      return matchesSearch && matchesStatus && matchesRole;
+    });
+
+    // Sort the filtered data
+    filtered.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case "date":
+          comparison =
+            new Date(a.hackathon.startDate) - new Date(b.hackathon.startDate);
+          break;
+        case "placement":
+          const aPlace = a.placement || 999;
+          const bPlace = b.placement || 999;
+          comparison = aPlace - bPlace;
+          break;
+        case "prize":
+          comparison = (a.prizeWon || 0) - (b.prizeWon || 0);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [searchTerm, statusFilter, roleFilter, sortBy, sortOrder]);
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const totalPrizeWon = hackathonParticipations.reduce(
+    (sum, p) => sum + (p.prizeWon || 0),
+    0
+  );
+
+  const completedHackathons = hackathonParticipations.filter(
+    (p) => p.hackathon.status === "COMPLETED"
+  ).length;
+
+  const topPlacements = hackathonParticipations.filter(
+    (p) => p.placement && p.placement <= 3
+  ).length;
+
+  return (
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Team Requests
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Your hackathon participation history and achievements
+            </p>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Trophy className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Total Hackathons
+                </p>
+                <p className="text-2xl font-bold text-foreground">
+                  {hackathonParticipations.length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-chart-4/10 rounded-lg">
+                <Award className="w-5 h-5 text-chart-4" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Top 3 Finishes</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {topPlacements}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-chart-2/10 rounded-lg">
+                <DollarSign className="w-5 h-5 text-chart-2" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Prize Won</p>
+                <p className="text-2xl font-bold text-foreground">
+                  ${totalPrizeWon.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-chart-1/10 rounded-lg">
+                <Users className="w-5 h-5 text-chart-1" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {completedHackathons}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="bg-card rounded-lg border border-border p-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search hackathons, teams, or organizers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="ALL">All Status</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="LIVE">Live</option>
+              <option value="UPCOMING">Upcoming</option>
+            </select>
+
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="ALL">All Roles</option>
+              <option value="LEADER">Team Leader</option>
+              <option value="MEMBER">Team Member</option>
+            </select>
+
+            <select
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split("-");
+                setSortBy(field);
+                setSortOrder(order);
+              }}
+              className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="placement-asc">Best Placement</option>
+              <option value="prize-desc">Highest Prize</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted border-b border-border">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Hackathon
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Team Info
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Tags
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Result
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-card divide-y divide-border">
+              {filteredAndSortedData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-12 text-center text-muted-foreground"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="w-8 h-8 text-muted-foreground/30" />
+                      <p>
+                        No hackathon participation found matching your criteria.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredAndSortedData.map((participation) => (
+                  <tr
+                    key={participation.id}
+                    className="hover:bg-muted transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="font-medium text-foreground text-sm">
+                          {participation.hackathon.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {participation.hackathon.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70">
+                          by {participation.hackathon.createdBy.name}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <TeamInfoCell teamInfo={participation.teamInfo} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1 text-sm">
+                        <span className="text-foreground">
+                          {formatDate(participation.hackathon.startDate)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          to {formatDate(participation.hackathon.endDate)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={participation.hackathon.status} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <TagsCell tags={participation.hackathon.tags} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <PlacementBadge
+                        placement={participation.placement}
+                        prizeWon={participation.prizeWon}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
