@@ -139,8 +139,29 @@ export class AuthService {
       },
     });
 
-    // Return user without password
-    return user;
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId: user.id },
+      include: { Role: true },
+    });
+
+    const roles = userRoles.map((ur) => ur.Role.name);
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      roles,
+    };
+
+    // Return token and user info
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        roles,
+      },
+    };
   }
 
   async getUserRoles(userId: string): Promise<RoleType[]> {
