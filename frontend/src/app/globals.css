@@ -8,6 +8,23 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Add your primary colors here */
+  --color-primary: #3d63dd;
+  --color-primary-light: #405eb2;
+  --color-primary-1: #0c111c;
+  --color-primary-2: #111725;
+  --color-primary-3: #172448;
+  --color-primary-4: #1d2e61;
+  --color-primary-5: #243974;
+  --color-primary-6: #2d4484;
+  --color-primary-7: #375098;
+  --color-primary-8: #405eb2;
+  --color-primary-9: #3d63dd;
+  --color-primary-10: #3f5cb0;
+  --color-primary-11: #93b4ff;
+  --color-primary-12: #d5e2ff;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
