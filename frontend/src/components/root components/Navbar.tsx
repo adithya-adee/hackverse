@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Logo from "@/assets/logo.svg";
 
 function Navbar() {
   return (
@@ -7,8 +8,8 @@ function Navbar() {
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-primary-7 bg-primary-1`}
     >
       <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-        <a className="flex items-center" href="/">
-          <img src="/logo.png" alt="logo" className="h-25 w-auto p-2" />
+        <a className="flex items-center justify-center align-middle" href="/">
+          <Logo className="h-32 w-32 mt-5" />
         </a>
 
         <div className="flex gap-3">
