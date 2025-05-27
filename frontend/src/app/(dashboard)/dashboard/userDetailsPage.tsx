@@ -41,7 +41,7 @@ import {
   X,
   PlusIcon,
 } from "lucide-react";
-import type { User as UserType } from "@/types/user_interface";
+import type { Role, User as UserType } from "@/types/core_interfaces";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -307,9 +307,10 @@ const UserDetailsUpdatePage = () => {
   };
 
   const skills = user.Skill || [];
-  const roles = user.UserRole?.map((user_role) => user_role.Role) || [
-    "PARTICIPANT",
-  ];
+  const roles: Role[] =
+    user.UserRole?.map((user_role) => user_role.Role).filter(
+      (role): role is Role => role !== undefined
+    ) || [];
 
   return (
     <div className="h-screen bg-background-1 text-foreground p-4">
@@ -410,12 +411,12 @@ const UserDetailsUpdatePage = () => {
               <CardContent className="space-y-3">
                 {roles.map((roleData, index) => (
                   <div
-                    key={roleData.id}
+                    key={roleData?.id}
                     className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)]"
                   >
                     <div>
                       <Badge className="mb-1 bg-[var(--accent)] text-[var(--accent-foreground)]">
-                        {roleData.name}
+                        {roleData?.name}
                       </Badge>
                       <p className="text-sm">{roleData.description}</p>
                     </div>

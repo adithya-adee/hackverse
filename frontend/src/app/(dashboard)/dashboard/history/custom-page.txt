@@ -13,11 +13,10 @@ import {
 } from "lucide-react";
 
 // Import only the array from history.json
-import historyData from "@/assets/data/history.json";
-const hackathonParticipations = historyData.hackathonParticipations;
+import historyData from "@/assets/data/hackathon_registrations_json_data.json";
+import { HackathonStatus } from "@/types/user_interface";
 
-// --- Status Badge ---
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status }: { status: HackathonStatus }) => {
   const statusConfig = {
     COMPLETED: {
       color: "bg-chart-2 text-primary-foreground border-chart-2",
@@ -128,9 +127,9 @@ export default function HackathonParticipationHistory() {
   const [sortOrder, setSortOrder] = useState("desc");
 
   const filteredAndSortedData = useMemo(() => {
-    let filtered = hackathonParticipations.filter((participation) => {
+    let filtered = historyData.filter((participation) => {
       const matchesSearch =
-        participation.hackathon.title
+        participation..title
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         participation.teamInfo.teamName
