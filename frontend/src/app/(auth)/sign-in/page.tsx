@@ -1,9 +1,16 @@
 "use client";
+
 import { useState } from "react";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useForm } from "react-hook-form";
+
+import { useDispatch } from "react-redux";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLoginMutation } from "@/apiSlice/authApiSlice";
+import { setUserCredentials } from "@/apiSlice/authSlice";
+
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { motion } from "motion/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useLoginMutation } from "@/apiSlice/authApiSlice";
-import { useDispatch } from "react-redux";
-import { setUserCredentials } from "@/apiSlice/authSlice";
 
-// Zod schema
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email" }),
   password: z
@@ -26,7 +29,6 @@ const loginSchema = z.object({
     .min(6, { message: "Password must be at least 6 characters" }),
 });
 
-// TypeScript type
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
@@ -52,7 +54,12 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <motion.div
+      className="w-full max-w-md"
+      initial={{ opacity: 0.2, y: 300 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", duration: 1.5 }}
+    >
       {/* Card */}
       <div className="bg-primary-2/80 backdrop-blur-sm border border-primary-6 rounded-2xl p-8 shadow-2xl">
         {/* Header */}
@@ -132,7 +139,7 @@ function LoginForm() {
           </form>
         </Form>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

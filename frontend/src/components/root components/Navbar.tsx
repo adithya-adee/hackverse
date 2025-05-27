@@ -8,14 +8,19 @@ function Navbar() {
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-primary-7 bg-primary-1`}
     >
       <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-        <a className="flex items-center justify-center align-middle" href="/">
-          <Logo className="h-32 w-32 mt-5" />
+        <a className="flex items-center justify-center" href="/">
+          <Logo className="h-48 w-48" />
         </a>
 
         <div className="flex gap-3">
           <Link href="/events">
             <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
               Events
+            </button>
+          </Link>
+          <Link href="/dashboard">
+            <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
+              Dashboard
             </button>
           </Link>
           <Link href="/about-us">

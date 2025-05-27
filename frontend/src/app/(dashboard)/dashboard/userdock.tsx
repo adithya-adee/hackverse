@@ -40,10 +40,10 @@ function UserDock() {
                     aria-label={item.label}
                     className={cn(
                       buttonVariants({ variant: "ghost", size: "icon" }),
-                      "size-12 rounded-full"
+                      "size-12 rounded-full hover:bg-primary-12"
                     )}
                   >
-                    <item.icon className="size-8 text-primary-10" />
+                    <item.icon className="size-8 text-primary-9" />
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent>
