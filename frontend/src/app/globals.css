@@ -96,6 +96,20 @@
 }
 
 .dark {
+  --color-primary-1: #FDFDFE;
+  --color-primary-2: #F7F9FF;
+  --color-primary-3: #EDF2FE;
+  --color-primary-4: #DFEAFF;
+  --color-primary-5: #D0DFFF;
+  --color-primary-6: #BDD1FF;
+  --color-primary-7: #A6BFF9;
+  --color-primary-8: #87A5EF;
+  --color-primary-9: #3D63DD;
+  --color-primary-10: #3657C3;
+  --color-primary-11: #395BC7;
+  --color-primary-12: #1D2E5C;
+
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

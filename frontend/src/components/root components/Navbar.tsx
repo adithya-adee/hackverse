@@ -1,8 +1,17 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Logo from "@/assets/logo.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "@/store/themeSlice";
+import { MoonIcon, SunIcon } from "lucide-react";
+import { RootState } from "@/store/store";
 
 function Navbar() {
+  const dispatch = useDispatch();
+  const isDarkMode = useSelector((state: RootState) => state.theme.mode);
+
   return (
     <div
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-primary-7 bg-primary-1`}
@@ -31,6 +40,12 @@ function Navbar() {
         </div>
 
         <div className="flex gap-3">
+          <button
+            className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors"
+            onClick={() => dispatch(toggleTheme())}
+          >
+            {isDarkMode ? <SunIcon /> : <MoonIcon />}
+          </button>
           <Link href="/sign-in">
             <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
               Login
