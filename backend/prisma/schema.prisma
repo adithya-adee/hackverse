@@ -21,10 +21,11 @@ model Hackathon {
   id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title                     String
   description               String?
-  rules                     String?
-  prize                     String?
+  location                  String?
+  mode                      HackathonMode?              @default(ONLINE)
   maxTeamSize               Int                         @default(4)
   createdById               String                      @db.Uuid
+  registrationDate          DateTime                    @db.Timestamp(6)
   startDate                 DateTime                    @db.Timestamp(6)
   endDate                   DateTime                    @db.Timestamp(6)
   status                    HackathonStatus             @default(UPCOMING)
@@ -36,9 +37,27 @@ model Hackathon {
   HackathonModeratorRequest HackathonModeratorRequest[]
   HackathonRegistration     HackathonRegistration[]
   HackathonTag              HackathonTag[]
+  HackathonTab              HackathonTab[]
   Submission                Submission[]
   Team                      Team[]
 }
+
+model HackathonTab {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hackathonId  String    @db.Uuid
+  title        String
+  content      String    // Markdown content
+  order        Int       // For ordering tabs
+  isVisible    Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime  @default(now()) @db.Timestamp(6)
+  
+  Hackathon    Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  
+  @@unique([hackathonId, order])
+  @@index([hackathonId])
+}
+
 
 model HackathonModerator {
   userId      String    @db.Uuid
@@ -237,6 +256,12 @@ enum HackathonStatus {
   UPCOMING
   LIVE
   COMPLETED
+}
+
+enum HackathonMode {
+  ONLINE
+  OFFLINE
+  HYBRID
 }
 
 enum RequestStatus {

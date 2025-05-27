@@ -21,7 +21,7 @@ export class HackathonsController {
 
   @Get()
   findAll() {
-    return this.hackathonsService.getAllHackthons();
+    return this.hackathonsService.getAllUpcomingHackathons();
   }
 
   @Get(':id')

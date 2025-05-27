@@ -142,7 +142,7 @@ function LoginForm() {
 
 function Page() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)]">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-[var(--primary-5)] via-[var(--primary-3)] to-[var(--primary-1)]">
       <LoginForm />
     </div>
   );
