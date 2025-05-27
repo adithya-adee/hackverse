@@ -10,11 +10,11 @@ import { RootState } from "@/store/store";
 
 function Navbar() {
   const dispatch = useDispatch();
-  const isDarkMode = useSelector((state: RootState) => state.theme.mode);
+  const mode = useSelector((state: RootState) => state.theme.mode);
 
   return (
     <div
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-primary-7 bg-primary-1`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-1)] bg-[var(--primary-1)]`}
     >
       <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
         <a className="flex items-center justify-center" href="/">
@@ -23,17 +23,17 @@ function Navbar() {
 
         <div className="flex gap-3">
           <Link href="/events">
-            <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-11)] hover:text-[var(--primary-10] font-bold transition-colors">
               Events
             </button>
           </Link>
           <Link href="/dashboard">
-            <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-11)] hover:text-[var(--primary-10] font-bold transition-colors">
               Dashboard
             </button>
           </Link>
           <Link href="/about-us">
-            <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-11)] hover:text-[var(--primary-10] font-bold transition-colors">
               About Us
             </button>
           </Link>
@@ -41,18 +41,34 @@ function Navbar() {
 
         <div className="flex gap-3">
           <button
-            className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors"
+            className="relative px-4 py-2 rounded-full bg-transparent text-[var(--primary-11)] hover:text-[var(--primary-10)] font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary-7)]/50"
             onClick={() => dispatch(toggleTheme())}
+            aria-label="Toggle theme"
           >
-            {isDarkMode ? <SunIcon /> : <MoonIcon />}
+            <span className="relative flex items-center justify-center w-7 h-7">
+              <SunIcon
+                className={`absolute transition-all duration-300 scale-110 ${
+                  mode === "dark"
+                    ? "opacity-100 rotate-0"
+                    : "opacity-0 -rotate-45 scale-75"
+                } text-[var(--primary-11)] drop-shadow-[0_0_8px_rgba(255,221,51,0.3)]`}
+              />
+              <MoonIcon
+                className={`absolute transition-all duration-300 scale-110 ${
+                  mode === "light"
+                    ? "opacity-100 rotate-0"
+                    : "opacity-0 rotate-45 scale-75"
+                } text-[var(--primary-11)]`}
+              />
+            </span>
           </button>
           <Link href="/sign-in">
-            <button className="px-4 py-2 text-primary-11 hover:text-primary-10 font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-11)] hover:text-[var(--primary-10)] font-bold transition-colors">
               Login
             </button>
           </Link>
           <Link href="/sign-up">
-            <button className="px-6 py-2.5 bg-primary-6 hover:bg-primary-10 text-primary-12 rounded-full hover:shadow-lg hover:shadow-primary/20 font-medium transition-all hover:scale-105 active:scale-100">
+            <button className="px-6 py-2.5 bg-[var(--primary-6)] hover:bg-[var(--primary-10)] text-[var(--primary-12)] rounded-full hover:shadow-lg hover:shadow-primary/20 font-medium transition-all hover:scale-105 active:scale-100">
               Sign Up
             </button>
           </Link>

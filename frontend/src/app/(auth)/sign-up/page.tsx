@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
 import { motion } from "motion/react";
 import {
   Form,
@@ -16,10 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import GoogleIcon from "@/assets/google-icon.svg";
-
 import { useSignupMutation } from "@/apiSlice/authApiSlice";
 import { useDispatch } from "react-redux";
 import { setUserCredentials } from "@/apiSlice/authSlice";
@@ -45,22 +42,21 @@ const SignUpComponent = () => {
   });
 
   const dispatch = useDispatch();
-
   const [signin, { isLoading }] = useSignupMutation();
 
   const onSubmit = async (data: SignupFormValues) => {
-    console.log("Form submitted:", data);
     const result = await signin({
       user: data,
     }).unwrap();
-
-    console.log(result);
     if (result) dispatch(setUserCredentials(result));
   };
 
   const handleGoogleLogin = () => {
     console.log("Continue with Google clicked");
   };
+
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePassword = () => setShowPassword((prev) => !prev);
 
   return (
     <motion.div
@@ -70,11 +66,11 @@ const SignUpComponent = () => {
       transition={{ type: "spring", duration: 1.5 }}
     >
       {/* Card */}
-      <div className="bg-primary-2/80 backdrop-blur-sm border border-primary-6 rounded-2xl p-8 shadow-2xl">
+      <div className="backdrop-blur-sm border rounded-2xl p-8 shadow-2xl bg-[rgba(var(--primary-2),0.8)] border-[var(--primary-6)]">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary-12 mb-2">
-            Join <span className="text-primary-10">HackVerse</span>
+          <h1 className="text-3xl font-bold mb-2 text-[var(--primary-12)]">
+            Join <span className="text-[var(--primary-10)]">HackVerse</span>
           </h1>
         </div>
 
@@ -87,14 +83,14 @@ const SignUpComponent = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-primary-11">
+                  <FormLabel className="text-sm font-medium text-[var(--primary-11)]">
                     Full name
                   </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter your name"
                       {...field}
-                      className="w-full px-4 py-3 bg-primary-3/50 border border-primary-6 rounded-lg text-primary-12 placeholder-primary-10 focus:outline-none focus:ring-2 focus:ring-primary-9 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-[rgba(var(--primary-3),0.5)] border border-[var(--primary-6)] rounded-lg text-[var(--primary-12)] placeholder:text-[var(--primary-10)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-9)] focus:border-transparent transition-all"
                     />
                   </FormControl>
                   <FormMessage className="text-red-400 text-sm" />
@@ -108,7 +104,7 @@ const SignUpComponent = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-primary-11">
+                  <FormLabel className="text-sm font-medium text-[var(--primary-11)]">
                     Email
                   </FormLabel>
                   <FormControl>
@@ -116,7 +112,7 @@ const SignUpComponent = () => {
                       type="email"
                       placeholder="Enter your email address"
                       {...field}
-                      className="w-full px-4 py-3 bg-primary-3/50 border border-primary-6 rounded-lg text-primary-12 placeholder-primary-10 focus:outline-none focus:ring-2 focus:ring-primary-9 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-[rgba(var(--primary-3),0.5)] border border-[var(--primary-6)] rounded-lg text-[var(--primary-12)] placeholder:text-[var(--primary-10)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-9)] focus:border-transparent transition-all"
                     />
                   </FormControl>
                   <FormMessage className="text-red-400 text-sm" />
@@ -128,47 +124,42 @@ const SignUpComponent = () => {
             <FormField
               control={form.control}
               name="password"
-              render={({ field }) => {
-                const [showPassword, setShowPassword] = useState(false);
-                const togglePassword = () => setShowPassword((prev) => !prev);
-
-                return (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-primary-11">
-                      Password
-                    </FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
-                          {...field}
-                          className="w-full pr-12 px-4 py-3 bg-primary-3/50 border border-primary-6 rounded-lg text-primary-12 placeholder-primary-10 focus:outline-none focus:ring-2 focus:ring-primary-9 focus:border-transparent transition-all"
-                        />
-                      </FormControl>
-                      <button
-                        type="button"
-                        onClick={togglePassword}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-11 hover:text-primary-12"
-                      >
-                        {showPassword ? (
-                          <AiOutlineEyeInvisible size={20} />
-                        ) : (
-                          <AiOutlineEye size={20} />
-                        )}
-                      </button>
-                    </div>
-                    <FormMessage className="text-red-400 text-sm" />
-                  </FormItem>
-                );
-              }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-[var(--primary-11)]">
+                    Password
+                  </FormLabel>
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        {...field}
+                        className="w-full pr-12 px-4 py-3 bg-[rgba(var(--primary-3),0.5)] border border-[var(--primary-6)] rounded-lg text-[var(--primary-12)] placeholder:text-[var(--primary-10)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-9)] focus:border-transparent transition-all"
+                      />
+                    </FormControl>
+                    <button
+                      type="button"
+                      onClick={togglePassword}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--primary-11)] hover:text-[var(--primary-12)]"
+                    >
+                      {showPassword ? (
+                        <AiOutlineEyeInvisible size={20} />
+                      ) : (
+                        <AiOutlineEye size={20} />
+                      )}
+                    </button>
+                  </div>
+                  <FormMessage className="text-red-400 text-sm" />
+                </FormItem>
+              )}
             />
 
             {/* Create Account Button */}
             <Button
               disabled={isLoading}
               type="submit"
-              className="w-full bg-primary-9 hover:bg-primary-8 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-9 focus:ring-offset-2 focus:ring-offset-primary-2"
+              className="w-full bg-[var(--primary-9)] hover:bg-[var(--primary-8)] text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary-9)] focus:ring-offset-2 focus:ring-offset-[var(--primary-2)]"
             >
               Create account
             </Button>
@@ -177,16 +168,16 @@ const SignUpComponent = () => {
 
         {/* Divider */}
         <div className="my-6 flex items-center">
-          <div className="flex-1 border-t border-primary-6"></div>
-          <span className="px-4 text-sm text-primary-10">OR</span>
-          <div className="flex-1 border-t border-primary-6"></div>
+          <div className="flex-1 border-t border-[var(--primary-6)]"></div>
+          <span className="px-4 text-sm text-[var(--primary-10)]">OR</span>
+          <div className="flex-1 border-t border-[var(--primary-6)]"></div>
         </div>
 
         {/* Google Button */}
         <Button
           onClick={handleGoogleLogin}
           variant="outline"
-          className="w-full bg-transparent border border-primary-6 hover:bg-primary-3 text-primary-12 font-medium py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-8 focus:ring-offset-2 focus:ring-offset-primary-2 flex items-center justify-center gap-3"
+          className="w-full bg-transparent border border-[var(--primary-6)] hover:bg-[var(--primary-3)] text-[var(--primary-12)] font-medium py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary-8)] focus:ring-offset-2 focus:ring-offset-[var(--primary-2)] flex items-center justify-center gap-3"
         >
           <GoogleIcon />
           Continue with Google
@@ -198,8 +189,8 @@ const SignUpComponent = () => {
 
 function SignUpPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-1 via-primary-4 to-primary-2 flex items-center justify-center p-6">
-      <SignUpComponent />;
+    <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)] flex items-center justify-center p-6">
+      <SignUpComponent />
     </div>
   );
 }
