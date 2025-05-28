@@ -7,10 +7,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { RootState } from "@/store/store";
+import { getLoggedInUser, isUserLoggedIn } from "@/utils/auth";
+import UserProfileAvatar from "./UserProfileAvatar";
 
 function Navbar() {
   const dispatch = useDispatch();
   const mode = useSelector((state: RootState) => state.theme.mode);
+
+  const user = getLoggedInUser();
+  const isLoggedIn = isUserLoggedIn();
 
   return (
     <div
@@ -42,7 +47,7 @@ function Navbar() {
 
         <div className="flex gap-3">
           <button
-            className="relative px-4 py-2 rounded-full bg-transparent text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary-7)]/50"
+            className="relative px-4 py-2 bg-transparent text-[var(--primary-12)] font-bold transition-colors"
             onClick={() => dispatch(toggleTheme())}
             aria-label="Toggle theme"
           >
@@ -63,16 +68,25 @@ function Navbar() {
               />
             </span>
           </button>
-          <Link href="/sign-in">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
-              Login
-            </button>
-          </Link>
-          <Link href="/sign-up">
-            <button className="px-6 py-2.5 bg-[var(--primary-6)] hover:bg-[var(--primary-10)] text-[var(--primary-12)] rounded-full hover:shadow-lg hover:shadow-primary/20 font-medium transition-all hover:scale-105 active:scale-100">
-              Sign Up
-            </button>
-          </Link>
+          {isLoggedIn ? (
+            <div>
+              {/* todo: complete this component */}
+              <UserProfileAvatar />
+            </div>
+          ) : (
+            <div>
+              <Link href="/sign-in">
+                <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
+                  Login
+                </button>
+              </Link>
+              <Link href="/sign-up">
+                <button className="px-6 py-2.5 bg-[var(--primary-6)] hover:bg-[var(--primary-10)] text-[var(--primary-12)] rounded-full hover:shadow-lg hover:shadow-primary/20 font-medium transition-all hover:scale-105 active:scale-100">
+                  Sign Up
+                </button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
