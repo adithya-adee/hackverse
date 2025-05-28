@@ -48,6 +48,7 @@ const SignUpComponent = () => {
     const result = await signin({
       user: data,
     }).unwrap();
+
     if (result) dispatch(setUserCredentials(result));
   };
 
