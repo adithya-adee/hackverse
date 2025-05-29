@@ -20,6 +20,7 @@ import GoogleIcon from "@/assets/google-icon.svg";
 import { useSignupMutation } from "@/apiSlice/authApiSlice";
 import { useDispatch } from "react-redux";
 import { setUserCredentials } from "@/apiSlice/authSlice";
+import { useRouter } from "next/navigation";
 
 const signupSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 letters" }),
@@ -41,6 +42,7 @@ const SignUpComponent = () => {
     },
   });
 
+  const router = useRouter();
   const dispatch = useDispatch();
   const [signin, { isLoading }] = useSignupMutation();
 
@@ -49,7 +51,12 @@ const SignUpComponent = () => {
       user: data,
     }).unwrap();
 
-    if (result) dispatch(setUserCredentials(result));
+    if (result) {
+      dispatch(setUserCredentials(result.data));
+      router.push("/");
+    } else {
+      console.error("Signup failed:", result.error);
+    }
   };
 
   const handleGoogleLogin = () => {

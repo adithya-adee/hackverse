@@ -79,6 +79,7 @@ export class HackathonsService {
     }));
   }
 
+
   async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
     const hackathon = await this.prisma.hackathon.findFirst({
       where: {
@@ -118,9 +119,9 @@ export class HackathonsService {
       },
     });
 
-    if (!hackathon) {
-      throw new Error('Hackathon Not found');
-    }
+  if (!hackathon) {
+    throw new Error('Hackathon Not found');
+  }
 
     return {
       id: hackathon.id,

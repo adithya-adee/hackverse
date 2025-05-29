@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,18 +12,18 @@
 
   /* Add your primary colors here */
   --color-primary-1: #fdfdfe;
-  --color-primary-2: #F7F9FF;
-  --color-primary-3: #EDF2FE;
-  --color-primary-4: #DFEAFF;
-  --color-primary-5: #D0DFFF;
-  --color-primary-6: #BDD1FF;
-  --color-primary-7: #A6BFF9;
-  --color-primary-8: #87A5EF;
-  --color-primary-9: #3D63DD;
-  --color-primary-10: #3657C3;
-  --color-primary-11: #395BC7;
-  --color-primary-12: #1D2E5C;
-  
+  --color-primary-2: #f7f9ff;
+  --color-primary-3: #edf2fe;
+  --color-primary-4: #dfeaff;
+  --color-primary-5: #d0dfff;
+  --color-primary-6: #bdd1ff;
+  --color-primary-7: #a6bff9;
+  --color-primary-8: #87a5ef;
+  --color-primary-9: #3d63dd;
+  --color-primary-10: #3657c3;
+  --color-primary-11: #395bc7;
+  --color-primary-12: #1d2e5c;
+
   /* Generate primary-1 etc. that your Tailwind uses */
   --primary-1: var(--color-primary-1);
   --primary-2: var(--color-primary-2);
@@ -121,7 +122,7 @@
   --color-primary-10: #3f5cb0;
   --color-primary-11: #93b4ff;
   --color-primary-12: #d5e2ff;
-  
+
   /* Generate primary-1 etc. that your Tailwind uses */
   --primary-1: var(--color-primary-1);
   --primary-2: var(--color-primary-2);
@@ -135,7 +136,7 @@
   --primary-10: var(--color-primary-10);
   --primary-11: var(--color-primary-11);
   --primary-12: var(--color-primary-12);
-  
+
   /* Dark mode base colors */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
