@@ -30,11 +30,11 @@ export class HackathonsController {
   }
 
   //TODO: role guard jwt+role
-  @Post('create')
-  create(@Body() createHackathonDto: CreateHackathonDto) {
-    //user = req.user.userid
-    return this.hackathonsService.createHackathon(createHackathonDto);
-  }
+  // @Post('create')
+  // create(@Body() createHackathonDto: CreateHackathonDto) {
+  //   //user = req.user.userid
+  //   return this.hackathonsService.createHackathon(createHackathonDto);
+  // }
 
   // @Patch(':id')
   // @UseGuards(RolesGuard)
@@ -49,10 +49,10 @@ export class HackathonsController {
   //   );
   // }
 
-  @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
-  delete(@Param('id') id: string) {
-    return this.hackathonsService.deleteHackathon(id);
-  }
+  // @Delete(':id')
+  // @UseGuards(RolesGuard)
+  // @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
+  // delete(@Param('id') id: string) {
+  //   return this.hackathonsService.deleteHackathon(id);
+  // }
 }

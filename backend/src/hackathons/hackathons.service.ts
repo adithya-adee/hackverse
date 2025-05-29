@@ -81,9 +81,7 @@ export class HackathonsService {
   }
 
 
-
-  
-async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
+  async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
   const hackathon = await this.prisma.hackathon.findFirst({
     where: {
       id: id,
@@ -150,7 +148,7 @@ async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
       content: tab.content,
     })),
   };
-}
+  }
 
   
   // async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
