@@ -13,7 +13,7 @@ import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
-import { UpdateHackathonDto } from './dto/update-hackathon.dto';
+// import { UpdateHackathonDto } from './dto/update-hackathon.dto';
 
 @Controller('hackathons')
 export class HackathonsController {
@@ -29,12 +29,12 @@ export class HackathonsController {
     return this.hackathonsService.getHackathonById(id);
   }
 
-  //TODO: role guard jwt+role
-  @Post('create')
-  create(@Body() createHackathonDto: CreateHackathonDto) {
-    //user = req.user.userid
-    return this.hackathonsService.createHackathon(createHackathonDto);
-  }
+  // //TODO: role guard jwt+role
+  // @Post('create')
+  // create(@Body() createHackathonDto: CreateHackathonDto) {
+  //   //user = req.user.userid
+  //   return this.hackathonsService.createHackathon(createHackathonDto);
+  // }
 
   // @Patch(':id')
   // @UseGuards(RolesGuard)
@@ -49,10 +49,10 @@ export class HackathonsController {
   //   );
   // }
 
-  @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
-  delete(@Param('id') id: string) {
-    return this.hackathonsService.deleteHackathon(id);
-  }
+  // @Delete(':id')
+  // @UseGuards(RolesGuard)
+  // @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
+  // delete(@Param('id') id: string) {
+  //   return this.hackathonsService.deleteHackathon(id);
+  // }
 }
