@@ -13,7 +13,7 @@ import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
-import { UpdateHackathonDto } from './dto/update-hackathon.dto';
+// import { UpdateHackathonDto } from './dto/update-hackathon.dto';
 
 @Controller('hackathons')
 export class HackathonsController {
@@ -29,7 +29,7 @@ export class HackathonsController {
     return this.hackathonsService.getHackathonById(id);
   }
 
-  //TODO: role guard jwt+role
+  // //TODO: role guard jwt+role
   // @Post('create')
   // create(@Body() createHackathonDto: CreateHackathonDto) {
   //   //user = req.user.userid
