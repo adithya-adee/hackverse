@@ -19,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email" }),
@@ -30,6 +31,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
+  const router = useRouter();
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -48,7 +50,13 @@ function LoginForm() {
     });
 
     console.log(result);
-    dispatch(setUserCredentials(result));
+    if ("data" in result) {
+      dispatch(setUserCredentials(result.data));
+      router.push("/");
+    } else {
+      // Handle error case here
+      console.error("Login failed:", result.error);
+    }
   };
 
   const [showPassword, setShowPassword] = useState(false);

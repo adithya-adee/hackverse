@@ -1,5 +1,6 @@
 "use client";
-// import HackathonParticipationHistory from "./custom-page";
+
+// import historyRegistration from
 
 function UserHistoryPage() {
   return (

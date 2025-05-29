@@ -10,9 +10,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock, Users, Calendar, Mail } from "lucide-react";
+import { Users, Calendar, Mail, Check, X } from "lucide-react";
 import Request from "@/assets/data/team_request.json";
 import { HackathonStatus } from "@/types/core_enum";
+import { Button } from "@/components/ui/button";
 
 interface TeamRequestProps {
   teamId: string;
@@ -162,6 +163,11 @@ function RequestTable() {
                     Status
                   </div>
                 </TableHead>
+                <TableHead>
+                  <div className="font-bold text-[var(--primary-12)] py-4 px-6 text-center">
+                    Accept/Reject
+                  </div>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -264,6 +270,20 @@ function RequestTable() {
                           {request.hackathon.status || "Unknown"}
                         </Badge>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="outline"
+                        className="text-sm text-[var(--primary-10)] mt-1 mx-1"
+                      >
+                        <Check />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="text-sm text-[var(--primary-10)] mt-1 mx-1"
+                      >
+                        <X />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

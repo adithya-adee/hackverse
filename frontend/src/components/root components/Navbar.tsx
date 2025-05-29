@@ -71,7 +71,7 @@ function Navbar() {
           {isLoggedIn ? (
             <div>
               {/* todo: complete this component */}
-              <UserProfileAvatar />
+              <UserProfileAvatar user={user} />
             </div>
           ) : (
             <div>
