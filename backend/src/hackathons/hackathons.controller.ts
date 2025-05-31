@@ -13,7 +13,7 @@ import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
-// import { UpdateHackathonDto } from './dto/update-hackathon.dto';
+import { UpdateHackathonDto } from './dto/update-hackathon.dto';
 
 @Controller('hackathons')
 export class HackathonsController {
@@ -21,6 +21,12 @@ export class HackathonsController {
 
   @Get()
   findAll() {
+    return this.hackathonsService.getAllHackathons();
+  }
+
+  @Get('upcoming')
+  findUpcomingHackathons() {
+    console.log('upcoming');
     return this.hackathonsService.getAllUpcomingHackathons();
   }
 
@@ -30,29 +36,25 @@ export class HackathonsController {
   }
 
   // //TODO: role guard jwt+role
-  // @Post('create')
-  // create(@Body() createHackathonDto: CreateHackathonDto) {
-  //   //user = req.user.userid
-  //   return this.hackathonsService.createHackathon(createHackathonDto);
-  // }
+  @Post('create')
+  create(@Body() createHackathonDto: CreateHackathonDto) {
+    return this.hackathonsService.createHackathon(createHackathonDto);
+  }
 
-  // @Patch(':id')
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ORGANIZER, RoleType.MODERATOR)
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateHackathonDto: UpdateHackathonDto,
-  // ) {
-  //   return this.hackathonsService.updateHackathonDetails(
-  //     id,
-  //     updateHackathonDto,
-  //   );
-  // }
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.ORGANIZER, RoleType.MODERATOR)
+  update(
+    @Param('id') id: string,
+    @Body() updateHackathonDto: UpdateHackathonDto,
+  ) {
+    return this.hackathonsService.updateHackathon(id, updateHackathonDto);
+  }
 
-  // @Delete(':id')
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
-  // delete(@Param('id') id: string) {
-  //   return this.hackathonsService.deleteHackathon(id);
-  // }
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
+  delete(@Param('id') id: string) {
+    return this.hackathonsService.deleteHackathon(id);
+  }
 }

@@ -1,4 +1,3 @@
-import { User } from '@prisma/client';
 import {
   IsString,
   IsInt,
@@ -8,8 +7,11 @@ import {
   Min,
   Max,
   Length,
+  IsArray,
+  IsUrl,
 } from 'class-validator';
 
+import { HackathonMode } from '@prisma/client';
 export class CreateHackathonDto {
   @IsString()
   @IsNotEmpty()
@@ -18,19 +20,7 @@ export class CreateHackathonDto {
 
   @IsString()
   @IsNotEmpty()
-  description: string;
-
-  @IsString()
-  @IsNotEmpty()
-  rules: string;
-
-  @IsString()
-  @IsNotEmpty()
   createdById: string;
-
-  @IsString()
-  @IsNotEmpty()
-  prize: string;
 
   @IsInt()
   @Min(1)
@@ -38,19 +28,34 @@ export class CreateHackathonDto {
   maxTeamSize: number;
 
   @IsNotEmpty()
+  mode: HackathonMode;
+
   @IsDateString()
-  startDate: Date;
-  
   @IsNotEmpty()
+  registrationDate: Date;
+
   @IsDateString()
+  @IsNotEmpty()
+  startDate: Date;
+
+  @IsDateString()
+  @IsNotEmpty()
   endDate: Date;
 
-  @IsOptional()
   @IsString()
-  bannerImageUrl: string;
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
 
   @IsOptional()
-  @IsString({ each: true })
-  tags?: string[]; //DOUBT: there is no attribute named tags
+  @IsUrl()
+  bannerImageUrl?: string;
 
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
