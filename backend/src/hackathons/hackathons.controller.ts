@@ -7,6 +7,7 @@ import {
   Patch,
   UseGuards,
   Delete,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { HackathonsService } from './hackathons.service';
 import { CreateHackathonDto } from './dto/create-hackathon.dto';
@@ -44,13 +45,33 @@ export class HackathonsController {
   }
 
   @Post(':id/tags')
-  createTags(@Param('id') id: string, @Body() tags: CreateTagDto) {
-    return this.hackathonsService.createTags(id, tags);
+  async createTags(
+    @Param('id') hackathonId: string,
+    @Body() tags: CreateTagDto,
+  ) {
+    return await this.hackathonsService
+      .validateUserHackathon(tags.userId, hackathonId)
+      .then((validUser) => {
+        if (!validUser) {
+          throw new UnauthorizedException('Not authorized for this method');
+        }
+        return this.hackathonsService.createTags(hackathonId, tags);
+      });
   }
 
   @Post(':id/tabs')
-  createTabs(@Param('id') id: string, @Body() tab: CreateTabDto) {
-    return this.hackathonsService.createTabs(id, tab);
+  async createTabs(
+    @Param('id') hackathonId: string,
+    @Body() tab: CreateTabDto,
+  ) {
+    return await this.hackathonsService
+      .validateUserHackathon(tab.userId, hackathonId)
+      .then((validUser) => {
+        if (!validUser) {
+          throw new UnauthorizedException('Not authorized for this method');
+        }
+        return this.hackathonsService.createTabs(hackathonId, tab);
+      });
   }
 
   @Patch(':id')
