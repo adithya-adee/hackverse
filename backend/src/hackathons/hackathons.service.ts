@@ -4,6 +4,7 @@ import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
 import { FindHackathonDto } from './dto/find-hackathon.dto';
 import type { UpcomingHackathonDto } from './dto/get-upcoming-hackathon.dto';
+import { HackathonTab } from '@prisma/client';
 @Injectable()
 export class HackathonsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -117,6 +118,28 @@ export class HackathonsService {
       ...hackathon,
       createdBy: hackathon.User,
     };
+  }
+
+  async validateUserHackathon(userId: string, hackathonId: string) {
+    const response = await this.prisma.hackathon.findFirst({
+      where: {
+        id: hackathonId,
+      },
+    });
+
+    return userId == response?.createdById;
+  }
+
+  async createHackathonTabs(hackathonTabData: Omit<HackathonTab, 'id'>) {
+    const response = await this.prisma.hackathonTab.create({
+      data: hackathonTabData,
+    });
+
+    if (!response) {
+      throw new NotFoundException('Hackathon tab not created');
+    }
+
+    return response;
   }
 
   async updateHackathon(id: string, updateHackathonDto: UpdateHackathonDto) {

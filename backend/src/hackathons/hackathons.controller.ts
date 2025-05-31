@@ -41,10 +41,27 @@ export class HackathonsController {
     return this.hackathonsService.createHackathon(createHackathonDto);
   }
 
+  // @Patch(':id/create/tabs')
+  // async updateTags(
+  //   @Param('id') hackathonId: string,
+  //   @Body() body: { hackathonTags: HackathonTag; userId: string },
+  // ) {
+  //   return await this.hackathonsService
+  //     .validateUserHackathon(body.userId, hackathonId)
+  //     .then((isOrganizer) => {
+  //       if (!isOrganizer) {
+  //         throw new UnauthorizedException(
+  //           'Not authorized to perform this action',
+  //         );
+  //       }
+  //       return this.hackathonsService.updateHackathonTags(body.hackathonTags);
+  //     });
+  // }
+
   @Patch(':id')
   @UseGuards(RolesGuard)
   @Roles(RoleType.ORGANIZER, RoleType.MODERATOR)
-  update(
+  updateAll(
     @Param('id') id: string,
     @Body() updateHackathonDto: UpdateHackathonDto,
   ) {
