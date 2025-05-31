@@ -28,6 +28,7 @@ export class CreateHackathonDto {
   maxTeamSize: number;
 
   @IsNotEmpty()
+  @IsEnum(HackathonMode)
   mode: HackathonMode;
 
   @IsDateString()
