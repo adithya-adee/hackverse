@@ -133,10 +133,11 @@ export class HackathonsService {
   }
 
   async createTags(id: string, tags: CreateTagDto) {
+    const { name } = tags;
     const response = await this.prisma.hackathonTag.create({
       data: {
         hackathonId: id,
-        ...tags,
+        name,
       },
     });
 
@@ -144,10 +145,15 @@ export class HackathonsService {
   }
 
   async createTabs(id: string, tab: CreateTabDto) {
+    const { title, content, order, isVisible } = tab;
+
     const response = await this.prisma.hackathonTab.create({
       data: {
         hackathonId: id,
-        ...tab,
+        title,
+        content,
+        order,
+        isVisible: isVisible !== undefined ? isVisible : true,
       },
     });
 
