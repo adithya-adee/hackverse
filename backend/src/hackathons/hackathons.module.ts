@@ -5,12 +5,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TabsModule } from './tabs/tabs.module';
-import { TabsController } from './tabs/tabs.controller';
-import { TabsService } from './tabs/tabs.service';
-import { TagsModule } from './tags/tags.module';
-import { TagsController } from './tags/tags.controller';
-import { TagsService } from './tags/tags.service';
 
 @Module({
   imports: [
@@ -26,11 +20,9 @@ import { TagsService } from './tags/tags.service';
         },
       }),
     }),
-    TabsModule,
-    TagsModule,
   ],
-  controllers: [HackathonsController, TabsController, TagsController],
-  providers: [HackathonsService, TabsService, TagsService],
+  controllers: [HackathonsController],
+  providers: [HackathonsService],
   exports: [HackathonsService],
 })
 export class HackathonsModule {}

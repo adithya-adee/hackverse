@@ -14,6 +14,8 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
+import { CreateTagDto } from './dto/create-tags.dto';
+import { CreateTabDto } from './dto/create-tabs.dto';
 
 @Controller('hackathons')
 export class HackathonsController {
@@ -35,28 +37,21 @@ export class HackathonsController {
     return this.hackathonsService.getHackathonById(id);
   }
 
-  // //TODO: role guard jwt+role
+  //TODO: role guard jwt+role
   @Post('create')
   create(@Body() createHackathonDto: CreateHackathonDto) {
     return this.hackathonsService.createHackathon(createHackathonDto);
   }
 
-  // @Patch(':id/create/tabs')
-  // async updateTags(
-  //   @Param('id') hackathonId: string,
-  //   @Body() body: { hackathonTags: HackathonTag; userId: string },
-  // ) {
-  //   return await this.hackathonsService
-  //     .validateUserHackathon(body.userId, hackathonId)
-  //     .then((isOrganizer) => {
-  //       if (!isOrganizer) {
-  //         throw new UnauthorizedException(
-  //           'Not authorized to perform this action',
-  //         );
-  //       }
-  //       return this.hackathonsService.updateHackathonTags(body.hackathonTags);
-  //     });
-  // }
+  @Post(':id/tags')
+  createTags(@Param('id') id: string, @Body() tags: CreateTagDto) {
+    return this.hackathonsService.createTags(id, tags);
+  }
+
+  @Post(':id/tabs')
+  createTabs(@Param('id') id: string, @Body() tab: CreateTabDto) {
+    return this.hackathonsService.createTabs(id, tab);
+  }
 
   @Patch(':id')
   @UseGuards(RolesGuard)
