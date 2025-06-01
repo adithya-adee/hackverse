@@ -5,7 +5,7 @@ import Link from "next/link";
 import Logo from "@/assets/logo.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { ComputerIcon, MoonIcon, SunIcon } from "lucide-react";
 import { RootState } from "@/store/store";
 import UserProfileAvatar from "./UserProfileAvatar";
 
@@ -22,27 +22,37 @@ function Navbar() {
           <Logo className="h-48 w-48" />
         </a>
 
-        <div className="flex gap-3">
+        <div className=" flex gap-3">
           <Link href="/events">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
+            <button className="cursor-pointer px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10] font-bold transition-colors">
               Events
             </button>
           </Link>
           <Link href="/dashboard">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
+            <button className="cursor-pointer px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10] font-bold transition-colors">
               Dashboard
             </button>
           </Link>
           <Link href="/about-us">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
+            <button className="cursor-pointer px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10] font-bold transition-colors">
               About Us
             </button>
           </Link>
         </div>
 
         <div className="flex gap-3">
+          {isLoggedIn && (
+            <>
+              {/*TODO : Fix this host button*/}
+              <span className="relative flex items-center justify-center w-7">
+                <Link href={"/host-hackathon/step1"}>
+                  <ComputerIcon />
+                </Link>
+              </span>
+            </>
+          )}
           <button
-            className="relative px-4 py-2 bg-transparent text-[var(--primary-12)] font-bold transition-colors"
+            className="cursor-pointer relative px-4 py-2 bg-transparent text-[var(--primary-12)] font-bold transition-colors"
             onClick={() => dispatch(toggleTheme())}
             aria-label="Toggle theme"
           >
@@ -64,9 +74,12 @@ function Navbar() {
             </span>
           </button>
           {isLoggedIn ? (
-            <div>
-              <UserProfileAvatar user={user} />
-            </div>
+            <>
+              <div>
+                {/* todo: complete this component */}
+                <UserProfileAvatar user={user} />
+              </div>
+            </>
           ) : (
             <div>
               <Link href="/sign-in">
