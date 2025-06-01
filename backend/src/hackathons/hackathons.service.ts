@@ -1,51 +1,26 @@
-import { Injectable, Param } from '@nestjs/common';
+import { Injectable, NotFoundException, Param } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-// import { CreateHackathonDto } from './dto/create-hackathon.dto';
-// import { UpdateHackathonDto } from './dto/update-hackathon.dto';
-// import { FindHackathonDto } from './dto/find-hackathon.dto';
-import { response } from 'express';
-
-// DTO interface for the response
-export interface UpcomingHackathonDto {
-  id: string;
-  title: string;
-  description: string;
-  bannerImageUrl: string | null;
-  startDate: Date;
-  mode: 'ONLINE' | 'OFFLINE' | 'HYBRID';
-  maxTeamSize: number;
-  tags: string[];
-  registeredParticipants: number;
-}
-
-export interface FindHackathonDto {
-  id: string;
-  title: string;
-  description?: string;
-  startDate: Date;
-  endDate: Date;
-  registrationDate: Date;
-  location?: string;
-  maxTeamSize: number;
-  mode: 'ONLINE' | 'OFFLINE' | 'HYBRID';
-  status: 'UPCOMING' | 'LIVE' | 'COMPLETED';
-  bannerImageUrl?: string;
-  createdBy: {
-    id: string;
-    name: string;
-    profileImageUrl?: string;
-  };
-  registeredParticipants: number;
-  tags: string[];
-  tabs: {
-    title: string;
-    content: string; // Markdown content
-  }[];
-}
+import { CreateHackathonDto } from './dto/create-hackathon.dto';
+import { UpdateHackathonDto } from './dto/update-hackathon.dto';
+import { FindHackathonDto } from './dto/find-hackathon.dto';
+import type { UpcomingHackathonDto } from './dto/get-upcoming-hackathon.dto';
+import { CreateTagDto } from './dto/create-tags.dto';
+import { CreateTabDto } from './dto/create-tabs.dto';
 
 @Injectable()
 export class HackathonsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getAllHackathons() {
+    const response = await this.prisma.hackathon.findMany({
+      include: {
+        HackathonTag: true,
+        HackathonTab: true,
+      },
+    });
+
+    return response;
+  }
 
   async getAllUpcomingHackathons(): Promise<UpcomingHackathonDto[]> {
     const response = await this.prisma.hackathon.findMany({
@@ -53,8 +28,8 @@ export class HackathonsService {
         status: 'UPCOMING', // Only fetch upcoming hackathons
       },
       include: {
-        HackathonTag: true, // Include tags
-        HackathonRegistration: true, // Include registrations to count participants
+        HackathonTag: true,
+        HackathonRegistration: true,
         _count: {
           select: {
             HackathonRegistration: true, // Count registered participants
@@ -62,9 +37,13 @@ export class HackathonsService {
         },
       },
       orderBy: {
-        startDate: 'asc', // Order by start date (earliest first)
+        startDate: 'asc',
       },
     });
+
+    // if (!response.length) {
+    //   throw new NotFoundException('No upcoming Hackthons');
+    // }
 
     return response.map((hackathon) => ({
       id: hackathon.id,
@@ -81,135 +60,148 @@ export class HackathonsService {
 
 
   async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
-    const hackathon = await this.prisma.hackathon.findFirst({
-      where: {
-        id: id,
-      },
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id },
       include: {
-        User: {
-          select: {
-            id: true,
-            name: true,
-            profileImageUrl: true,
-          },
-        },
-        HackathonRegistration: {
-          select: {
-            userId: true,
-          },
-        },
-        HackathonTag: {
-          select: {
-            name: true,
-          },
-        },
+        User: { select: { id: true, name: true, profileImageUrl: true } },
+        HackathonRegistration: { select: { userId: true } },
+        HackathonTag: { select: { name: true } },
         HackathonTab: {
-          select: {
-            title: true,
-            content: true,
-            order: true,
-          },
-          where: {
-            isVisible: true,
-          },
-          orderBy: {
-            order: 'asc',
-          },
+          select: { title: true, content: true, order: true, isVisible: true },
+          orderBy: { order: 'asc' },
         },
       },
     });
 
-  if (!hackathon) {
-    throw new Error('Hackathon Not found');
-  }
+    if (!hackathon) throw new NotFoundException('Hackathon not found');
 
     return {
       id: hackathon.id,
       title: hackathon.title,
       description: hackathon.description ?? undefined,
-      startDate: hackathon.startDate,
-      endDate: hackathon.endDate,
-      registrationDate: hackathon.registrationDate,
       location: hackathon.location ?? undefined,
+      mode: hackathon.mode ?? 'ONLINE',
       maxTeamSize: hackathon.maxTeamSize,
-      mode: hackathon.mode as 'ONLINE' | 'OFFLINE' | 'HYBRID',
-      status: hackathon.status,
-      bannerImageUrl: hackathon.bannerImageUrl ?? undefined,
       createdBy: {
         id: hackathon.User.id,
         name: hackathon.User.name,
         profileImageUrl: hackathon.User.profileImageUrl ?? undefined,
       },
+      registrationDate: hackathon.registrationDate,
+      startDate: hackathon.startDate,
+      endDate: hackathon.endDate,
+      status: hackathon.status,
+      bannerImageUrl: hackathon.bannerImageUrl ?? undefined,
       registeredParticipants: hackathon.HackathonRegistration.length,
       tags: hackathon.HackathonTag.map((tag) => tag.name),
-      tabs: hackathon.HackathonTab.map((tab) => ({
-        title: tab.title,
-        content: tab.content,
-      })),
+      tabs: hackathon.HackathonTab.filter((tab) => tab.isVisible).map(
+        (tab) => ({
+          title: tab.title,
+          content: tab.content,
+        }),
+      ),
+      createdAt: hackathon.createdAt ?? undefined,
     };
   }
 
-  // async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
-  //   const hackathon = await this.prisma.hackathon.findFirst({
-  //     where: {
-  //       id: id,
-  //     },
-  //   });
+  async createHackathon(createHackathonDto: CreateHackathonDto) {
+    const { createdById, ...hackathonData } = createHackathonDto;
 
-  //   if (!hackathon) {
-  //     throw new Error('Hackathon Not found');
-  //   }
+    const hackathon = await this.prisma.hackathon.create({
+      data: {
+        ...hackathonData,
+        User: { connect: { id: createdById } },
+      },
+      include: {
+        User: { select: { id: true, name: true, profileImageUrl: true } },
+      },
+    });
 
-  //   return {
-  //     ...hackathon,
-  //     description: hackathon.description ?? undefined,
-  //     rules: hackathon.rules ?? undefined,
-  //     prize: hackathon.prize ?? undefined,
-  //     bannerImageUrl: hackathon.bannerImageUrl ?? undefined,
-  //   };
-  // }
+    return {
+      ...hackathon,
+      createdBy: hackathon.User,
+    };
+  }
 
-  // async createHackathon(createHackathonDto: CreateHackathonDto) {
-  //   const { createdById, ...hackathonData } = createHackathonDto;
-  //   const response = await this.prisma.hackathon.create({
-  //     data: {
-  //       ...hackathonData,
-  //       User: {
-  //         connect: {
-  //           id: createdById
-  //         }
-  //       }
-  //     },
-  //   });
-  //   return response;
-  // }
+  async validateUserHackathon(userId: string, hackathonId: string) {
+    const response = await this.prisma.hackathon.findFirst({
+      where: {
+        id: hackathonId,
+      },
+    });
 
-  // async updateHackathonDetails(
-  //   id: string,
-  //   updateHackathonDto: UpdateHackathonDto,
-  // ) {
-  //   const { User, ...rest } = updateHackathonDto;
-  //   if (!User) {
-  //     throw new UnauthorizedException('User required');
-  //   }
-  //   const response = await this.prisma.hackathon.update({
-  //     where: {
-  //       id: id,
-  //     },
-  //     data: {
-  //       ...rest,
-  //       User: { connect: { id: User.id } },
-  //     },
-  //   });
-  //   return response;
-  // }
+    return userId == response?.createdById;
+  }
 
-  // async deleteHackathon(id: string) {
-  //   const response = await this.prisma.hackathon.delete({
-  //     where: {
-  //       id,
-  //     },
-  //   });
-  //   return response;
-  // }
+  async createTags(id: string, tags: CreateTagDto) {
+    const { name } = tags;
+    const response = await this.prisma.hackathonTag.create({
+      data: {
+        hackathonId: id,
+        name,
+      },
+    });
+
+    return response;
+  }
+
+  async createTabs(id: string, tab: CreateTabDto) {
+    const { title, content, order, isVisible } = tab;
+
+    const response = await this.prisma.hackathonTab.create({
+      data: {
+        hackathonId: id,
+        title,
+        content,
+        order,
+        isVisible: isVisible !== undefined ? isVisible : true,
+      },
+    });
+
+    return response;
+  }
+
+  async updateHackathon(id: string, updateHackathonDto: UpdateHackathonDto) {
+    const { tags, ...updateData } = updateHackathonDto;
+
+    const existing = await this.prisma.hackathon.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Hackathon not found');
+
+    const hackathon = await this.prisma.hackathon.update({
+      where: { id },
+      data: {
+        ...updateData,
+        HackathonTag: tags
+          ? {
+              deleteMany: {}, // Remove all old tags
+              create: tags.map((name) => ({ name })),
+            }
+          : undefined,
+      },
+      include: {
+        HackathonTag: true,
+        User: { select: { id: true, name: true, profileImageUrl: true } },
+      },
+    });
+
+    return {
+      ...hackathon,
+      tags: hackathon.HackathonTag.map((tag) => tag.name),
+      createdBy: hackathon.User,
+    };
+  }
+
+  async deleteHackathon(id: string) {
+    const deleteHackathon = await this.prisma.hackathon.delete({
+      where: {
+        id,
+      },
+      include: {
+        HackathonTag: true,
+        HackathonTab: true,
+      },
+    });
+
+    return deleteHackathon;
+  }
 }

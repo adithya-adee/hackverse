@@ -7,21 +7,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
 import { ComputerIcon, MoonIcon, SunIcon } from "lucide-react";
 import { RootState } from "@/store/store";
-import { getLoggedInUser, isUserLoggedIn } from "@/utils/auth";
 import UserProfileAvatar from "./UserProfileAvatar";
 
 function Navbar() {
   const dispatch = useDispatch();
   const mode = useSelector((state: RootState) => state.theme.mode);
-
-  const user = getLoggedInUser();
-  const isLoggedIn = isUserLoggedIn();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
   return (
-    <div
-      //TODO: make navbar blur a bit
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md`}
-    >
+    <div className="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md">
       <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
         <a className="flex items-center justify-center" href="/">
           <Logo className="h-48 w-48" />

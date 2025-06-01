@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   user: any | null;
@@ -7,10 +7,20 @@ interface AuthState {
   isLoggedIn: boolean;
 }
 
+// Helper to safely parse cookie JSON
+function getCookieJSON(key: string) {
+  try {
+    const value = Cookies.get(key);
+    return value ? JSON.parse(value) : null;
+  } catch {
+    return null;
+  }
+}
+
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  isLoggedIn: false,
+  user: getCookieJSON("user"),
+  token: Cookies.get("token") || null,
+  isLoggedIn: Cookies.get("isLoggedIn") === "true",
 };
 
 const authSlice = createSlice({
@@ -19,24 +29,20 @@ const authSlice = createSlice({
   reducers: {
     setUserCredentials: (
       state,
-      action: PayloadAction<{ user: any; token: string }>,
+      action: PayloadAction<{ user: any; token: string }>
     ) => {
       const { user, token } = action.payload;
-
       state.user = user;
       state.token = token;
       state.isLoggedIn = !!user && !!token;
-
       Cookies.set("user", JSON.stringify(user), { expires: 7 });
       Cookies.set("token", token, { expires: 7 });
       Cookies.set("isLoggedIn", "true", { expires: 7 });
     },
-
     logoutUser: (state) => {
       state.user = null;
       state.token = null;
       state.isLoggedIn = false;
-
       Cookies.remove("user");
       Cookies.remove("token");
       Cookies.remove("isLoggedIn");
