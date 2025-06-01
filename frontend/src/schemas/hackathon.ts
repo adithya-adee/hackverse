@@ -1,4 +1,3 @@
-// lib/schemas/hackathon.ts
 import { z } from "zod";
 
 export const hackathonStep1Schema = z
@@ -34,7 +33,7 @@ export const hackathonStep1Schema = z
     {
       message: "Registration deadline must be before start date",
       path: ["registrationDate"],
-    },
+    }
   )
   .refine(
     (data) => {
@@ -46,7 +45,7 @@ export const hackathonStep1Schema = z
     {
       message: "End date must be after start date",
       path: ["endDate"],
-    },
+    }
   )
   .refine(
     (data) => {
@@ -58,7 +57,7 @@ export const hackathonStep1Schema = z
     {
       message: "Location is required for offline/hybrid events",
       path: ["location"],
-    },
+    }
   );
 
 export const hackathonStep2Schema = z.object({
@@ -70,7 +69,7 @@ export const hackathonStep2Schema = z.object({
         content: z.string().min(1, "Tab content is required"),
         order: z.number(),
         isVisible: z.boolean(),
-      }),
+      })
     )
     .min(1, "At least one tab is required"),
   moderatorEmails: z
@@ -80,7 +79,7 @@ export const hackathonStep2Schema = z.object({
 
 export const hackathonCompleteSchema = z.intersection(
   hackathonStep1Schema,
-  hackathonStep2Schema,
+  hackathonStep2Schema
 );
 
 export type HackathonStep1Data = z.infer<typeof hackathonStep1Schema>;

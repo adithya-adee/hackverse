@@ -7,12 +7,14 @@ import {
   Min,
   Max,
   Length,
-  IsArray,
   IsUrl,
   IsEnum,
+  ValidateIf,
+  IsArray,
 } from 'class-validator';
 
 import { HackathonMode } from '@prisma/client';
+
 export class CreateHackathonDto {
   @IsString()
   @IsNotEmpty()
@@ -50,6 +52,9 @@ export class CreateHackathonDto {
 
   @IsString()
   @IsOptional()
+  @ValidateIf(
+    (o: CreateHackathonDto) => o.mode === 'OFFLINE' || o.mode === 'HYBRID',
+  )
   location?: string;
 
   @IsOptional()
@@ -58,6 +63,5 @@ export class CreateHackathonDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
+  tags: string[];
 }

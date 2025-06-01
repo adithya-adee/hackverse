@@ -43,21 +43,20 @@ model Hackathon {
 }
 
 model HackathonTab {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hackathonId  String    @db.Uuid
-  title        String
-  content      String    // Markdown content
-  order        Int       // For ordering tabs
-  isVisible    Boolean   @default(true)
-  createdAt    DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt    DateTime  @default(now()) @db.Timestamp(6)
-  
-  Hackathon    Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
-  
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hackathonId String   @db.Uuid
+  title       String
+  content     String // Markdown content
+  order       Int // For ordering tabs
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @db.Timestamp(6)
+
+  Hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+
   @@unique([hackathonId, order])
   @@index([hackathonId])
 }
-
 
 model HackathonModerator {
   userId      String    @db.Uuid
