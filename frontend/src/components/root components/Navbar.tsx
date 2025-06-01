@@ -7,21 +7,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { RootState } from "@/store/store";
-import { getLoggedInUser, isUserLoggedIn } from "@/utils/auth";
 import UserProfileAvatar from "./UserProfileAvatar";
 
 function Navbar() {
   const dispatch = useDispatch();
   const mode = useSelector((state: RootState) => state.theme.mode);
-
-  const user = getLoggedInUser();
-  const isLoggedIn = isUserLoggedIn();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
   return (
-    <div
-      //TODO: make navbar blur a bit
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md`}
-    >
+    <div className="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md">
       <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
         <a className="flex items-center justify-center" href="/">
           <Logo className="h-48 w-48" />
@@ -29,17 +24,17 @@ function Navbar() {
 
         <div className="flex gap-3">
           <Link href="/events">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10] font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
               Events
             </button>
           </Link>
           <Link href="/dashboard">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10] font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
               Dashboard
             </button>
           </Link>
           <Link href="/about-us">
-            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10] font-bold transition-colors">
+            <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
               About Us
             </button>
           </Link>
@@ -70,7 +65,6 @@ function Navbar() {
           </button>
           {isLoggedIn ? (
             <div>
-              {/* todo: complete this component */}
               <UserProfileAvatar user={user} />
             </div>
           ) : (

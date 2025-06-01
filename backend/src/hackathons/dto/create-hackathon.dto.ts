@@ -9,6 +9,7 @@ import {
   Length,
   IsArray,
   IsUrl,
+  IsEnum,
 } from 'class-validator';
 
 import { HackathonMode } from '@prisma/client';
