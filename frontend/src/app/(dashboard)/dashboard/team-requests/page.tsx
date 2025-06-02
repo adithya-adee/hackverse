@@ -11,9 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Calendar, Mail, Check, X } from "lucide-react";
-import Request from "@/assets/data/team_request.json";
+
 import { HackathonStatus } from "@/types/core_enum";
 import { Button } from "@/components/ui/button";
+import { useGetTeamRequestsQuery } from "@/apiSlice/userApiSlice";
+import { TeamRequest } from "@/types/core_interfaces";
+import { formatDateTime, getUserInitials } from "@/lib/formatters";
 
 interface TeamRequestProps {
   teamId: string;
@@ -21,51 +24,28 @@ interface TeamRequestProps {
   requestedAt: string;
   expiresAt: string;
   user: {
-    name?: string;
+    name: string;
     email: string;
-    avatar?: string;
+    profileImageUrl: string;
   };
   team: {
-    id?: string;
-    name?: string;
+    id: string;
+    name: string;
     description?: string;
-    hackathonId?: string;
-    createdById?: string;
-    lookingForMembers?: boolean;
+    hackathonId: string;
+    createdById: string;
+    lookingForMembers: boolean;
     requiredSkills?: string;
-    createdAt?: string;
-    updatedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+    Hackathon: {
+      id: string;
+      title: string;
+      startDate?: string;
+      endDate?: string;
+      status?: HackathonStatus;
+    };
   };
-  hackathon: {
-    id?: string;
-    title?: string;
-    startDate?: string;
-    endDate?: string;
-    status?: HackathonStatus;
-  };
-}
-
-const team_request: TeamRequestProps[] = (Request as TeamRequestProps[]).filter(
-  (req) =>
-    req &&
-    req.team &&
-    req.user &&
-    req.hackathon &&
-    req.team.name &&
-    req.user.email &&
-    req.hackathon.title
-);
-
-function formatDateTime(dateStr?: string) {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function getStatusConfig(status?: string) {
@@ -99,19 +79,11 @@ function getStatusConfig(status?: string) {
   }
 }
 
-function getUserInitials(name?: string, email?: string) {
-  if (name) {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  }
-  return email?.slice(0, 2).toUpperCase() || "??";
-}
-
-function RequestTable() {
+function RequestTable({
+  team_request,
+}: {
+  team_request: TeamRequest[] | undefined;
+}) {
   return (
     <Card className="w-full max-w-7xl mx-auto shadow-2xl border-0 bg-[var(--primary-1)]/95 backdrop-blur-sm">
       <CardHeader className=" text-[var(--primary-12)] rounded-t-lg">
@@ -171,7 +143,7 @@ function RequestTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {team_request.length === 0 && (
+              {!team_request || team_request.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={6}
@@ -190,104 +162,107 @@ function RequestTable() {
                     </div>
                   </TableCell>
                 </TableRow>
-              )}
-              {team_request.map((request, index) => {
-                const statusConfig = getStatusConfig(request.hackathon.status);
+              ) : (
+                team_request.map((request, index) => {
+                  const statusConfig = getStatusConfig(
+                    request.team?.Hackathon?.status
+                  );
 
-                return (
-                  <TableRow
-                    key={request.userId + request.teamId}
-                    className="border-b border-[var(--primary-4)] hover:bg-[var(--primary-2)]/80 transition-all duration-200 group"
-                  >
-                    <TableCell className="py-4 px-6">
-                      <div>
-                        <div className="font-semibold text-[var(--primary-12)] group-hover:text-[var(--primary-9)] transition-colors">
-                          {request.team.name}
-                        </div>
-                        {request.team.description && (
-                          <div className="text-sm text-[var(--primary-10)] mt-1 truncate max-w-48">
-                            {request.team.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8 ring-2 ring-[var(--primary-4)] group-hover:ring-[var(--primary-8)] transition-all">
-                          <AvatarImage src={request.user.avatar} />
-                          <AvatarFallback className="bg-gradient-to-br from-[var(--primary-9)] to-[var(--primary-8)] text-white text-xs font-semibold">
-                            {getUserInitials(
-                              request.user.name,
-                              request.user.email
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
+                  return (
+                    <TableRow
+                      key={request.userId + request.teamId}
+                      className="border-b border-[var(--primary-4)] hover:bg-[var(--primary-2)]/80 transition-all duration-200 group"
+                    >
+                      <TableCell className="py-4 px-6">
                         <div>
-                          <div className="font-medium text-[var(--primary-12)]">
-                            {request.user.name || "Anonymous"}
+                          <div className="font-semibold text-[var(--primary-12)] group-hover:text-[var(--primary-9)] transition-colors">
+                            {request.team?.name}
                           </div>
-                          <div className="text-sm text-[var(--primary-10)]">
-                            {request.user.email}
+                          {request.team?.description && (
+                            <div className="text-sm text-[var(--primary-10)] mt-1 truncate max-w-48">
+                              {request.team.description}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 ring-2 ring-[var(--primary-4)] group-hover:ring-[var(--primary-8)] transition-all">
+                            <AvatarImage src={request.user?.profileImageUrl} />
+                            <AvatarFallback className="bg-gradient-to-br from-[var(--primary-9)] to-[var(--primary-8)] text-white text-xs font-semibold">
+                              {getUserInitials(
+                                request.user?.name,
+                                request.user?.email
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-[var(--primary-12)]">
+                              {request.user?.name || "Anonymous"}
+                            </div>
+                            <div className="text-sm text-[var(--primary-10)]">
+                              {request.user?.email}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
+                      </TableCell>
 
-                    <TableCell className="py-4 px-6">
-                      <div>
-                        <div className="font-medium text-[var(--primary-11)]">
-                          {request.hackathon.title}
-                        </div>
-                        {request.hackathon.startDate && (
-                          <div className="text-sm text-[var(--primary-10)] mt-1">
-                            Starts:{" "}
-                            {formatDateTime(request.hackathon.startDate)}
+                      <TableCell className="py-4 px-6">
+                        <div>
+                          <div className="font-medium text-[var(--primary-11)]">
+                            {request.team?.Hackathon?.title}
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
+                          {request.team?.Hackathon?.startDate && (
+                            <div className="text-sm text-[var(--primary-10)] mt-1">
+                              Starts:{" "}
+                              {formatDateTime(request.team.Hackathon.startDate)}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
 
-                    {/* <TableCell className="py-4 px-6 text-[var(--primary-12)]">
-                      <div className="font-mono text-sm">
-                        {formatDateTime(request.requestedAt)}
-                      </div>
-                    </TableCell>
+                      {/* <TableCell className="py-4 px-6 text-[var(--primary-12)]">
+                        <div className="font-mono text-sm">
+                          {formatDateTime(request.requestedAt)}
+                        </div>
+                      </TableCell>
 
-                    <TableCell className="py-4 px-6 text-[var(--primary-12)]">
-                      <div className="font-mono text-sm">
-                        {formatDateTime(request.expiresAt)}
-                      </div>
-                    </TableCell> */}
+                      <TableCell className="py-4 px-6 text-[var(--primary-12)]">
+                        <div className="font-mono text-sm">
+                          {formatDateTime(request.expiresAt)}
+                        </div>
+                      </TableCell> */}
 
-                    <TableCell className="py-4 px-6 text-center">
-                      <div className="hover:scale-105 transition-transform duration-200">
-                        <Badge
-                          variant={statusConfig.variant}
-                          className={`${statusConfig.className} font-medium px-3 py-1 text-xs transition-all duration-200 shadow-sm hover:shadow-md`}
+                      <TableCell className="py-4 px-6 text-center">
+                        <div className="hover:scale-105 transition-transform duration-200">
+                          <Badge
+                            variant={statusConfig.variant}
+                            className={`${statusConfig.className} font-medium px-3 py-1 text-xs transition-all duration-200 shadow-sm hover:shadow-md`}
+                          >
+                            <span className="mr-1">{statusConfig.icon}</span>
+                            {request.team?.Hackathon?.status || "Unknown"}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="outline"
+                          className="text-sm text-[var(--primary-10)] mt-1 mx-1"
                         >
-                          <span className="mr-1">{statusConfig.icon}</span>
-                          {request.hackathon.status || "Unknown"}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        variant="outline"
-                        className="text-sm text-[var(--primary-10)] mt-1 mx-1"
-                      >
-                        <Check />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="text-sm text-[var(--primary-10)] mt-1 mx-1"
-                      >
-                        <X />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                          <Check />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="text-sm text-[var(--primary-10)] mt-1 mx-1"
+                        >
+                          <X />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </div>
@@ -297,6 +272,47 @@ function RequestTable() {
 }
 
 function TeamRequestsPage() {
+  const { data: team_request, isLoading, error } = useGetTeamRequestsQuery();
+
+  // Add loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)] flex flex-col items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-[var(--primary-9)] border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-[var(--primary-11)] text-lg">
+            Loading team requests...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Add error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)] flex flex-col items-center justify-center">
+        <div className="text-center bg-red-50 p-6 rounded-lg max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-red-700 text-xl font-semibold mb-2">
+            Error Loading Team Requests
+          </h2>
+          <p className="text-red-600 mb-4">
+            {error instanceof Error
+              ? error.message
+              : "An unknown error occurred"}
+          </p>
+          <button
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)] flex flex-col items-center justify-start p-8 mt-[4rem]">
       <div className="text-center mb-8">
@@ -310,7 +326,15 @@ function TeamRequestsPage() {
       </div>
 
       <div className="w-full">
-        <RequestTable />
+        <RequestTable
+          team_request={
+            team_request
+              ? Array.isArray(team_request)
+                ? team_request
+                : [team_request]
+              : undefined
+          }
+        />
       </div>
     </div>
   );

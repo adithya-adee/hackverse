@@ -40,7 +40,18 @@ export class TeamService {
         },
       },
       include: {
-        team: true,
+        user: {
+          select: {
+            email: true,
+            name: true,
+            profileImageUrl: true,
+          },
+        },
+        team: {
+          include: {
+            Hackathon: true,
+          },
+        },
       },
     });
   }
