@@ -11,10 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Calendar, Mail, Check, X } from "lucide-react";
+
 import { HackathonStatus } from "@/types/core_enum";
 import { Button } from "@/components/ui/button";
 import { useGetTeamRequestsQuery } from "@/apiSlice/userApiSlice";
 import { TeamRequest } from "@/types/core_interfaces";
+import { formatDateTime, getUserInitials } from "@/lib/formatters";
 
 interface TeamRequestProps {
   teamId: string;
@@ -46,18 +48,6 @@ interface TeamRequestProps {
   };
 }
 
-function formatDateTime(dateStr?: string) {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function getStatusConfig(status?: string) {
   switch (status) {
     case "ONGOING":
@@ -87,18 +77,6 @@ function getStatusConfig(status?: string) {
         icon: "⚪",
       };
   }
-}
-
-function getUserInitials(name?: string, email?: string) {
-  if (name) {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  }
-  return email?.slice(0, 2).toUpperCase() || "??";
 }
 
 function RequestTable({
