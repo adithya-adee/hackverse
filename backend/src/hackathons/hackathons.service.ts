@@ -58,7 +58,6 @@ export class HackathonsService {
     }));
   }
 
-
   async getHackathonById(@Param('id') id: string): Promise<FindHackathonDto> {
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id },
