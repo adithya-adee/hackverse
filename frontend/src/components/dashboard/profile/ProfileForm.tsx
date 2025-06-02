@@ -80,6 +80,7 @@ export function ProfileForm({
         <FormField
           control={form.control}
           name="biography"
+          defaultValue=""
           render={({ field }) => (
             <FormItem>
               <FormLabel>Biography</FormLabel>

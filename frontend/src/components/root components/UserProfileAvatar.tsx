@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "@/apiSlice/authSlice";
 
 interface UserData {
   id?: string;
@@ -36,6 +38,7 @@ interface Props {
 
 function UserProfileAvatar({ user }: Props) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
 
   // Get initials from name or email
@@ -57,9 +60,7 @@ function UserProfileAvatar({ user }: Props) {
   };
 
   const handleLogout = () => {
-    // Replace with your actual logout logic
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    dispatch(logoutUser());
     router.push("/sign-in");
   };
 

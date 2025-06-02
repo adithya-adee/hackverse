@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -10,7 +13,6 @@ import { userDetailsSchema } from "@/schemas/user-schema";
 import { UserDetailsFormValues } from "@/schemas/user-schema";
 import type { User as UserType } from "@/types/core_interfaces";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import { User } from "lucide-react";
 import { ProfileForm } from "./ProfileForm";
 import { formatDate } from "@/lib/formatters";
