@@ -10,9 +10,6 @@ export default function DashboardLayout({
 }) {
   return (
     <div>
-      <nav>
-        <Navbar />
-      </nav>
       <div className="mt-22">
         <HackathonProgress />
       </div>
