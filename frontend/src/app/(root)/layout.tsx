@@ -5,12 +5,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div>
-      <nav>
-        <Navbar />
-      </nav>
-      {children}
-    </div>
-  );
+  return <div>{children}</div>;
 }
