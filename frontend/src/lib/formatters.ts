@@ -1,10 +1,19 @@
+// export function formatDate(dateString: string) {
+//   return new Date(dateString).toLocaleDateString("en-US", {
+//     year: "numeric",
+//     month: "long",
+//     day: "numeric",
+//   });
+// }
 export function formatDate(dateString: string) {
+  if (!dateString) return "Not set";
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 }
+
 export function formatDateTime(dateStr?: string) {
   if (!dateStr) return "-";
   const date = new Date(dateStr);

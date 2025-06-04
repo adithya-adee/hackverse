@@ -3,10 +3,6 @@ import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class CreateTabDto {
   @IsNotEmpty()
   @IsString()
-  userId: string;
-
-  @IsNotEmpty()
-  @IsString()
   title: string;
 
   @IsNotEmpty()

@@ -47,12 +47,15 @@ const SignUpComponent = () => {
   const [signin, { isLoading }] = useSignupMutation();
 
   const onSubmit = async (data: SignupFormValues) => {
+    console.log(data);
     const result = await signin({
       user: data,
     }).unwrap();
 
+    console.log(result);
+
     if (result) {
-      dispatch(setUserCredentials(result.data));
+      dispatch(setUserCredentials(result));
       router.push("/");
     } else {
       console.error("Signup failed:", result.error);
