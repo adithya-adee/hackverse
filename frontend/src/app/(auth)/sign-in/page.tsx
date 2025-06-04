@@ -136,6 +136,7 @@ function LoginForm() {
             />
 
             <Button
+              disabled={isLoading}
               type="submit"
               className="w-full bg-[var(--primary-9)] hover:bg-[var(--primary-8)] text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary-9)] focus:ring-offset-2 focus:ring-offset-[var(--primary-2)]"
             >

@@ -49,10 +49,13 @@ export default function CreateHackathonStep1() {
   const watchMode = form.watch("mode");
 
   const onSubmit = async (data: HackathonStep1Data) => {
-    console.log("data:", data);
-    const result = await updateFormData(data);
-    console.log("result:", result);
-    console.log(formData);
+    if (data.registrationDate)
+      data.registrationDate = new Date(data.registrationDate).toISOString();
+    if (data.startDate) data.startDate = new Date(data.startDate).toISOString();
+    if (data.endDate) data.endDate = new Date(data.endDate).toISOString();
+
+    await updateFormData(data);
+
     router.push("/host-hackathon/step2");
   };
 

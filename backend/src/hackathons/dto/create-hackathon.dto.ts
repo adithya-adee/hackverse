@@ -22,17 +22,24 @@ export class CreateHackathonDto {
   title: string;
 
   @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  @ValidateIf(
+    (o: CreateHackathonDto) => o.mode === 'OFFLINE' || o.mode === 'HYBRID',
+  )
+  location?: string;
+
   @IsNotEmpty()
-  createdById: string;
+  @IsEnum(HackathonMode)
+  mode: HackathonMode;
 
   @IsInt()
   @Min(1)
   @Max(10)
   maxTeamSize: number;
-
-  @IsNotEmpty()
-  @IsEnum(HackathonMode)
-  mode: HackathonMode;
 
   @IsDateString()
   @IsNotEmpty()
@@ -46,17 +53,6 @@ export class CreateHackathonDto {
   @IsNotEmpty()
   endDate: Date;
 
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @IsString()
-  @IsOptional()
-  @ValidateIf(
-    (o: CreateHackathonDto) => o.mode === 'OFFLINE' || o.mode === 'HYBRID',
-  )
-  location?: string;
-
   @IsOptional()
   @IsUrl()
   bannerImageUrl?: string;
@@ -64,4 +60,13 @@ export class CreateHackathonDto {
   @IsOptional()
   @IsArray()
   tags: string[];
+
+  @IsOptional()
+  @IsArray()
+  tabs: {
+    title: string;
+    content: string;
+    order: number;
+    isVisible: boolean;
+  }[];
 }

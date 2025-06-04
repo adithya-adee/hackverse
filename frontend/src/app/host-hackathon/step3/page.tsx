@@ -18,19 +18,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useHackathonForm } from "@/contexts/hackathon-form-context";
 import ReactMarkdown from "react-markdown";
+import { useCreateMutation } from "@/apiSlice/hackathonApiSlice";
+import { formatDate } from "@/lib/formatters";
 
 export default function CreateHackathonStep3() {
   const router = useRouter();
   const { formData, resetFormData } = useHackathonForm();
+  const [create, { isLoading, isError }] = useCreateMutation();
 
   const handleSubmit = async () => {
     try {
-      // TODO: Create Api call
-      console.log("Creating hackathon with data:", formData);
-
-      // Reset form and redirect to success page or hackathon list
+      // TODO: addTOAST
+      const { moderatorEmails, ...data } = formData;
+      console.log("sending data:", data);
+      const data2 = { data };
+      const result = await create(data2);
+      console.log(result);
       resetFormData();
-      router.push("/events"); // or wherever you want to redirect
+      router.push("/events");
     } catch (error) {
       console.error("Error creating hackathon:", error);
     }
@@ -38,15 +43,6 @@ export default function CreateHackathonStep3() {
 
   const goBack = () => {
     router.push("/host-hackathon/step2");
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "Not set";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   return (
@@ -299,6 +295,7 @@ export default function CreateHackathonStep3() {
           </Button>
 
           <Button
+            disabled={isLoading}
             onClick={handleSubmit}
             className="bg-gradient-to-r from-blue-400 to-green-400 text-[var(--primary-1)] cursor-pointer"
           >

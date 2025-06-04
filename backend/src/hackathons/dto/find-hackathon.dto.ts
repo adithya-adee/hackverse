@@ -8,6 +8,7 @@ import {
   ValidateNested,
   IsUrl,
   IsDate,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateHackathonDto } from './create-hackathon.dto';
@@ -31,6 +32,12 @@ class TabDto {
 
   @IsString()
   content: string;
+
+  @IsBoolean()
+  isVisible: boolean;
+
+  @IsNumber()
+  order: number;
 }
 
 export class FindHackathonDto extends PartialType(CreateHackathonDto) {

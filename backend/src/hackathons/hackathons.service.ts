@@ -97,28 +97,58 @@ export class HackathonsService {
         (tab) => ({
           title: tab.title,
           content: tab.content,
+          isVisible: tab.isVisible,
+          order: tab.order,
         }),
       ),
       createdAt: hackathon.createdAt ?? undefined,
     };
   }
 
-  async createHackathon(createHackathonDto: CreateHackathonDto) {
-    const { createdById, ...hackathonData } = createHackathonDto;
-
+  async createHackathon(createdById:string, createHackathonDto: CreateHackathonDto) {
+    const {tags, tabs , ...hackathonData}  = createHackathonDto;
     const hackathon = await this.prisma.hackathon.create({
       data: {
         ...hackathonData,
         User: { connect: { id: createdById } },
       },
-      include: {
-        User: { select: { id: true, name: true, profileImageUrl: true } },
-      },
+      // include: {
+      //   User: { select: { id: true, name: true, profileImageUrl: true } },
+      // },
     });
 
+    console.log("hackathon created")
+    console.log(hackathon)
+
+    //creating tags...
+    if(tags?.length){
+      await this.prisma.hackathonTag.createMany({
+        data: tags.map((tag)=>({
+            name:tag,
+            hackathonId: hackathon.id
+        })),
+      });
+    }
+
+    if(tabs?.length){
+      await this.prisma.hackathonTab.createMany({
+        data: tabs.map((tab)=>({
+          title: tab.title,
+          content: tab.content,
+          order: tab.order,
+          isVisible: tab.isVisible,
+          hackathonId: hackathon.id,
+        })),
+      });
+    }
+
     return {
+      data:{
       ...hackathon,
-      createdBy: hackathon.User,
+      createdBy: { id: createdById },
+      }
+      
+      
     };
   }
 
@@ -132,33 +162,33 @@ export class HackathonsService {
     return userId == response?.createdById;
   }
 
-  async createTags(id: string, tags: CreateTagDto) {
-    const { name } = tags;
-    const response = await this.prisma.hackathonTag.create({
-      data: {
-        hackathonId: id,
-        name,
-      },
-    });
+  // async createTags(id: string, tags: CreateTagDto) {
+  //   const { name } = tags;
+  //   const response = await this.prisma.hackathonTag.create({
+  //     data: {
+  //       hackathonId: id,
+  //       name,
+  //     },
+  //   });
 
-    return response;
-  }
+  //   return response;
+  // }
 
-  async createTabs(id: string, tab: CreateTabDto) {
-    const { title, content, order, isVisible } = tab;
+  // async createTabs(id: string, tab: CreateTabDto) {
+  //   const { title, content, order, isVisible } = tab;
 
-    const response = await this.prisma.hackathonTab.create({
-      data: {
-        hackathonId: id,
-        title,
-        content,
-        order,
-        isVisible: isVisible !== undefined ? isVisible : true,
-      },
-    });
+  //   const response = await this.prisma.hackathonTab.create({
+  //     data: {
+  //       hackathonId: id,
+  //       title,
+  //       content,
+  //       order,
+  //       isVisible: isVisible !== undefined ? isVisible : true,
+  //     },
+  //   });
 
-    return response;
-  }
+  //   return response;
+  // }
 
   async updateHackathon(id: string, updateHackathonDto: UpdateHackathonDto) {
     const { tags, ...updateData } = updateHackathonDto;
