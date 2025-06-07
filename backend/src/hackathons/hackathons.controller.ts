@@ -7,11 +7,7 @@ import {
   Patch,
   UseGuards,
   Delete,
-  UnauthorizedException,
   Request,
-  HttpCode,
-  Res,
-  Req,
 } from '@nestjs/common';
 import { HackathonsService } from './hackathons.service';
 import { CreateHackathonDto } from './dto/create-hackathon.dto';
@@ -19,8 +15,6 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
-import { CreateTagDto } from './dto/create-tags.dto';
-import { CreateTabDto } from './dto/create-tabs.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('hackathons')
@@ -47,11 +41,13 @@ export class HackathonsController {
   @Post('create')
   @UseGuards(JwtAuthGuard)
   create(
-    @Request() req:{ user: {userId: string}},
+    @Request() req: { user: { userId: string } },
     @Body() createHackathonDto: CreateHackathonDto,
   ) {
-
-    const hackathon =  this.hackathonsService.createHackathon(req.user.userId,createHackathonDto);
+    const hackathon = this.hackathonsService.createHackathon(
+      req.user.userId,
+      createHackathonDto,
+    );
     return hackathon;
   }
 
