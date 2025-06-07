@@ -2,16 +2,18 @@ import {
   Body,
   Controller,
   Get,
-  Patch,
   Post,
   Request,
   UseGuards,
+  Patch,
+  Param,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RoleType, User } from '@prisma/client';
+import { RequestStatus, RoleType } from '@prisma/client';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorator/role.decorator';
+import { CreateRoleReqDto } from './dto/createRoleReq-dto';
 
 @Controller('role')
 export class RoleController {
@@ -20,20 +22,11 @@ export class RoleController {
   @Post('request-role')
   @UseGuards(JwtAuthGuard)
   async requestRole(
-    @Request() req: { user: User },
-    @Body()
-    requestDto: {
-      roleType: RoleType;
-      reason: string;
-      supportingUrl?: string;
-    },
+    @Request() req: { user: { userId: string } },
+    @Body() createRoleReqDto: CreateRoleReqDto,
   ) {
-    return this.roleService.requestRole(
-      req.user.id,
-      requestDto.roleType,
-      requestDto.reason,
-      requestDto.supportingUrl,
-    );
+    console.log(req.user, createRoleReqDto);
+    return this.roleService.requestRole(req.user.userId, createRoleReqDto);
   }
 
   @Get('getAllReqs')
@@ -43,12 +36,17 @@ export class RoleController {
     return this.roleService.getAllRoleReqs();
   }
 
-  // @Patch('')
-  // @UseGuards(JwtAuthGuard,RolesGuard)
-  // @Roles(RoleType.ADMIN)
-  // async updateRole(
-  //   @Body()
-  // ){
-  //   return this.roleService.updateRole()
-  // }
+  @Patch('update-request/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  async updateRole(
+    @Param('id') id: string,
+    @Body() updateData: { status: RequestStatus; reviewNotes?: string },
+  ) {
+    return this.roleService.updateRole(
+      id,
+      updateData.status,
+      updateData.reviewNotes || '',
+    );
+  }
 }

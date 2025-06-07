@@ -1,35 +1,74 @@
-import { Injectable } from '@nestjs/common';
-import { RequestStatus, RoleType } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { RequestStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateRoleReqDto } from './dto/createRoleReq-dto';
 
 @Injectable()
 export class RoleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async requestRole(
-    userId: string,
-    roleType: RoleType,
-    reason: string,
-    supportingUrl?: string,
-  ) {
+  async requestRole(id: string, createRoleReqDto: CreateRoleReqDto) {
+    const { roleType, reason, supportingUrl } = createRoleReqDto;
+
+    console.log(id);
+    if (!id) {
+      throw new BadRequestException('User ID is required');
+    }
+
     // Find the requested role
     const role = await this.prisma.role.findFirst({
       where: { name: roleType },
     });
 
     if (!role) {
-      throw new Error(`Role ${roleType} not found`);
+      throw new NotFoundException(`Role ${roleType} not found`);
     }
 
-    // Create the role request
-    return this.prisma.roleRequest.create({
-      data: {
-        userId,
+    // Check if the user already has a pending request for this role
+    const existingRequest = await this.prisma.roleRequest.findFirst({
+      where: {
+        userId: id,
         roleId: role.id,
-        reason,
-        supportingUrl,
+        status: 'PENDING',
       },
     });
+
+    if (existingRequest) {
+      throw new BadRequestException(
+        'You already have a pending request for this role',
+      );
+    }
+
+    // Create the role request using proper Prisma syntax
+    try {
+      return await this.prisma.roleRequest.create({
+        data: {
+          userId: id,
+          reason,
+          supportingUrl,
+          status: 'PENDING',
+          roleId: role.id, // This works because we have defined the relation in schema
+        },
+        include: {
+          Role: true,
+          User: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error creating role request:', error);
+      throw new BadRequestException(
+        'Failed to create role request. Please try again.',
+      );
+    }
   }
 
   async getAllRoleReqs() {
