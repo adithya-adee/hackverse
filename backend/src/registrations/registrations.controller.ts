@@ -33,6 +33,11 @@ export class RegistrationsController {
     return this.registrationsService.getRegisteredHackathons(userId);
   }
 
+  @Get('submission')
+  getSubmissionCount() {
+    return this.registrationsService.getSubmissionCount();
+  }
+
   @Delete(':userId/:hackathonId')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(

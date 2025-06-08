@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -28,7 +27,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -40,7 +38,6 @@ import {
   Activity,
   Award,
   MessageSquare,
-  Layers,
   Settings,
   Search,
   ChevronDown,
@@ -53,79 +50,44 @@ import {
   ArrowUpRight,
   CheckCircle,
 } from "lucide-react";
-import { RoleRequest } from "@/types/core_interfaces";
+import {
+  User,
+  Hackathon,
+  RoleRequest,
+  Submission,
+  Team,
+} from "@/types/core_interfaces";
+import {
+  useGetAllHackathonsQuery,
+  useGetAllUsersQuery,
+  useGetAllTeamsQuery,
+  useGetAllSubmissionsQuery,
+} from "@/apiSlice/adminApiSlice";
+import { useUpdateRoleRequestMutation } from "@/apiSlice/roleRequestApiSlice";
+import { toast } from "sonner";
 
-// Mock data
-const stats = [
-  { title: "Total Users", value: "2,856", change: "+12%", icon: Users },
-  { title: "Active Hackathons", value: "8", change: "+3", icon: Calendar },
-  { title: "Teams Registered", value: "342", change: "+28", icon: Activity },
-  { title: "Submissions", value: "187", change: "+16%", icon: Award },
-];
+// Define response types for better type safety
+interface UsersResponse {
+  users: User[];
+  count: number;
+}
 
-const recentUsers = [
-  {
-    id: "1",
-    name: "Sophia Chen",
-    email: "sophia@example.com",
-    role: "PARTICIPANT",
-    joinedAt: "2023-10-15",
-    imageUrl: "/avatars/sophia.png",
-  },
-  {
-    id: "2",
-    name: "James Wilson",
-    email: "james@example.com",
-    role: "ORGANIZER",
-    joinedAt: "2023-10-14",
-    imageUrl: "/avatars/james.png",
-  },
-  {
-    id: "3",
-    name: "Emma Rodriguez",
-    email: "emma@example.com",
-    role: "MENTOR",
-    joinedAt: "2023-10-12",
-    imageUrl: "/avatars/emma.png",
-  },
-  {
-    id: "4",
-    name: "Michael Johnson",
-    email: "michael@example.com",
-    role: "MODERATOR",
-    joinedAt: "2023-10-10",
-    imageUrl: "/avatars/michael.png",
-  },
-];
+interface HackathonsResponse {
+  response: Hackathon[];
+  count: number;
+}
 
-const hackathons = [
-  {
-    id: "1",
-    title: "AI Innovation Challenge",
-    startDate: "2023-11-01",
-    endDate: "2023-11-10",
-    status: "UPCOMING",
-    teamsCount: 42,
-  },
-  {
-    id: "2",
-    title: "Web3 Hackathon",
-    startDate: "2023-10-15",
-    endDate: "2023-10-25",
-    status: "ONGOING",
-    teamsCount: 78,
-  },
-  {
-    id: "3",
-    title: "Mobile App Competition",
-    startDate: "2023-09-10",
-    endDate: "2023-09-20",
-    status: "COMPLETED",
-    teamsCount: 63,
-  },
-];
+interface TeamsResponse {
+  count: number;
+  teams?: Team[];
+}
 
-// Animations
+interface SubmissionsResponse {
+  submissions: Submission[];
+  count: number;
+}
+
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -145,11 +107,148 @@ const itemVariants = {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch all API data
   const {
-    data: roleRequests,
+    data: roleRequests = [],
     isLoading: roleRequestsLoading,
     error: roleRequestsError,
+    refetch: refetchRoleRequests,
   } = useGetRoleRequestQuery(undefined);
+
+  const {
+    data: userData,
+    isLoading: userDataLoading,
+    error: userDataFetchError,
+    refetch: refetchUsers,
+  } = useGetAllUsersQuery(undefined);
+
+  const {
+    data: hackathonData,
+    isLoading: hackathonLoading,
+    error: hackathonError,
+    refetch: refetchHackathons,
+  } = useGetAllHackathonsQuery(undefined);
+
+  // Add missing API queries
+  const {
+    data: teamsData,
+    isLoading: teamsLoading,
+    error: teamsError,
+    refetch: refetchTeams,
+  } = useGetAllTeamsQuery(undefined);
+
+  const {
+    data: submissionsData,
+    isLoading: submissionsLoading,
+    error: submissionsError,
+    refetch: refetchSubmissions,
+  } = useGetAllSubmissionsQuery(undefined);
+
+  // Add mutation for role request actions
+  const [updateRoleRequest, { isLoading: isUpdatingRole }] =
+    useUpdateRoleRequestMutation();
+
+  // Calculate statistics for dashboard
+  const userCount = userData?.users?.length || 0;
+  const totalUsers = userData?.count || 0;
+
+  const activeHackathons =
+    hackathonData?.response?.filter((h) => h.status === "ONGOING").length || 0;
+
+  const hackathonCount = hackathonData?.count || 0;
+  const teamCount = teamsData?.count || 0;
+  const submissionCount = submissionsData?.count || 0;
+
+  // Stats cards with dynamic data
+  const stats = [
+    {
+      title: "Total Users",
+      value: totalUsers.toString(),
+      change: `+${Math.round(totalUsers * 0.1)}`,
+      icon: Users,
+    },
+    {
+      title: "Active Hackathons",
+      value: activeHackathons.toString(),
+      change: "+2",
+      icon: Calendar,
+    },
+    {
+      title: "Teams Registered",
+      value: teamCount.toString(),
+      change: `+${Math.round(teamCount * 0.08)}`,
+      icon: Activity,
+    },
+    {
+      title: "Submissions",
+      value: submissionCount.toString(),
+      change: `+${Math.round(submissionCount * 0.15)}%`,
+      icon: Award,
+    },
+  ];
+
+  // Handle role request actions
+  const handleApproveRequest = async (id: string) => {
+    try {
+      await updateRoleRequest({
+        id,
+        status: "APPROVED",
+        reviewNotes: "Request approved by admin",
+      }).unwrap();
+
+      toast.success("Role request approved", {
+        description: "The user's role has been updated successfully.",
+      });
+
+      refetchRoleRequests();
+    } catch (err) {
+      toast.error("Failed to approve request", {
+        description: "An error occurred. Please try again.",
+      });
+    }
+  };
+
+  const handleRejectRequest = async (id: string) => {
+    try {
+      await updateRoleRequest({
+        id,
+        status: "REJECTED",
+        reviewNotes: "Request rejected by admin",
+      }).unwrap();
+
+      toast.error("Role request rejected", {
+        description: "The user has been notified of the decision.",
+      });
+
+      refetchRoleRequests();
+    } catch (err) {
+      toast.error("Failed to reject request", {
+        description: "An error occurred. Please try again.",
+      });
+    }
+  };
+
+  // Filter users based on search query
+  const filteredUsers =
+    userData?.users?.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+
+  // Dashboard refreshing
+  const refreshDashboard = () => {
+    refetchUsers();
+    refetchHackathons();
+    refetchRoleRequests();
+    refetchTeams();
+    refetchSubmissions();
+    toast.success("Dashboard refreshed", {
+      description: "All data has been updated",
+    });
+  };
 
   return (
     <motion.div
@@ -174,9 +273,13 @@ export default function AdminDashboard() {
           </motion.div>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-1">
-              <Filter className="h-4 w-4" />
-              Filter
+            <Button
+              variant="outline"
+              className="gap-1"
+              onClick={refreshDashboard}
+            >
+              <ArrowUpRight className="h-4 w-4 rotate-45" />
+              Refresh
             </Button>
             <Dialog>
               <DialogTrigger asChild>
@@ -196,6 +299,7 @@ export default function AdminDashboard() {
                   <Button
                     variant="outline"
                     className="h-20 flex flex-col items-center justify-center gap-2"
+                    onClick={() => setActiveTab("users")}
                   >
                     <UserPlus className="h-6 w-6" />
                     Create User
@@ -203,6 +307,7 @@ export default function AdminDashboard() {
                   <Button
                     variant="outline"
                     className="h-20 flex flex-col items-center justify-center gap-2"
+                    onClick={() => setActiveTab("hackathons")}
                   >
                     <Calendar className="h-6 w-6" />
                     New Hackathon
@@ -217,6 +322,7 @@ export default function AdminDashboard() {
                   <Button
                     variant="outline"
                     className="h-20 flex flex-col items-center justify-center gap-2"
+                    onClick={() => setActiveTab("settings")}
                   >
                     <Lock className="h-6 w-6" />
                     Manage Permissions
@@ -333,6 +439,7 @@ export default function AdminDashboard() {
                         variant="ghost"
                         size="sm"
                         className="text-[var(--primary-10)]"
+                        onClick={() => setActiveTab("users")}
                       >
                         See all
                         <ChevronDown className="ml-1 h-4 w-4" />
@@ -341,77 +448,121 @@ export default function AdminDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead>User</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Joined</TableHead>
-                            <TableHead className="text-right">
-                              Actions
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {recentUsers.map((user) => (
-                            <TableRow
-                              key={user.id}
-                              className="hover:bg-[var(--primary-2)]"
-                            >
-                              <TableCell>
-                                <div className="flex items-center gap-3">
-                                  <Avatar>
-                                    <AvatarImage src={user.imageUrl} />
-                                    <AvatarFallback className="bg-[var(--primary-5)]">
-                                      {user.name
-                                        .split(" ")
-                                        .map((n) => n[0])
-                                        .join("")}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <div className="font-semibold">
-                                      {user.name}
-                                    </div>
-                                    <div className="text-sm text-[var(--muted-foreground)]">
-                                      {user.email}
-                                    </div>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="outline"
-                                  className="bg-[var(--primary-3)] text-[var(--primary-11)] border-[var(--primary-7)]"
-                                >
-                                  {user.role}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-[var(--muted-foreground)]">
-                                {new Date(user.joinedAt).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-red-500"
-                                  >
-                                    <Lock className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                      {userDataLoading ? (
+                        <div className="flex justify-center items-center py-16">
+                          <div className="h-10 w-10 rounded-full border-4 border-t-transparent border-[var(--primary-9)] animate-spin"></div>
+                        </div>
+                      ) : userDataFetchError ? (
+                        <div className="p-8 text-center">
+                          <p className="text-red-500 mb-2">
+                            Failed to load users
+                          </p>
+                          <Button
+                            variant="outline"
+                            onClick={() => refetchUsers()}
+                            size="sm"
+                          >
+                            Try again
+                          </Button>
+                        </div>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                              <TableHead>User</TableHead>
+                              <TableHead>Role</TableHead>
+                              <TableHead>Joined</TableHead>
+                              <TableHead className="text-right">
+                                Actions
+                              </TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {userData?.users && userData.users.length > 0 ? (
+                              userData.users.slice(0, 5).map((user) => (
+                                <TableRow
+                                  key={user.id}
+                                  className="hover:bg-[var(--primary-2)]"
+                                >
+                                  <TableCell>
+                                    <div className="flex items-center gap-3">
+                                      <Avatar>
+                                        <AvatarImage
+                                          src={
+                                            user.profileImageUrl || undefined
+                                          }
+                                        />
+                                        <AvatarFallback className="bg-[var(--primary-5)]">
+                                          {user.name
+                                            ? user.name
+                                                .split(" ")
+                                                .map((n) => n[0])
+                                                .join("")
+                                            : "U"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <div className="font-semibold">
+                                          {user.name}
+                                        </div>
+                                        <div className="text-sm text-[var(--muted-foreground)]">
+                                          {user.email}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                      {user.UserRole &&
+                                        user.UserRole.map((role, idx) => (
+                                          <Badge
+                                            key={idx}
+                                            variant="outline"
+                                            className="bg-[var(--primary-3)] text-[var(--primary-11)] border-[var(--primary-7)]"
+                                          >
+                                            {role.Role.name}
+                                          </Badge>
+                                        ))}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-[var(--muted-foreground)]">
+                                    {new Date(
+                                      user.createdAt
+                                    ).toLocaleDateString()}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex justify-end gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-red-500"
+                                      >
+                                        <Lock className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={4}
+                                  className="text-center py-8"
+                                >
+                                  No users found
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -442,7 +593,7 @@ export default function AdminDashboard() {
                           variant="outline"
                           size="sm"
                           className="mt-2"
-                          onClick={() => window.location.reload()}
+                          onClick={() => refetchRoleRequests()}
                         >
                           Retry
                         </Button>
@@ -454,69 +605,76 @@ export default function AdminDashboard() {
                         </p>
                       </div>
                     ) : (
-                      roleRequests.map((request: RoleRequest) => (
-                        <div
-                          key={request.id}
-                          className="p-4 rounded-lg bg-[var(--primary-2)] border border-[var(--primary-6)] flex flex-col gap-3"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="font-medium">
-                                {request.User?.name || "Unknown User"}
+                      roleRequests
+                        .filter((req) => req.status === "PENDING")
+                        .slice(0, 3)
+                        .map((request: RoleRequest) => (
+                          <div
+                            key={request.id}
+                            className="p-4 rounded-lg bg-[var(--primary-2)] border border-[var(--primary-6)] flex flex-col gap-3"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="font-medium">
+                                  {request.User?.name || "Unknown User"}
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-[var(--primary-5)]"
+                                  >
+                                    {request.Role?.name}
+                                  </Badge>
+                                  <span>·</span>
+                                  <span>
+                                    {new Date(
+                                      request.createdAt
+                                    ).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-[var(--muted-foreground)] mt-2 line-clamp-2">
+                                  {request.reason}
+                                </p>
                               </div>
-                              <div className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-[var(--primary-5)]"
+                              <Badge
+                                className={
+                                  request.status === "PENDING"
+                                    ? "bg-amber-100 text-amber-800 border-amber-300"
+                                    : request.status === "APPROVED"
+                                      ? "bg-green-100 text-green-800 border-green-300"
+                                      : "bg-red-100 text-red-800 border-red-300"
+                                }
+                              >
+                                {request.status}
+                              </Badge>
+                            </div>
+                            {request.status === "PENDING" && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-10)] flex-1"
+                                  onClick={() =>
+                                    handleApproveRequest(request.id)
+                                  }
                                 >
-                                  {request.Role?.name}
-                                </Badge>
-                                <span>·</span>
-                                <span>
-                                  {new Date(
-                                    request.createdAt
-                                  ).toLocaleDateString()}
-                                </span>
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1"
+                                  onClick={() =>
+                                    handleRejectRequest(request.id)
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Reject
+                                </Button>
                               </div>
-                              <p className="text-sm text-[var(--muted-foreground)] mt-2 line-clamp-2">
-                                {request.reason}
-                              </p>
-                            </div>
-                            <Badge
-                              className={
-                                request.status === "PENDING"
-                                  ? "bg-amber-100 text-amber-800 border-amber-300"
-                                  : request.status === "APPROVED"
-                                    ? "bg-green-100 text-green-800 border-green-300"
-                                    : "bg-red-100 text-red-800 border-red-300"
-                              }
-                            >
-                              {request.status}
-                            </Badge>
+                            )}
                           </div>
-                          {request.status === "PENDING" && (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-10)] flex-1"
-                                onClick={() => handleApproveRequest(request.id)}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => handleRejectRequest(request.id)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))
+                        ))
                     )}
                     <Button
                       variant="ghost"
@@ -543,6 +701,8 @@ export default function AdminDashboard() {
                       <Input
                         placeholder="Search users..."
                         className="pl-9 w-64"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                     </div>
                     <Button className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-10)]">
@@ -553,9 +713,123 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-4 text-[var(--muted-foreground)]">
-                  User management content will appear here
-                </p>
+                {userDataLoading ? (
+                  <div className="flex justify-center items-center py-16">
+                    <div className="h-12 w-12 rounded-full border-4 border-t-transparent border-[var(--primary-9)] animate-spin"></div>
+                  </div>
+                ) : userDataFetchError ? (
+                  <div className="p-8 text-center">
+                    <p className="text-red-500 mb-2">Failed to load users</p>
+                    <Button variant="outline" onClick={() => refetchUsers()}>
+                      Try again
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Roles</TableHead>
+                          <TableHead>Skills</TableHead>
+                          <TableHead>Joined</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.length > 0 ? (
+                          filteredUsers.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar>
+                                    <AvatarImage
+                                      src={user.profileImageUrl || undefined}
+                                    />
+                                    <AvatarFallback className="bg-[var(--primary-5)]">
+                                      {user.name
+                                        ? user.name
+                                            .split(" ")
+                                            .map((n) => n[0])
+                                            .join("")
+                                        : "U"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <div className="font-semibold">
+                                      {user.name}
+                                    </div>
+                                    <div className="text-sm text-[var(--muted-foreground)]">
+                                      {user.email}
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {user.UserRole &&
+                                    user.UserRole.map((role, idx) => (
+                                      <Badge
+                                        key={idx}
+                                        variant="outline"
+                                        className="bg-[var(--primary-3)] text-[var(--primary-11)] border-[var(--primary-7)]"
+                                      >
+                                        {role.Role.name}
+                                      </Badge>
+                                    ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {user.Skill &&
+                                    user.Skill.slice(0, 2).map((skill, idx) => (
+                                      <Badge
+                                        key={idx}
+                                        variant="outline"
+                                        className="bg-[var(--primary-2)]"
+                                      >
+                                        {skill.name}
+                                      </Badge>
+                                    ))}
+                                  {user.Skill && user.Skill.length > 2 && (
+                                    <Badge variant="outline">
+                                      +{user.Skill.length - 2} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {new Date(user.createdAt).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button size="sm" variant="outline">
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-red-300 text-red-700"
+                                  >
+                                    <Lock className="h-4 w-4 mr-1" />
+                                    Block
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8">
+                              No users matching your search
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -573,79 +847,127 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead>Title</TableHead>
-                        <TableHead>Dates</TableHead>
-                        <TableHead>Teams</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {hackathons.map((hackathon) => (
-                        <TableRow
-                          key={hackathon.id}
-                          className="hover:bg-[var(--primary-2)]"
-                        >
-                          <TableCell>
-                            <div className="font-semibold">
-                              {hackathon.title}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm text-[var(--muted-foreground)]">
-                              {new Date(
-                                hackathon.startDate
-                              ).toLocaleDateString()}{" "}
-                              -{" "}
-                              {new Date(hackathon.endDate).toLocaleDateString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>{hackathon.teamsCount}</TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                hackathon.status === "ONGOING"
-                                  ? "bg-green-100 text-green-800 border-green-300"
-                                  : hackathon.status === "UPCOMING"
-                                    ? "bg-blue-100 text-blue-800 border-blue-300"
-                                    : "bg-gray-100 text-gray-800 border-gray-300"
-                              }
-                            >
-                              {hackathon.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                              >
-                                <Settings className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                {hackathonLoading ? (
+                  <div className="flex justify-center items-center py-16">
+                    <div className="h-12 w-12 rounded-full border-4 border-t-transparent border-[var(--primary-9)] animate-spin"></div>
+                  </div>
+                ) : hackathonError ? (
+                  <div className="p-8 text-center">
+                    <p className="text-red-500 mb-2">
+                      Failed to load hackathons
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => refetchHackathons()}
+                    >
+                      Try again
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead>Title</TableHead>
+                          <TableHead>Dates</TableHead>
+                          <TableHead>Tags</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {hackathonData?.response &&
+                        hackathonData.response.length > 0 ? (
+                          hackathonData.response.map((hackathon) => (
+                            <TableRow
+                              key={hackathon.id}
+                              className="hover:bg-[var(--primary-2)]"
+                            >
+                              <TableCell>
+                                <div className="font-semibold">
+                                  {hackathon.title}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm text-[var(--muted-foreground)]">
+                                  {new Date(
+                                    hackathon.startDate
+                                  ).toLocaleDateString()}{" "}
+                                  -{" "}
+                                  {new Date(
+                                    hackathon.endDate
+                                  ).toLocaleDateString()}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {hackathon.HackathonTag?.slice(0, 2).map(
+                                    (tag, idx) => (
+                                      <Badge
+                                        key={idx}
+                                        variant="outline"
+                                        className="bg-[var(--primary-2)]"
+                                      >
+                                        {tag.name}
+                                      </Badge>
+                                    )
+                                  )}
+                                  {hackathon.HackathonTag?.length > 2 && (
+                                    <Badge variant="outline">
+                                      +{hackathon.HackathonTag.length - 2}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={
+                                    hackathon.status === "ONGOING"
+                                      ? "bg-green-100 text-green-800 border-green-300"
+                                      : hackathon.status === "UPCOMING"
+                                        ? "bg-blue-100 text-blue-800 border-blue-300"
+                                        : "bg-gray-100 text-gray-800 border-gray-300"
+                                  }
+                                >
+                                  {hackathon.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                  >
+                                    <Settings className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8">
+                              No hackathons found
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* REQUESTS TAB - Enhanced with more details */}
+          {/* REQUESTS TAB */}
           <TabsContent value="requests">
             <Card className="shadow-lg border-0">
               <CardHeader>
@@ -683,7 +1005,7 @@ export default function AdminDashboard() {
                     <Button
                       variant="outline"
                       className="border-red-300 text-red-700"
-                      onClick={() => window.location.reload()}
+                      onClick={() => refetchRoleRequests()}
                     >
                       Retry
                     </Button>
@@ -772,6 +1094,9 @@ export default function AdminDashboard() {
                                 <Button
                                   size="sm"
                                   className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-10)]"
+                                  onClick={() =>
+                                    handleApproveRequest(request.id)
+                                  }
                                 >
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   Approve
@@ -780,6 +1105,9 @@ export default function AdminDashboard() {
                                   size="sm"
                                   variant="outline"
                                   className="border-red-300 text-red-700"
+                                  onClick={() =>
+                                    handleRejectRequest(request.id)
+                                  }
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   Reject
@@ -818,15 +1146,4 @@ export default function AdminDashboard() {
       </div>
     </motion.div>
   );
-}
-
-// Add these functions at the appropriate place in your code
-function handleApproveRequest(id: string) {
-  // Implementation for approving a role request
-  console.log("Approving request:", id);
-}
-
-function handleRejectRequest(id: string) {
-  // Implementation for rejecting a role request
-  console.log("Rejecting request:", id);
 }

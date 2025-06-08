@@ -13,10 +13,18 @@ import { TeamService } from './team.service';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { RoleType } from '@prisma/client';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('team')
 export class TeamController {
   constructor(private readonly teamsService: TeamService) {}
+
+  @Get('count')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  getAllTeam() {
+    return this.teamsService.getTeamCount();
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)

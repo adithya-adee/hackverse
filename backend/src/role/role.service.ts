@@ -72,7 +72,26 @@ export class RoleService {
   }
 
   async getAllRoleReqs() {
-    return await this.prisma.roleRequest.findMany({});
+    return await this.prisma.roleRequest.findMany({
+      select: {
+        id: true,
+        reason: true,
+        supportingUrl: true,
+        status: true,
+        createdAt: true,
+        User: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        Role: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
   }
 
   async updateRole(
