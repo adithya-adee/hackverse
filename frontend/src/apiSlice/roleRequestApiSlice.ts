@@ -22,8 +22,17 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    updateRoleRequest: builder.mutation({
+      query: (data) => ({
+        url: "/role/update",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useCreateRoleRequestMutation, useGetRoleRequestQuery } =
-  roleRequestApiSlice;
+export const {
+  useCreateRoleRequestMutation,
+  useGetRoleRequestQuery,
+  useUpdateRoleRequestMutation,
+} = roleRequestApiSlice;

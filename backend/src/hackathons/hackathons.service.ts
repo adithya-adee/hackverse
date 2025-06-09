@@ -4,8 +4,6 @@ import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
 import { FindHackathonDto } from './dto/find-hackathon.dto';
 import type { UpcomingHackathonDto } from './dto/get-upcoming-hackathon.dto';
-import { CreateTagDto } from './dto/create-tags.dto';
-import { CreateTabDto } from './dto/create-tabs.dto';
 
 @Injectable()
 export class HackathonsService {
@@ -19,7 +17,9 @@ export class HackathonsService {
       },
     });
 
-    return response;
+    const count = await this.prisma.hackathon.count();
+
+    return { response, count };
   }
 
   async getAllUpcomingHackathons(): Promise<UpcomingHackathonDto[]> {
@@ -105,8 +105,11 @@ export class HackathonsService {
     };
   }
 
-  async createHackathon(createdById:string, createHackathonDto: CreateHackathonDto) {
-    const {tags, tabs , ...hackathonData}  = createHackathonDto;
+  async createHackathon(
+    createdById: string,
+    createHackathonDto: CreateHackathonDto,
+  ) {
+    const { tags, tabs, ...hackathonData } = createHackathonDto;
     const hackathon = await this.prisma.hackathon.create({
       data: {
         ...hackathonData,
@@ -117,22 +120,22 @@ export class HackathonsService {
       // },
     });
 
-    console.log("hackathon created")
-    console.log(hackathon)
+    console.log('hackathon created');
+    console.log(hackathon);
 
     //creating tags...
-    if(tags?.length){
+    if (tags?.length) {
       await this.prisma.hackathonTag.createMany({
-        data: tags.map((tag)=>({
-            name:tag,
-            hackathonId: hackathon.id
+        data: tags.map((tag) => ({
+          name: tag,
+          hackathonId: hackathon.id,
         })),
       });
     }
 
-    if(tabs?.length){
+    if (tabs?.length) {
       await this.prisma.hackathonTab.createMany({
-        data: tabs.map((tab)=>({
+        data: tabs.map((tab) => ({
           title: tab.title,
           content: tab.content,
           order: tab.order,
@@ -143,12 +146,10 @@ export class HackathonsService {
     }
 
     return {
-      data:{
-      ...hackathon,
-      createdBy: { id: createdById },
-      }
-      
-      
+      data: {
+        ...hackathon,
+        createdBy: { id: createdById },
+      },
     };
   }
 

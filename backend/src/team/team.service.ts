@@ -8,6 +8,12 @@ import { TeamRequest } from '@prisma/client';
 export class TeamService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getTeamCount() {
+    const respone = await this.prisma.team.count();
+
+    return respone;
+  }
+
   async createTeam(data: CreateTeamDto, userId: string) {
     return await this.prisma.team.create({
       data: {

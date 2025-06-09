@@ -51,6 +51,10 @@ export class RegistrationsService {
     });
   }
 
+  async getSubmissionCount() {
+    return await this.prisma.submission.count();
+  }
+
   async remove(userId: string, hackathonId: string): Promise<void> {
     try {
       await this.prisma.hackathonRegistration.delete({

@@ -32,27 +32,33 @@ export class UsersService {
     });
   }
 
-  async findAll(): Promise<FindUserDto[]> {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        biography: true,
-        profileImageUrl: true,
-        resumeUrl: true,
-        githubUrl: true,
-        linkedinUrl: true,
-        createdAt: true,
-        updatedAt: true,
-        UserRole: {
-          include: {
-            Role: true,
+  async findAll(): Promise<{ users: FindUserDto[]; count: number }> {
+    const [users, count] = await Promise.all([
+      this.prisma.user.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          biography: true,
+          profileImageUrl: true,
+          resumeUrl: true,
+          githubUrl: true,
+          linkedinUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          UserRole: {
+            include: {
+              Role: true,
+            },
           },
+          Skill: true,
         },
-        Skill: true,
-      },
-    });
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      this.prisma.user.count(),
+    ]);
+    return { users, count };
   }
 
   async findOne(id: string): Promise<FindUserDto> {
