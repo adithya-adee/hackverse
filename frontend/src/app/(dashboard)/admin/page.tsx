@@ -23,7 +23,7 @@ import DashboardHeader from "@/components/dashboard/admin/DashboardHeader";
 import OverviewTab from "@/components/dashboard/admin/tabs/OverviewTab";
 import UsersTab from "@/components/dashboard/admin/tabs/UsersTab";
 import HackathonsTab from "@/components/dashboard/admin/tabs/HackathonsTab";
-import RequestsTab from "@/components/dashboard/admin/tabs/RequetsTab";
+import RequestsTab from "@/components/dashboard/admin/tabs/RequestsTab";
 import SettingsTab from "@/components/dashboard/admin/tabs/SettingsTab";
 import { Hackathon } from "@/types/core_interfaces";
 

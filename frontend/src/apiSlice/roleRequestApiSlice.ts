@@ -1,5 +1,5 @@
 import { apiSlice } from "@/store/apiSlice";
-import type { RoleRequest } from "@/types/core_interfaces";
+import type { RoleRequest, UserRole } from "@/types/core_interfaces";
 
 export interface CreateRoleRequestDto {
   roleType: "MODERATOR" | "ORGANIZER" | "ADMIN";
@@ -16,16 +16,36 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
-    getRoleRequest: builder.query({
+
+    getRoleRequest: builder.query<RoleRequest[], void>({
       query: () => ({
         url: "/role/getAllReqs",
         method: "GET",
       }),
     }),
-    updateRoleRequest: builder.mutation({
-      query: (data) => ({
-        url: "/role/update",
-        method: "GET",
+
+    acceptRoleRequest: builder.mutation<UserRole, string>({
+      query: (id) => ({
+        url: `/role/requests/${id}/accept`,
+        method: "POST",
+      }),
+    }),
+
+    rejectRoleRequest: builder.mutation<RoleRequest, string>({
+      query: (id) => ({
+        url: `/role/requests/${id}/reject`,
+        method: "POST",
+      }),
+    }),
+
+    updateRoleRequestNotes: builder.mutation<
+      RoleRequest,
+      { id: string; notes: string }
+    >({
+      query: ({ id, notes }) => ({
+        url: `/role/requests/${id}/notes`,
+        method: "PATCH",
+        body: { notes },
       }),
     }),
   }),
@@ -34,5 +54,7 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateRoleRequestMutation,
   useGetRoleRequestQuery,
-  useUpdateRoleRequestMutation,
+  useAcceptRoleRequestMutation,
+  useRejectRoleRequestMutation,
+  useUpdateRoleRequestNotesMutation,
 } = roleRequestApiSlice;

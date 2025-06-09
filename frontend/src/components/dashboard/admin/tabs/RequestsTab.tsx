@@ -4,8 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
 import { useState } from "react";
 import { DashboardData } from "@/types/admin_interfaces";
-import { useUpdateRoleRequestMutation } from "@/apiSlice/roleRequestApiSlice";
-import { toast } from "sonner";
 import RoleRequestsTable from "../tables/RoleRequestTable";
 
 interface RequestsTabProps {
@@ -20,50 +18,7 @@ export default function RequestsTab({ data }: RequestsTabProps) {
     refetchRoleRequests,
   } = data;
   const [requestSearchQuery, setRequestSearchQuery] = useState("");
-  const [updateRoleRequest] = useUpdateRoleRequestMutation();
 
-  // Handle role request actions
-  const handleApproveRequest = async (id: string) => {
-    try {
-      await updateRoleRequest({
-        id,
-        status: "APPROVED",
-        reviewNotes: "Request approved by admin",
-      }).unwrap();
-
-      toast.success("Role request approved", {
-        description: "The user's role has been updated successfully.",
-      });
-
-      refetchRoleRequests();
-    } catch (err) {
-      toast.error("Failed to approve request", {
-        description: "An error occurred. Please try again.",
-      });
-    }
-  };
-
-  const handleRejectRequest = async (id: string) => {
-    try {
-      await updateRoleRequest({
-        id,
-        status: "REJECTED",
-        reviewNotes: "Request rejected by admin",
-      }).unwrap();
-
-      toast.error("Role request rejected", {
-        description: "The user has been notified of the decision.",
-      });
-
-      refetchRoleRequests();
-    } catch (err) {
-      toast.error("Failed to reject request", {
-        description: "An error occurred. Please try again.",
-      });
-    }
-  };
-
-  // Filter requests based on search query
   const filteredRequests = roleRequests.filter(
     (request) =>
       request.User?.name
@@ -105,8 +60,6 @@ export default function RequestsTab({ data }: RequestsTabProps) {
           loading={roleRequestsLoading}
           error={roleRequestsError}
           retry={() => refetchRoleRequests()}
-          onApprove={handleApproveRequest}
-          onReject={handleRejectRequest}
         />
       </CardContent>
     </Card>

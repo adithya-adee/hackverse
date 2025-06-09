@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,16 +10,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { CheckCircle, Trash2, Eye, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle, Trash2, Eye, MessageSquare, Save } from "lucide-react";
 import { RoleRequest } from "@/types/core_interfaces";
+import {
+  useAcceptRoleRequestMutation,
+  useRejectRoleRequestMutation,
+  useUpdateRoleRequestNotesMutation,
+} from "@/apiSlice/roleRequestApiSlice";
+import { toast } from "sonner";
 
 interface RoleRequestsTableProps {
   requests: RoleRequest[];
   loading: boolean;
   error: unknown;
   retry: () => void;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
 }
 
 export default function RoleRequestsTable({
@@ -26,9 +32,46 @@ export default function RoleRequestsTable({
   loading,
   error,
   retry,
-  onApprove,
-  onReject,
 }: RoleRequestsTableProps) {
+  const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [isEditingNotes, setIsEditingNotes] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const [acceptRequest] = useAcceptRoleRequestMutation();
+  const [rejectRequest] = useRejectRoleRequestMutation();
+  const [updateNotes] = useUpdateRoleRequestNotesMutation();
+
+  const handleAccept = async (id: string) => {
+    try {
+      await acceptRequest(id).unwrap();
+      toast.success("Role request accepted");
+    } catch (error) {
+      toast.error("Failed to accept role request");
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await rejectRequest(id).unwrap();
+      toast.success("Role request rejected");
+    } catch (error) {
+      toast.error("Failed to reject role request");
+    }
+  };
+
+  const handleSaveNotes = async (id: string) => {
+    try {
+      await updateNotes({ id, notes: editingNotes[id] }).unwrap();
+      setIsEditingNotes({ ...isEditingNotes, [id]: false });
+      toast.success("Notes updated");
+    } catch (error) {
+      toast.error("Failed to update notes");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-16">
@@ -75,6 +118,7 @@ export default function RoleRequestsTable({
           <TableHead>User</TableHead>
           <TableHead>Requested Role</TableHead>
           <TableHead>Reason</TableHead>
+          <TableHead>Notes</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
@@ -113,6 +157,68 @@ export default function RoleRequestsTable({
                 {request.reason}
               </p>
             </TableCell>
+            <TableCell>
+              {isEditingNotes[request.id] ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={
+                      editingNotes[request.id] || request.reviewNotes || ""
+                    }
+                    onChange={(e) =>
+                      setEditingNotes({
+                        ...editingNotes,
+                        [request.id]: e.target.value,
+                      })
+                    }
+                    placeholder="Add review notes..."
+                    className="min-h-[80px]"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setIsEditingNotes({
+                          ...isEditingNotes,
+                          [request.id]: false,
+                        })
+                      }
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleSaveNotes(request.id)}
+                    >
+                      <Save className="h-4 w-4 mr-1" />
+                      Save Notes
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-[var(--muted-foreground)]">
+                    {request.reviewNotes || "No review notes"}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditingNotes({
+                        ...isEditingNotes,
+                        [request.id]: true,
+                      });
+                      setEditingNotes({
+                        ...editingNotes,
+                        [request.id]: request.reviewNotes || "",
+                      });
+                    }}
+                  >
+                    Edit Notes
+                  </Button>
+                </div>
+              )}
+            </TableCell>
             <TableCell className="text-[var(--muted-foreground)]">
               {new Date(request.createdAt).toLocaleDateString()}
             </TableCell>
@@ -135,19 +241,17 @@ export default function RoleRequestsTable({
                   <Button
                     size="sm"
                     className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-10)]"
-                    onClick={() => onApprove(request.id)}
+                    onClick={() => handleAccept(request.id)}
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    Approve
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     className="border-red-300 text-red-700"
-                    onClick={() => onReject(request.id)}
+                    onClick={() => handleReject(request.id)}
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    Reject
                   </Button>
                 </div>
               ) : (

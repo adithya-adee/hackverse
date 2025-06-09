@@ -4,13 +4,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 
 import { Users, Calendar, Activity, Award } from "lucide-react";
-import { useUpdateRoleRequestMutation } from "@/apiSlice/roleRequestApiSlice";
-import { toast } from "sonner";
 import { DashboardData, containerVariants } from "@/types/admin_interfaces";
 import StatsCard from "../StatsCard";
 import RoleRequestCard from "../RoleRequestCard";
 import UsersTable from "../tables/UsersTable";
-import { RoleRequest } from "@/types/core_interfaces";
 
 interface OverviewTabProps {
   data: DashboardData;
@@ -33,10 +30,6 @@ export default function OverviewTab({ data, setActiveTab }: OverviewTabProps) {
     submissionCount,
   } = data;
 
-  const [updateRoleRequest, { isLoading: isUpdatingRole }] =
-    useUpdateRoleRequestMutation();
-
-  // Stats cards with dynamic data
   const stats = [
     {
       title: "Total Users",
@@ -63,47 +56,6 @@ export default function OverviewTab({ data, setActiveTab }: OverviewTabProps) {
       icon: Award,
     },
   ];
-
-  // Handle role request actions
-  const handleApproveRequest = async (id: string) => {
-    try {
-      await updateRoleRequest({
-        id,
-        status: "APPROVED",
-        reviewNotes: "Request approved by admin",
-      }).unwrap();
-
-      toast.success("Role request approved", {
-        description: "The user's role has been updated successfully.",
-      });
-
-      refetchRoleRequests();
-    } catch (err) {
-      toast.error("Failed to approve request", {
-        description: "An error occurred. Please try again.",
-      });
-    }
-  };
-
-  const handleRejectRequest = async (id: string) => {
-    try {
-      await updateRoleRequest({
-        id,
-        status: "REJECTED",
-        reviewNotes: "Request rejected by admin",
-      }).unwrap();
-
-      toast.error("Role request rejected", {
-        description: "The user has been notified of the decision.",
-      });
-
-      refetchRoleRequests();
-    } catch (err) {
-      toast.error("Failed to reject request", {
-        description: "An error occurred. Please try again.",
-      });
-    }
-  };
 
   const pendingRequests = roleRequests.filter(
     (req) => req.status === "PENDING"
@@ -208,12 +160,7 @@ export default function OverviewTab({ data, setActiveTab }: OverviewTabProps) {
                 pendingRequests
                   .slice(0, 3)
                   .map((request) => (
-                    <RoleRequestCard
-                      key={request.id}
-                      request={request}
-                      onApprove={handleApproveRequest}
-                      onReject={handleRejectRequest}
-                    />
+                    <RoleRequestCard key={request.id} request={request} />
                   ))
               )}
               <Button
