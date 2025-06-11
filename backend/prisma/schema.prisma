@@ -37,23 +37,22 @@ model Hackathon {
   HackathonModerator        HackathonModerator[]
   HackathonModeratorRequest HackathonModeratorRequest[]
   HackathonRegistration     HackathonRegistration[]
-  HackathonTag              HackathonTag[]
   HackathonTab              HackathonTab[]
+  HackathonTag              HackathonTag[]
   Submission                Submission[]
   Team                      Team[]
 }
 
 model HackathonTab {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hackathonId String   @db.Uuid
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hackathonId String    @db.Uuid
   title       String
-  content     String // Markdown content
-  order       Int // For ordering tabs
-  isVisible   Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime @default(now()) @db.Timestamp(6)
-
-  Hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  content     String
+  order       Int
+  isVisible   Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @default(now()) @db.Timestamp(6)
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
 
   @@unique([hackathonId, order])
   @@index([hackathonId])
@@ -283,14 +282,14 @@ enum RoleType {
   ADMIN
 }
 
-enum UserType {
-  STUDENT
-  PROFESSIONAL
-  OTHERS
-}
-
 enum Sex {
   MALE
   FEMALE
   UNSPECIFIED
+}
+
+enum UserType {
+  STUDENT
+  PROFESSIONAL
+  OTHERS
 }

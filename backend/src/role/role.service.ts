@@ -173,5 +173,86 @@ export class RoleService {
     return { message: 'Role request processed.' };
   }
 
-  //TODO: moderator
+  async acceptRoleRequest(requestId: string) {
+    return await this.prisma.$transaction(async (prisma) => {
+      // 1. Get the role request
+      const roleRequest = await prisma.roleRequest.findUnique({
+        where: { id: requestId },
+        include: {
+          Role: true,
+        },
+      });
+
+      if (!roleRequest) {
+        throw new NotFoundException('Role request not found');
+      }
+
+      // 2. Check if user already has a role
+      const existingUserRole = await prisma.userRole.findFirst({
+        where: {
+          userId: roleRequest.userId,
+          roleId: roleRequest.roleId,
+        },
+      });
+
+      if (existingUserRole) {
+        throw new BadRequestException('User already has this role');
+      }
+
+      // 3. Create new UserRole
+      const newUserRole = await prisma.userRole.create({
+        data: {
+          userId: roleRequest.userId,
+          roleId: roleRequest.roleId,
+        },
+      });
+
+      // 4. Update role request status
+      await prisma.roleRequest.update({
+        where: { id: requestId },
+        data: {
+          status: 'APPROVED',
+          updatedAt: new Date(),
+        },
+      });
+
+      return newUserRole;
+    });
+  }
+
+  async rejectRoleRequest(requestId: string) {
+    const roleRequest = await this.prisma.roleRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!roleRequest) {
+      throw new NotFoundException('Role request not found');
+    }
+
+    return await this.prisma.roleRequest.update({
+      where: { id: requestId },
+      data: {
+        status: 'REJECTED',
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async updateRoleRequestNotes(requestId: string, notes: string) {
+    const roleRequest = await this.prisma.roleRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!roleRequest) {
+      throw new NotFoundException('Role request not found');
+    }
+
+    return await this.prisma.roleRequest.update({
+      where: { id: requestId },
+      data: {
+        reviewNotes: notes,
+        updatedAt: new Date(),
+      },
+    });
+  }
 }
