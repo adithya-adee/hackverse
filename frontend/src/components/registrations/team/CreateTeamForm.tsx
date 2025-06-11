@@ -3,14 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,12 +16,6 @@ import {
   containerVariants,
   itemVariants,
 } from "@/lib/animation";
-
-const hackathonsData = [
-  { id: "1", title: "Hackathon 2023", maxTeamSize: 4 },
-  { id: "2", title: "Summer Code Fest", maxTeamSize: 4 },
-  { id: "3", title: "Winter Hackathon", maxTeamSize: 5 },
-];
 
 export default function CreateTeamForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,147 +51,124 @@ export default function CreateTeamForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="p-2"
     >
-      <Card className="h-full">
-        <CardHeader className="bg-transparent text-[var(--primary-9)]">
-          <CardTitle className="text-xl font-semibold flex items-center">
+      <div className="h-full">
+        <div className="bg-transparent text-[var(--primary-9)]">
+          <div className="text-xl font-semibold flex items-center">
             <PlusCircle className="h-5 w-5 mr-2" />
-            Create a New Team
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
+            Create Your Tean
+          </div>
+        </div>
+        <div className="p-6">
           <motion.form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6"
+            className="space-y-6 flex gap-4 w-full"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            <motion.div variants={itemVariants}>
-              <Label
-                htmlFor="name"
-                className="text-[var(--foreground)] mb-1 block"
-              >
-                Team Name *
-              </Label>
-              <Input
-                id="name"
-                placeholder="Enter your team name"
-                {...form.register("name")}
-                className="w-full"
-              />
-              {form.formState.errors.name && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.name.message}
-                </p>
-              )}
-            </motion.div>
+            <div className="grid grid-cols-1  gap-2 w-[50%]">
+              <motion.div variants={itemVariants}>
+                <Label
+                  htmlFor="name"
+                  className="text-[var(--foreground)] mb-1 block"
+                >
+                  Team Name *
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your team name"
+                  {...form.register("name")}
+                  className="w-full"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
+                )}
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label
-                htmlFor="description"
-                className="text-[var(--foreground)] mb-1 block"
-              >
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Describe your team and your project idea"
-                {...form.register("description")}
-                className="w-full min-h-[100px]"
-              />
-            </motion.div>
+              <motion.div variants={itemVariants}>
+                <Label
+                  htmlFor="requiredSkills"
+                  className="text-[var(--foreground)] mb-1 block"
+                >
+                  Required Skills (comma separated)
+                </Label>
+                <Input
+                  id="requiredSkills"
+                  placeholder="React, Node.js, TypeScript, etc."
+                  {...form.register("requiredSkills")}
+                  className="w-full"
+                />
+              </motion.div>
+            </div>
 
-            <motion.div variants={itemVariants}>
-              <Label
-                htmlFor="hackathon"
-                className="text-[var(--foreground)] mb-1 block"
-              >
-                Hackathon *
-              </Label>
-              <Select
-                onValueChange={(value) => form.setValue("hackathonId", value)}
-                value={form.watch("hackathonId")}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a hackathon" />
-                </SelectTrigger>
-                <SelectContent>
-                  {hackathonsData.map((hackathon) => (
-                    <SelectItem key={hackathon.id} value={hackathon.id}>
-                      {hackathon.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.hackathonId && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.hackathonId.message}
-                </p>
-              )}
-            </motion.div>
+            <div className="grid grid-cols-1 gap-2 w-[50%]">
+              <motion.div variants={itemVariants}>
+                <Label
+                  htmlFor="description"
+                  className="text-[var(--foreground)] mb-1 block"
+                >
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe your team and your project idea"
+                  {...form.register("description")}
+                  className="w-full min-h-[100px]"
+                />
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label
-                htmlFor="requiredSkills"
-                className="text-[var(--foreground)] mb-1 block"
+              <motion.div
+                variants={itemVariants}
+                className="flex items-center space-x-2"
               >
-                Required Skills (comma separated)
-              </Label>
-              <Input
-                id="requiredSkills"
-                placeholder="React, Node.js, TypeScript, etc."
-                {...form.register("requiredSkills")}
-                className="w-full"
-              />
-            </motion.div>
+                <Checkbox
+                  id="lookingForMembers"
+                  checked={form.watch("lookingForMembers")}
+                  onCheckedChange={(checked) =>
+                    form.setValue("lookingForMembers", checked as boolean)
+                  }
+                />
+                <Label
+                  htmlFor="lookingForMembers"
+                  className="text-[var(--foreground)]"
+                >
+                  Looking for team members
+                </Label>
+              </motion.div>
 
-            <motion.div
-              variants={itemVariants}
-              className="flex items-center space-x-2"
-            >
-              <Checkbox
-                id="lookingForMembers"
-                checked={form.watch("lookingForMembers")}
-                onCheckedChange={(checked) =>
-                  form.setValue("lookingForMembers", checked as boolean)
-                }
-              />
-              <Label
-                htmlFor="lookingForMembers"
-                className="text-[var(--foreground)]"
+              <motion.div
+                className="w-[50%] flex justify-end"
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
               >
-                Looking for team members
-              </Label>
-            </motion.div>
-
-            <motion.div
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
-              <Button
-                type="submit"
-                className="w-full bg-[var(--primary-9)] text-white"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"
-                  />
-                ) : null}
-                {isSubmitting ? "Creating..." : "Create Team"}
-              </Button>
-            </motion.div>
+                <Button
+                  type="submit"
+                  className="w-full bg-[var(--primary-9)] text-white"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                    />
+                  ) : null}
+                  {isSubmitting ? "Creating..." : "Create Team"}
+                </Button>
+              </motion.div>
+            </div>
           </motion.form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

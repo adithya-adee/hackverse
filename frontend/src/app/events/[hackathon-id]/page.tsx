@@ -43,10 +43,10 @@ export interface FindHackathonDto {
 
 const Page = () => {
   const params = useParams();
-  const hackathonId = params?.hackathonId as string;
+  const hackathonId = params["hackathon-id"];
 
   // const [hackathon, setHackathon] = useState<FindHackathonDto>(sampleHackathonData.aiHackathon);
-  const hackathon: FindHackathonDto = sampleHackathonData.aiHackathon;
+  const hackathon: FindHackathonDto = sampleHackathonData.healthHackathon;
   const [activeTab, setActiveTab] = useState(0);
 
   //Mock API call - replace with your actual API call
@@ -128,7 +128,7 @@ const Page = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-1)]">
+    <div className="min-h-screen bg-gradient-to-b from-[var(--primary-1)] to-[var(--primary-3)]">
       {/* Banner Section */}
       <div className="w-full h-[10-vh] mt-16"></div>
       <motion.div
@@ -401,7 +401,7 @@ const Page = () => {
             >
               {/* TODO: Handel this navigation to register hackathon page */}
               {/* TODO: add a link copying emoji to share the link to others */}
-              <Link href={"/"}>
+              <Link href={`/events/${hackathonId}/register`}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

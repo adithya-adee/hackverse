@@ -1,6 +1,7 @@
 import React from "react";
 import hackathonData from "@/assets/data/hackathon-listing-json-data.json";
 import { HackathonCard } from "@/components/root components/HackathonCard";
+import Link from "next/link";
 
 function Page() {
   //TODO: fetch this from backend later
@@ -27,18 +28,18 @@ function Page() {
           <div className="flex justify-center items-center min-h-screen  ">
             <div className="md:m-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-24">
               {hackathons.map((hackathon) => (
-                <HackathonCard
-                  key={hackathon.id}
-                  id={hackathon.id}
-                  title={hackathon.title}
-                  description={hackathon.description}
-                  bannerImageUrl={hackathon.bannerImageUrl}
-                  startDate={hackathon.startDate}
-                  mode={hackathon.mode as "OFFLINE" | "ONLINE" | "HYBRID"}
-                  maxTeamSize={hackathon.maxTeamSize}
-                  tags={hackathon.tags}
-                  registeredParticipants={hackathon.registeredParticipants}
-                />
+                  <HackathonCard
+                    key={hackathon.id}
+                    id={hackathon.id}
+                    title={hackathon.title}
+                    description={hackathon.description}
+                    bannerImageUrl={hackathon.bannerImageUrl}
+                    startDate={hackathon.startDate}
+                    mode={hackathon.mode as "OFFLINE" | "ONLINE" | "HYBRID"}
+                    maxTeamSize={hackathon.maxTeamSize}
+                    tags={hackathon.tags}
+                    registeredParticipants={hackathon.registeredParticipants}
+                  />
               ))}
             </div>
           </div>

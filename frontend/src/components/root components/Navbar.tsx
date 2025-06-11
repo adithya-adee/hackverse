@@ -27,11 +27,11 @@ function Navbar() {
   return (
     <div
       // suppressHydrationWarning
-      className="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md"
+      className="fixed top-0 left-0 w-full z-100 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md"
     >
       <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
         <a className="flex items-center justify-center" href="/">
-          <Logo className="h-48 w-48" />
+          <Logo className="h-18 w-48" />
         </a>
 
         <div className=" flex gap-5">

@@ -116,7 +116,7 @@ export default function CreateHackathonStep2() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-1)] py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[var(--primary-1)] to-[var(--primary-3)] py-8">
       <div className="max-w-6xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

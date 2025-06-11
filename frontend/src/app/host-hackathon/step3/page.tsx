@@ -50,7 +50,7 @@ export default function CreateHackathonStep3() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-1)] p-6"
+      className="min-h-screen bg-gradient-to-b from-[var(--primary-1)] to-[var(--primary-3)] p-6"
     >
       <div className="mx-auto max-w-4xl">
         <motion.div
