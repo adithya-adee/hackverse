@@ -32,27 +32,27 @@ model Hackathon {
   bannerImageUrl            String?
   createdAt                 DateTime                    @default(now()) @db.Timestamp(6)
   updatedAt                 DateTime                    @default(now()) @db.Timestamp(6)
+  minTeamSize               Int                         @default(1)
   User                      User                        @relation(fields: [createdById], references: [id], onDelete: NoAction)
   HackathonModerator        HackathonModerator[]
   HackathonModeratorRequest HackathonModeratorRequest[]
   HackathonRegistration     HackathonRegistration[]
-  HackathonTag              HackathonTag[]
   HackathonTab              HackathonTab[]
+  HackathonTag              HackathonTag[]
   Submission                Submission[]
   Team                      Team[]
 }
 
 model HackathonTab {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hackathonId String   @db.Uuid
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hackathonId String    @db.Uuid
   title       String
-  content     String // Markdown content
-  order       Int // For ordering tabs
-  isVisible   Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime @default(now()) @db.Timestamp(6)
-
-  Hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  content     String
+  order       Int
+  isVisible   Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @default(now()) @db.Timestamp(6)
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
 
   @@unique([hackathonId, order])
   @@index([hackathonId])
@@ -184,6 +184,7 @@ model Team {
   requiredSkills    String?
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @default(now()) @db.Timestamp(6)
+  registered        Boolean       @default(false)
   Submission        Submission[]
   User              User          @relation(fields: [createdById], references: [id], onDelete: NoAction)
   Hackathon         Hackathon     @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
@@ -225,6 +226,10 @@ model User {
   linkedinUrl                      String?
   createdAt                        DateTime                    @default(now()) @db.Timestamp(6)
   updatedAt                        DateTime                    @default(now()) @db.Timestamp(6)
+  gender                           Sex                         @default(UNSPECIFIED)
+  institutionName                  String?
+  phoneNo                          String?                     @unique @db.VarChar(10)
+  type                             UserType                    @default(STUDENT)
   Hackathon                        Hackathon[]
   HackathonModerator               HackathonModerator[]
   HackathonModeratorRequest        HackathonModeratorRequest[]
@@ -275,4 +280,16 @@ enum RoleType {
   RECRUITER
   MODERATOR
   ADMIN
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  UNSPECIFIED
+}
+
+enum UserType {
+  STUDENT
+  PROFESSIONAL
+  OTHERS
 }

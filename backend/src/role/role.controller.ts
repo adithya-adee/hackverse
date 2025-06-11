@@ -49,4 +49,28 @@ export class RoleController {
       updateData.reviewNotes || '',
     );
   }
+
+  @Post('requests/:id/accept')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  async acceptRoleRequest(@Param('id') id: string) {
+    return this.roleService.acceptRoleRequest(id);
+  }
+
+  @Post('requests/:id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  async rejectRoleRequest(@Param('id') id: string) {
+    return this.roleService.rejectRoleRequest(id);
+  }
+
+  @Patch('requests/:id/notes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  async updateRoleRequestNotes(
+    @Param('id') id: string,
+    @Body('notes') notes: string,
+  ) {
+    return this.roleService.updateRoleRequestNotes(id, notes);
+  }
 }
