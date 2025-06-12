@@ -36,7 +36,7 @@ function CreateTeamSection({ hackathonId }: Props) {
 
         {/* Map all the user from team-req and team-members */}
         <div>
-          <TeamMembercard />
+          {teamId ? <TeamMembercard teamId={teamId} /> : (<div>No Team Members Found</div>)}
         </div>
       </div>
     </div>
