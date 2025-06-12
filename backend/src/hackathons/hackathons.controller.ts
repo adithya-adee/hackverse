@@ -8,6 +8,7 @@ import {
   UseGuards,
   Delete,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { HackathonsService } from './hackathons.service';
 import { CreateHackathonDto } from './dto/create-hackathon.dto';
@@ -19,7 +20,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('hackathons')
 export class HackathonsController {
-  constructor(private readonly hackathonsService: HackathonsService) {}
+  constructor(private readonly hackathonsService: HackathonsService) { }
 
   @Get()
   findAll() {
@@ -37,9 +38,9 @@ export class HackathonsController {
     return this.hackathonsService.getHackathonById(id);
   }
 
-  //TODO: role guard jwt+role
   @Post('create')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
   create(
     @Request() req: { user: { userId: string } },
     @Body() createHackathonDto: CreateHackathonDto,
@@ -99,5 +100,19 @@ export class HackathonsController {
   @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
   delete(@Param('id') id: string) {
     return this.hackathonsService.deleteHackathon(id);
+  }
+
+  @Post(':id/register')
+  @UseGuards(JwtAuthGuard)
+  async registerForHackathon(
+    @Param('id') hackathonId: string,
+    @Request() req: { user: { userId: string } },
+    @Body() userData: any,
+  ) {
+    return this.hackathonsService.registerParticipant(
+      hackathonId,
+      req.user.userId,
+      userData,
+    );
   }
 }

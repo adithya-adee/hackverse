@@ -1,16 +1,24 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, UserPlus, Search, ChevronRight, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { motion } from "motion/react";
+import { motion } from "motion/react"; // Fixed motion import
 import {
   buttonVariants,
   containerVariants,
   itemVariants,
 } from "@/lib/animation";
+import {
+  useGetTeamsLookingForMembersQuery,
+  useCreateTeamRequestMutation,
+} from "@/apiSlice/teamApiSlice";
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+
 
 interface Team {
   id: string;
@@ -41,81 +49,53 @@ interface TeamMember {
   };
 }
 
-//TODO: fetch all the real teams with looking for members as true
-const teamsData: Team[] = [
-  {
-    id: "1",
-    name: "Code Wizards",
-    description: "Building an AI-powered education platform",
-    hackathonId: "1",
-    lookingForMembers: true,
-    requiredSkills: "React, Node.js, AI",
-    TeamMember: [
-      { userId: "1", teamId: "1", isLeader: true },
-      { userId: "2", teamId: "1", isLeader: false },
-    ],
-    Hackathon: { id: "1", title: "Hackathon 2023", maxTeamSize: 4 },
-    User: { id: "1", name: "Demo" },
-  },
-  {
-    id: "2",
-    name: "Web Ninjas",
-    description: "Creating a sustainable fashion marketplace",
-    hackathonId: "1",
-    lookingForMembers: true,
-    requiredSkills: "UI/UX, React, Firebase",
-    TeamMember: [{ userId: "3", teamId: "2", isLeader: true }],
-    Hackathon: { id: "1", title: "Hackathon 2023", maxTeamSize: 4 },
-    User: { id: "1", name: "Demo" },
-  },
-  {
-    id: "3",
-    name: "Data Dragons",
-    description: "Data visualization for climate change",
-    hackathonId: "2",
-    lookingForMembers: true,
-    requiredSkills: "Python, D3.js, Data Science",
-    TeamMember: [
-      { userId: "4", teamId: "3", isLeader: true },
-      { userId: "5", teamId: "3", isLeader: false },
-      { userId: "6", teamId: "3", isLeader: false },
-    ],
-    Hackathon: { id: "2", title: "Summer Code Fest", maxTeamSize: 4 },
-    User: { id: "1", name: "Demo" },
-  },
-  {
-    id: "4",
-    name: "Mobile Mavericks",
-    description: "Healthcare app for remote patients",
-    hackathonId: "3",
-    lookingForMembers: true,
-    requiredSkills: "Flutter, Firebase, UI Design",
-    TeamMember: [{ userId: "7", teamId: "4", isLeader: true }],
-    Hackathon: { id: "3", title: "Winter Hackathon", maxTeamSize: 5 },
-    User: { id: "1", name: "Demo" },
-  },
-];
+interface JoinTeamViewProps {
+  hackathonId: string;
+}
 
-export default function JoinTeamView() {
+export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [joiningTeam, setJoiningTeam] = useState<string | null>(null);
 
-  //TODO: you won't need additional loading after RTK Query
-  const [teams, setTeams] = useState<Team[]>(teamsData);
-  const [isLoading, setIsLoading] = useState(false);
+  // Get current user from Redux store
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  const handleJoinTeam = (teamId: string) => {
+  // Fetch teams looking for members from API
+  const {
+    data: teams = [] as Team[],
+    isLoading,
+    error,
+  } = useGetTeamsLookingForMembersQuery(hackathonId);
+
+  // Create team request mutation
+  const [createTeamRequest, { isLoading: isCreatingRequest }] =
+    useCreateTeamRequestMutation();
+
+  const handleJoinTeam = async (teamId: string) => {
+    if (!user?.id) {
+      toast.error("You must be logged in to join a team");
+      return;
+    }
+
     setJoiningTeam(teamId);
 
-    //TODO: find the current user using userId present in global state
-    //TODO:Create a team-joining request by current user, and if it succeeded change the button to sent(green).
+    try {
+      await createTeamRequest({
+        teamId,
+      }).unwrap();
 
-    setJoiningTeam(null);
+      toast.success("Join request sent successfully");
+    } catch (error) {
+      console.error("Failed to join team:", error);
+      toast.error("Failed to join team. Please try again.");
+    } finally {
+      setJoiningTeam(null);
+    }
   };
 
   // Filter teams based on search query
   const filteredTeams = teams.filter(
-    (team) =>
+    (team: Team) =>
       team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (team.description &&
         team.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -131,7 +111,7 @@ export default function JoinTeamView() {
       transition={{ duration: 0.5 }}
     >
       <div className="h-full">
-        <div className="bg-transparent p-2  text-[var(--primary-9)]">
+        <div className="bg-transparent p-2 text-[var(--primary-9)]">
           <div className="text-xl font-semibold flex items-center">
             <UserPlus className="h-5 w-5 mr-2" />
             Join a Team
@@ -153,7 +133,6 @@ export default function JoinTeamView() {
           </motion.div>
 
           {isLoading ? (
-            // change the loading state to our custumized one
             <div className="text-center py-10">
               <motion.div
                 animate={{ rotate: 360 }}
@@ -161,6 +140,10 @@ export default function JoinTeamView() {
                 className="h-10 w-10 border-4 border-[var(--primary-9)] border-t-transparent rounded-full mx-auto mb-4"
               />
               <p className="text-[var(--primary-11)]">Loading teams...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-10 text-red-500">
+              <p>Failed to load teams. Please try again.</p>
             </div>
           ) : filteredTeams.length === 0 ? (
             <motion.div
@@ -184,7 +167,7 @@ export default function JoinTeamView() {
               initial="hidden"
               animate="visible"
             >
-              {filteredTeams.map((team, index) => (
+              {filteredTeams.map(({ team, index }: { team: Team, index: number }) => (
                 <motion.div
                   className="shadow-sm rounded-2xl bg-[var(--primary-2)]"
                   key={team.id}
@@ -287,7 +270,7 @@ export default function JoinTeamView() {
                         >
                           <Button
                             onClick={() => handleJoinTeam(team.id)}
-                            disabled={joiningTeam === team.id}
+                            disabled={joiningTeam === team.id || isCreatingRequest}
                             className="bg-[var(--primary-10)] text-white"
                           >
                             {joiningTeam === team.id ? (
@@ -299,7 +282,7 @@ export default function JoinTeamView() {
                                     repeat: Infinity,
                                     ease: "linear",
                                   }}
-                                  className=" h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                                  className="h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"
                                 />
                                 Sending...
                               </>

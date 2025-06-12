@@ -1,5 +1,5 @@
 "use client";
-import React, { JSX, useState } from "react";
+import React, { JSX } from "react";
 import {
   Check,
   X,
@@ -11,6 +11,14 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  useGetTeamMembersQuery,
+  useGetTeamRequestsQuery,
+  useAcceptTeamRequestMutation,
+  useRejectTeamRequestMutation,
+} from "@/apiSlice/teamApiSlice";
+import { TeamMember, TeamRequest } from "@/types/core_interfaces";
 
 interface UserInfo {
   mem: boolean;
@@ -18,9 +26,9 @@ interface UserInfo {
     name: string;
     email: string;
     type: string;
-    institutionName: string;
-    profileImageUrl: string;
-    Skill: { id: string; name: string }[];
+    institutionName?: string;
+    profileImageUrl?: string;
+    Skill?: { id: string; name: string }[];
   };
   isLeader?: boolean;
   joinedAt: string;
@@ -28,151 +36,49 @@ interface UserInfo {
   actions?: JSX.Element;
 }
 
-const TeamMembercard = () => {
-  //TODO: Fetch all the team members...
-  const [teamMembers] = useState([
-    {
-      teamId: "team-550e8400-e29b-41d4-a716-446655440001",
-      userId: "550e8400-e29b-41d4-a716-446655440002",
-      isLeader: true,
-      joinedAt: "2024-03-01T10:00:00.000Z",
-      Team: {
-        id: "team-550e8400-e29b-41d4-a716-446655440001",
-        name: "AI Pioneers",
-        description:
-          "We're passionate about using AI to solve real-world problems. Looking for team members with machine learning and backend development skills.",
-        requiredSkills: "Machine Learning, Python, TensorFlow",
-      },
-      User: {
-        id: "550e8400-e29b-41d4-a716-446655440002",
-        name: "Bob Smith",
-        email: "bob.smith@email.com",
-        type: "PROFESSIONAL",
-        institutionName: "NITK",
-        profileImageUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-        biography:
-          "Machine Learning Engineer specializing in computer vision and NLP. Love building AI-powered applications and mentoring junior developers.",
-        Skill: [
-          {
-            id: "skill-550e8400-e29b-41d4-a716-446655440004",
-            name: "Machine Learning",
-          },
-          { id: "skill-550e8400-e29b-41d4-a716-446655440005", name: "Python" },
-          {
-            id: "skill-550e8400-e29b-41d4-a716-446655440006",
-            name: "TensorFlow",
-          },
-        ],
-      },
-    },
-    {
-      teamId: "team-550e8400-e29b-41d4-a716-446655440001",
-      userId: "550e8400-e29b-41d4-a716-446655440004",
-      isLeader: false,
-      joinedAt: "2024-03-05T14:30:00.000Z",
-      Team: {
-        id: "team-550e8400-e29b-41d4-a716-446655440001",
-        name: "AI Pioneers",
-        description:
-          "We're passionate about using AI to solve real-world problems. Looking for team members with machine learning and backend development skills.",
-        requiredSkills: "Machine Learning, Python, TensorFlow",
-      },
-      User: {
-        id: "550e8400-e29b-41d4-a716-446655440004",
-        name: "David Chen",
-        email: "david.chen@email.com",
-        type: "PROFESSIONAL",
-        institutionName: "NITK",
-        profileImageUrl:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-        biography:
-          "Backend developer specializing in microservices architecture and cloud computing. Experience with AWS, Docker, and Kubernetes.",
-        Skill: [
-          { id: "skill-550e8400-e29b-41d4-a716-446655440010", name: "Java" },
-          { id: "skill-550e8400-e29b-41d4-a716-446655440011", name: "AWS" },
-          { id: "skill-550e8400-e29b-41d4-a716-446655440012", name: "Docker" },
-        ],
-      },
-    },
-  ]);
+interface TeamMemberCardProps {
+  teamId: string;
+}
 
-  //TODO: fech all the Team reqs for/from a perticular team.
-  const [teamRequests, setTeamRequests] = useState([
-    {
-      teamId: "team-550e8400-e29b-41d4-a716-446655440002",
-      userId: "550e8400-e29b-41d4-a716-446655440003",
-      requestedAt: "2024-04-16T10:30:00.000Z",
-      expiresAt: "2024-04-23T10:30:00.000Z",
-      team: {
-        id: "team-550e8400-e29b-41d4-a716-446655440002",
-        name: "Web3 Warriors",
-        description:
-          "Building the next generation of decentralized applications. We focus on DeFi solutions and smart contract development.",
-        requiredSkills: "Solidity, JavaScript, React, Web3.js",
-      },
-      user: {
-        id: "550e8400-e29b-41d4-a716-446655440003",
-        name: "Carol Williams",
-        email: "carol.williams@email.com",
-        type: "PROFESSIONAL",
-        institutionName: "NITK",
-        profileImageUrl:
-          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-        biography:
-          "UX/UI Designer with a background in psychology. Focused on creating user-centered designs and improving accessibility in web applications.",
-        Skill: [
-          {
-            id: "skill-550e8400-e29b-41d4-a716-446655440007",
-            name: "UI/UX Design",
-          },
-          { id: "skill-550e8400-e29b-41d4-a716-446655440008", name: "Figma" },
-        ],
-      },
-    },
-    {
-      teamId: "team-550e8400-e29b-41d4-a716-446655440005",
-      userId: "550e8400-e29b-41d4-a716-446655440004",
-      requestedAt: "2024-06-16T09:20:00.000Z",
-      expiresAt: "2024-06-23T09:20:00.000Z",
-      team: {
-        id: "team-550e8400-e29b-41d4-a716-446655440005",
-        name: "Mobile Mavericks",
-        description:
-          "Creating amazing mobile experiences that users love. We specialize in cross-platform development and user-centered design.",
-        requiredSkills: "React Native, Flutter, UI/UX Design, Firebase",
-      },
-      user: {
-        id: "550e8400-e29b-41d4-a716-446655440004",
-        name: "David Chen",
-        email: "david.chen@email.com",
-        type: "PROFESSIONAL",
-        institutionName: "NITK",
-        profileImageUrl:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-        biography:
-          "Backend developer specializing in microservices architecture and cloud computing. Experience with AWS, Docker, and Kubernetes.",
-        Skill: [
-          { id: "skill-550e8400-e29b-41d4-a716-446655440010", name: "Java" },
-          { id: "skill-550e8400-e29b-41d4-a716-446655440011", name: "AWS" },
-          { id: "skill-550e8400-e29b-41d4-a716-446655440012", name: "Docker" },
-        ],
-      },
-    },
-  ]);
+const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
+  // Fetch team members using RTK Query
+  const {
+    data: teamMembers = [],
+    isLoading: isLoadingMembers,
+    error: membersError,
+  } = useGetTeamMembersQuery(teamId);
 
-  //TODO
-  const handleAcceptRequest = (userId: string) => {
-    setTeamRequests((prev) => prev.filter((req) => req.userId !== userId));
-    // In a real app, you would make an API call to accept the request
-    console.log(`Accepted request for user: ${userId}`);
+  // Fetch team requests using RTK Query
+  const {
+    data: teamRequests = [],
+    isLoading: isLoadingRequests,
+    error: requestsError,
+  } = useGetTeamRequestsQuery(teamId);
+
+  // Accept and reject request mutations
+  const [acceptRequest, { isLoading: isAccepting }] = useAcceptTeamRequestMutation();
+  const [rejectRequest, { isLoading: isRejecting }] = useRejectTeamRequestMutation();
+
+  // Handle accept request with API call
+  const handleAcceptRequest = async (userId: string) => {
+    try {
+      await acceptRequest({ teamId, userId }).unwrap();
+      toast.success("Team request accepted successfully");
+    } catch (error) {
+      console.error("Failed to accept request:", error);
+      toast.error("Failed to accept team request");
+    }
   };
 
-  //TODO:
-  const handleRejectRequest = (userId: string) => {
-    setTeamRequests((prev) => prev.filter((req) => req.userId !== userId));
-    // In a real app, you would make an API call to reject the request
-    console.log(`Rejected request for user: ${userId}`);
+  // Handle reject request with API call
+  const handleRejectRequest = async (userId: string) => {
+    try {
+      await rejectRequest({ teamId, userId }).unwrap();
+      toast.success("Team request rejected successfully");
+    } catch (error) {
+      console.error("Failed to reject request:", error);
+      toast.error("Failed to reject team request");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -189,6 +95,24 @@ const TeamMembercard = () => {
     const diffHours = (expiry - now) / (1000 * 60 * 60);
     return diffHours <= 24 && diffHours > 0;
   };
+
+  // Show loading state for members and requests
+  if (isLoadingMembers || isLoadingRequests) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary-9)]"></div>
+      </div>
+    );
+  }
+
+  // Show error state if any
+  if (membersError || requestsError) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        <p>Failed to load team data. Please try again.</p>
+      </div>
+    );
+  }
 
   const UserCard = ({
     user,
@@ -305,23 +229,35 @@ const TeamMembercard = () => {
         </div>
         <div className="mb-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {teamMembers.map((member) => (
-              <UserCard
-                key={member.userId}
-                mem={true}
-                user={member.User}
-                isLeader={member.isLeader}
-                joinedAt={member.joinedAt}
-                badge={
-                  <div className="flex items-center gap-2 px-3 py-1 bg-green-300 rounded-full">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">
-                      Verified
-                    </span>
-                  </div>
-                }
-              />
-            ))}
+            {teamMembers.map((member: TeamMember) => {
+              // Ensure user object has all required properties with defaults
+              const userWithDefaults = {
+                name: member.User?.name || "Unknown User",
+                email: member.User?.email || "No email provided",
+                type: member.User?.type || "UNSPECIFIED",
+                institutionName: member.User?.institutionName,
+                profileImageUrl: member.User?.profileImageUrl || "/default-avatar.png",
+                Skill: member.User?.Skill || []
+              };
+
+              return (
+                <UserCard
+                  key={member.userId}
+                  mem={true}
+                  user={userWithDefaults}
+                  isLeader={member.isLeader}
+                  joinedAt={member.joinedAt}
+                  badge={
+                    <div className="flex items-center gap-2 px-3 py-1 bg-green-300 rounded-full">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">
+                        Verified
+                      </span>
+                    </div>
+                  }
+                />
+              );
+            })}
           </div>
         </div>
 
@@ -350,53 +286,75 @@ const TeamMembercard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {teamRequests.map((request) => (
-                <UserCard
-                  key={request.userId}
-                  mem={false}
-                  user={request.user}
-                  joinedAt={request.requestedAt}
-                  badge={
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1 bg-yellow-200 rounded-full">
-                        <Clock className="w-4 h-4 text-yellow-600" />
-                        <span className="text-sm font-medium text-yellow-800">
-                          Pending
-                        </span>
-                      </div>
-                      {isExpiringSoon(request.expiresAt) && (
-                        <div className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full text-center">
-                          Expires Soon
+              {teamRequests.map((request: TeamRequest) => {
+                // Create a userWithDefaults object with fallback values to handle type safety
+                const userWithDefaults = {
+                  name: request.user?.name || "Unknown User",
+                  email: request.user?.email || "No email provided",
+                  type: request.user?.type || "UNSPECIFIED",
+                  institutionName: request.user?.institutionName || "",
+                  profileImageUrl: request.user?.profileImageUrl || "/default-avatar.png",
+                  Skill: request.user?.Skill || []
+                };
+
+                return (
+                  <UserCard
+                    key={request.userId}
+                    mem={false}
+                    user={userWithDefaults} // Pass the type-safe user object
+                    joinedAt={request.requestedAt}
+                    badge={
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-yellow-200 rounded-full">
+                          <Clock className="w-4 h-4 text-yellow-600" />
+                          <span className="text-sm font-medium text-yellow-800">
+                            Pending
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  }
-                  actions={
-                    <div className="space-y-3">
-                      <div className="text-xs text-gray-500">
-                        <div>Requested: {formatDate(request.requestedAt)}</div>
-                        <div>Expires: {formatDate(request.expiresAt)}</div>
+                        {isExpiringSoon(request.expiresAt) && (
+                          <div className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full text-center">
+                            Expires Soon
+                          </div>
+                        )}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAcceptRequest(request.userId)}
-                          className="flex-1 bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                          <Check className="w-4 h-4" />
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleRejectRequest(request.userId)}
-                          className="flex-1 bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                          <X className="w-4 h-4" />
-                          Reject
-                        </button>
+                    }
+                    actions={
+                      <div className="space-y-3">
+                        <div className="text-xs text-gray-500">
+                          <div>Requested: {formatDate(request.requestedAt)}</div>
+                          <div>Expires: {formatDate(request.expiresAt)}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleAcceptRequest(request.userId)}
+                            disabled={isAccepting}
+                            className="flex-1 bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isAccepting ? (
+                              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            ) : (
+                              <Check className="w-4 h-4" />
+                            )}
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleRejectRequest(request.userId)}
+                            disabled={isRejecting}
+                            className="flex-1 bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isRejecting ? (
+                              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
+                            Reject
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  }
-                />
-              ))}
+                    }
+                  />
+                );
+              })}
             </div>
           )}
         </div>

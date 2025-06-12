@@ -11,10 +11,13 @@ import {
   User,
   Tag,
   Trophy,
+  Share2,
 } from "lucide-react";
 import { sampleHackathonData } from "@/assets/data/hackathon_individual_.data";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
+import { toast } from "sonner";
+
 // Types
 export interface FindHackathonDto {
   id: string;
@@ -259,11 +262,10 @@ const Page = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 300 }}
-                      className={`w-full m-2 p-3 font-bold text-sm  rounded-xl ${
-                        activeTab === index
-                          ? "bg-gradient-to-r from-blue-500 to-green-500 text-white"
-                          : " text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
+                      className={`w-full m-2 p-3 font-bold text-sm  rounded-xl ${activeTab === index
+                        ? "bg-gradient-to-r from-blue-500 to-green-500 text-white"
+                        : " text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
                     >
                       {tab.title}
                     </motion.button>
@@ -399,22 +401,42 @@ const Page = () => {
               whileHover={{ y: -5 }}
               className="bg-[var(--primary-2)] rounded-lg shadow-sm p-6"
             >
-              {/* TODO: Handel this navigation to register hackathon page */}
-              {/* TODO: add a link copying emoji to share the link to others */}
-              <Link href={`/events/${hackathonId}/register`}>
+              <div className="flex flex-col space-y-3">
+                {/* Register button */}
+                <Link href={`/events/${hackathonId}/register`}>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    {hackathon.status === "UPCOMING"
+                      ? "Register Now"
+                      : hackathon.status === "LIVE"
+                        ? "Join Now"
+                        : "View Results"}
+                  </motion.button>
+                </Link>
+
+                {/* Share button */}
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  onClick={() => {
+                    // Copy the current URL to clipboard
+                    navigator.clipboard.writeText(window.location.href);
+
+                    toast("Link copied to clipboard!", {
+                      description: "Share this hackathon with your friends.",
+                      duration: 2000,
+                    });
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center justify-center gap-2 w-full py-2 px-3 text-sm border border-[var(--primary-6)] text-[var(--primary-11)] rounded-lg hover:bg-[var(--primary-3)] transition-colors"
                 >
-                  {hackathon.status === "UPCOMING"
-                    ? "Register Now"
-                    : hackathon.status === "LIVE"
-                      ? "Join Now"
-                      : "View Results"}
+                  <Share2 className="h-4 w-4" />
+                  Share Hackathon
                 </motion.button>
-              </Link>
+              </div>
             </motion.div>
           </motion.div>
         </div>
