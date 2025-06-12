@@ -1,50 +1,126 @@
 "use client";
-import React from "react";
-import UserData from "@/assets/data/users_json_data.json";
-import { userDetailsSchema } from "@/schemas/user-schema";
-import { UserDetailsFormValues } from "@/schemas/user-schema";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useParams } from "next/navigation";
+import { Sex, UserType, HackathonStatus } from "@/types/core_enum";
+import { User } from "@/types/core_interfaces";
+import { UserDetailsFormValues, userDetailsSchema } from "@/schemas/user-schema";
+import { useGetUserDetailsQuery, useUpdateUserProfileMutation } from "@/apiSlice/userApiSlice";
+import { useGetHackathonDetailsQuery, useRegisterForHackathonMutation } from "@/apiSlice/hackathonApiSlice";
+import { Loader } from "@/components/ui/loader";
 
 function Page() {
-  //TODO:
-  //fetch the user using userid present in global state
-  //demo user for now
-  const user = UserData[0];
-
+  const router = useRouter();
   const params = useParams();
-  const hackathonId = params["hackathon-id"];
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<UserDetailsFormValues>({
+  const hackathonId = params["hackathon-id"] as string;
+
+  // Fetch user and hackathon details
+  const { data: user, isLoading: isLoadingUser } = useGetUserDetailsQuery();
+  const { data: hackathon, isLoading: isLoadingHackathon } = useGetHackathonDetailsQuery(hackathonId);
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateUserProfileMutation();
+  const [registerForHackathon, { isLoading: isRegistering }] = useRegisterForHackathonMutation();
+
+  const form = useForm<UserDetailsFormValues>({
     resolver: zodResolver(userDetailsSchema),
     defaultValues: {
-      name: user.name,
-      email: user.email,
-      biography: user.biography || "",
-      phoneNo: user.phoneNo || "",
-      gender: user.gender,
-      institutionName: user.institutionName || "",
-      type: user.type,
-      githubUrl: user.githubUrl || "",
-      linkedinUrl: user.linkedinUrl || "",
-      profileImageUrl: user.profileImageUrl || "",
-      resumeUrl: user.resumeUrl || "",
+      name: "",
+      email: "",
+      biography: "",
+      phoneNo: "",
+      gender: "UNSPECIFIED",
+      institutionName: "",
+      type: "STUDENT",
+      githubUrl: "",
+      linkedinUrl: "",
+      profileImageUrl: "",
+      resumeUrl: "",
     },
-    mode: "onChange",
   });
 
-  const onSubmit = (data: UserDetailsFormValues) => {
-    //TODO: update the user details and register him in hackathon with hackathonId
-    console.log("Form data:", data);
+  // Update form when user data is loaded
+  useEffect(() => {
+    if (user) {
+      const userFields: Array<keyof UserDetailsFormValues> = [
+        "name",
+        "email",
+        "biography",
+        "phoneNo",
+        "gender",
+        "institutionName",
+        "type",
+        "githubUrl",
+        "linkedinUrl",
+        "profileImageUrl",
+        "resumeUrl"
+      ];
 
-    //TODO: if the hackathon is individual competition then redirect user to events page again, and if not then-->
-    window.location.href = `/events/${hackathonId}/register/team`;
+      userFields.forEach((field) => {
+        if (user[field]) {
+          form.setValue(field, user[field] as string);
+        }
+      });
+    }
+  }, [user, form.setValue]);
+
+  const onSubmit = async (data: UserDetailsFormValues) => {
+    try {
+      if (hackathon?.status !== HackathonStatus.UPCOMING) {
+        toast.error("Registration is closed for this hackathon");
+        return;
+      }
+
+      // Update user profile
+      await updateProfile({
+        ...data,
+        gender: Sex[data.gender as keyof typeof Sex],
+        type: UserType[data.type as keyof typeof UserType]
+      }).unwrap();
+
+      // Register for hackathon
+      await registerForHackathon({
+        hackathonId,
+        userData: {
+          userId: user?.id,
+          ...data
+        }
+      }).unwrap();
+
+      toast.success("Registration successful!");
+
+      // Redirect based on team size
+      if (hackathon?.maxTeamSize > 1) {
+        router.push(`/events/${hackathonId}/register/team`);
+      } else {
+        router.push(`/events/${hackathonId}`);
+      }
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+      console.error("Registration error:", error);
+    }
   };
+
+  // Gender options with proper typing
+  const genderOptions = Object.keys(Sex).filter(
+    (key) => !isNaN(Number(Sex[key as keyof typeof Sex]))
+  ) as Array<keyof typeof Sex>;
+
+  // User type options with proper typing
+  const typeOptions = Object.keys(UserType).filter(
+    (key) => !isNaN(Number(UserType[key as keyof typeof UserType]))
+  ) as Array<keyof typeof UserType>;
+
+  // Show loading state
+  if (isLoadingUser || isLoadingHackathon) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   const formFields: Array<{
     name: keyof UserDetailsFormValues;
@@ -52,31 +128,31 @@ function Page() {
     type: string;
     placeholder: string;
   }> = [
-    {
-      name: "name",
-      label: "Full Name",
-      type: "text",
-      placeholder: "Enter your full name",
-    },
-    {
-      name: "email",
-      label: "Email Address",
-      type: "email",
-      placeholder: "Enter your email",
-    },
-    {
-      name: "phoneNo",
-      label: "Phone Number",
-      type: "tel",
-      placeholder: "Enter your phone number",
-    },
-    {
-      name: "institutionName",
-      label: "Institution Name",
-      type: "text",
-      placeholder: "Enter your institution",
-    },
-  ];
+      {
+        name: "name",
+        label: "Full Name",
+        type: "text",
+        placeholder: "Enter your full name",
+      },
+      {
+        name: "email",
+        label: "Email Address",
+        type: "email",
+        placeholder: "Enter your email",
+      },
+      {
+        name: "phoneNo",
+        label: "Phone Number",
+        type: "tel",
+        placeholder: "Enter your phone number",
+      },
+      {
+        name: "institutionName",
+        label: "Institution Name",
+        type: "text",
+        placeholder: "Enter your institution",
+      },
+    ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[var(--primary-1)] to-[var(--primary-3)]">
@@ -125,7 +201,7 @@ function Page() {
                       id={field.name}
                       type={field.type}
                       placeholder={field.placeholder}
-                      {...register(field.name)}
+                      {...form.register(field.name)}
                       className="w-full px-4 py-3 transition-all shadow-sm rounded-2xl border-gray-300 duration-200 focus:outline-none "
                       style={{
                         backgroundColor: "var(--primary-2)",
@@ -135,14 +211,14 @@ function Page() {
                       whileHover={{ scale: 1.02 }}
                       whileFocus={{ scale: 1.02 }}
                     />
-                    {errors[field.name] && (
+                    {form.formState.errors[field.name] && (
                       <motion.p
                         className="text-sm text-red-500"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        {errors[field.name]?.message}
+                        {form.formState.errors[field.name]?.message}
                       </motion.p>
                     )}
                   </motion.div>
@@ -160,29 +236,18 @@ function Page() {
                   Gender
                 </label>
                 <div className="flex gap-4">
-                  {["MALE", "FEMALE", "UNSPECIFIED"].map((option, index) => (
+                  {genderOptions.map((option) => (
                     <motion.label
                       key={option}
                       className="flex items-center gap-2 cursor-pointer"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
                     >
                       <input
                         type="radio"
                         value={option}
-                        {...register("gender")}
-                        className="w-4 h-4 rounded-full border-2 focus:outline-none  transition-all custom-radio"
-                        style={{
-                          borderColor: "var(--primary-7)",
-                          accentColor: "var(--primary-9)",
-                        }}
+                        {...form.register("gender")}
+                        className="w-4 h-4"
                       />
-                      <span className="text-sm capitalize text-[var(--primary-11)]">
-                        {option}
-                      </span>
+                      <span className="text-sm capitalize">{option.toLowerCase()}</span>
                     </motion.label>
                   ))}
                 </div>
@@ -205,7 +270,7 @@ function Page() {
                   id="biography"
                   rows={4}
                   placeholder="Tell us about yourself..."
-                  {...register("biography")}
+                  {...form.register("biography")}
                   className="w-full px-4 py-3 transition-all duration-200 focus:outline-none  resize-none shadow-sm rounded-2xl border-gray-300"
                   style={{
                     backgroundColor: "var(--primary-2)",
@@ -215,14 +280,14 @@ function Page() {
                   whileHover={{ scale: 1.02 }}
                   whileFocus={{ scale: 1.02 }}
                 />
-                {errors.biography && (
+                {form.formState.errors.biography && (
                   <motion.p
                     className="text-sm text-red-500"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {errors.biography?.message}
+                    {form.formState.errors.biography?.message}
                   </motion.p>
                 )}
               </motion.div>
@@ -242,15 +307,14 @@ function Page() {
                   Who Are You?
                 </label>
                 <motion.select
-                  id="type"
-                  {...register("type")}
-                  className="bg-[var(--primary-2)] border-solid border-[1px] border-[var(--primary-7)] text-[var(--primary-12)] w-full px-4 py-3 rounded-lg transition-all duration-200 focus:outline-none "
-                  whileHover={{ scale: 1.02 }}
-                  whileFocus={{ scale: 1.02 }}
+                  {...form.register("type")}
+                  className="w-full px-4 py-3"
                 >
-                  <option value="STUDENT">STUDENT</option>
-                  <option value="PROFESSIONAL">PROFESSIONAL</option>
-                  <option value="OTHERS">OTHERS</option>
+                  {typeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </motion.select>
               </motion.div>
 
@@ -263,14 +327,22 @@ function Page() {
               >
                 <motion.button
                   type="button"
-                  onClick={handleSubmit(onSubmit)}
-                  className="bg-gradient-to-r from-blue-500 to-green-500 text-white w-full py-4 px-6 font-semibold text-lg transition-all duration-300 transform hover:shadow-sm rounded-2xl border-gray-300 focus:outline-none focus:ring-4"
+                  onClick={form.handleSubmit(onSubmit)}
+                  disabled={isUpdating || isRegistering}
+                  className="bg-gradient-to-r from-blue-500 to-green-500 text-white w-full py-4 px-6 font-semibold text-lg transition-all duration-300 transform hover:shadow-sm rounded-2xl border-gray-300 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed"
                   whileHover={{
-                    scale: 1.02,
+                    scale: !isUpdating && !isRegistering ? 1.02 : 1,
                   }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  REGISTER
+                  {isUpdating || isRegistering ? (
+                    <div className="flex items-center justify-center">
+                      <Loader className="w-5 h-5 mr-2" />
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    "REGISTER"
+                  )}
                 </motion.button>
               </motion.div>
             </div>

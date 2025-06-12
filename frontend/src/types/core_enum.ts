@@ -1,4 +1,10 @@
 // Enums
+
+export enum HackathonMode {
+  ONLINE = "ONLINE",
+  OFFLINE = "OFFLINE",
+  HYBRID = "HYBRID",
+}
 export enum HackathonStatus {
   UPCOMING = "UPCOMING",
   LIVE = "LIVE",
@@ -17,4 +23,16 @@ export enum RoleType {
   RECRUITER = "RECRUITER",
   MODERATOR = "MODERATOR",
   ADMIN = "ADMIN",
+}
+
+export enum Sex {
+  MALE,
+  FEMALE,
+  UNSPECIFIED
+}
+
+export enum UserType {
+  STUDENT,
+  PROFESSIONAL,
+  OTHERS
 }

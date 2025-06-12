@@ -1,11 +1,15 @@
-import { HackathonStatus, RoleType, RequestStatus } from "./core_enum";
+import { HackathonStatus, HackathonMode, RoleType, RequestStatus, UserType, Sex } from "./core_enum";
 
 // Core Interfaces
 export interface User {
   id: string;
   name: string;
+  phoneNo?: string;
   email: string;
   password?: string;
+  institutionName?: string;
+  type: keyof typeof UserType;
+  gender: keyof typeof Sex;
   biography?: string;
   profileImageUrl?: string;
   resumeUrl?: string;
@@ -33,13 +37,15 @@ export interface Hackathon {
   id: string;
   title: string;
   description?: string;
-  rules?: string;
-  prize?: string;
-  maxTeamSize: number; // defaults to 4
+  location?: string;
+  mode?: keyof typeof HackathonMode;
+  maxTeamSize: number;
+  minTeamSize: number;
   createdById: string;
+  registrationDate: string;
   startDate: string;
   endDate: string;
-  status: HackathonStatus; // defaults to UPCOMING
+  status: keyof typeof HackathonStatus;
   bannerImageUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -48,9 +54,23 @@ export interface Hackathon {
   HackathonModerator?: HackathonModerator[];
   HackathonModeratorRequest?: HackathonModeratorRequest[];
   HackathonRegistration?: HackathonRegistration[];
+  HackathonTab?: HackathonTab[];
   HackathonTag?: HackathonTag[];
   Submission?: Submission[];
   Team?: Team[];
+}
+
+export interface HackathonTab {
+  id: string;
+  hackathonId: string;
+  title: string;
+  content: string;
+  order: number;
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
+
+  Hackathon?: Hackathon;
 }
 
 export interface Team {
@@ -59,7 +79,8 @@ export interface Team {
   description?: string;
   hackathonId: string;
   createdById: string;
-  lookingForMembers: boolean; // defaults to false
+  lookingForMembers: boolean;
+  registered: boolean;
   requiredSkills?: string;
   createdAt: string;
   updatedAt: string;
@@ -81,7 +102,7 @@ export interface Submission {
   githubUrl?: string;
   demoUrl?: string;
   videoUrl?: string;
-  imageUrls: string[]; // Array of strings
+  imageUrls: string[];
   submittedAt: string;
   updatedAt: string;
 
@@ -94,7 +115,7 @@ export interface Submission {
 
 export interface Role {
   id: string;
-  name: RoleType; // Enum, not string
+  name: keyof typeof RoleType;
   description?: string;
   createdAt: string;
 
@@ -104,7 +125,7 @@ export interface Role {
 
 export interface Skill {
   id: string;
-  name: string; // unique
+  name: string;
   createdAt: string;
 
   User?: User[];
@@ -116,7 +137,7 @@ export interface Feedback {
   comment: string;
   createdById: string;
   createdAt: string;
-  createdBy: string; // Note: This seems redundant with createdById in schema
+  createdBy: string;
 
   Submission?: Submission;
 }
@@ -126,7 +147,7 @@ export interface Rating {
   submissionId: string;
   raterId: string;
   category: string;
-  score: number; // Float in schema
+  score: number;
   comment?: string;
   createdAt: string;
 
@@ -138,17 +159,17 @@ export interface Message {
   senderId: string;
   receiverId: string;
   content: string;
-  isRead: boolean; // defaults to false
+  isRead: boolean;
   createdAt: string;
 
   User_Message_receiverIdToUser?: User;
   User_Message_senderIdToUser?: User;
 }
 
-// Junction Table Interfaces (Composite Primary Keys)
+// Junction Table Interfaces
 export interface HackathonModerator {
-  userId: string; // Part of composite PK
-  hackathonId: string; // Part of composite PK
+  userId: string;
+  hackathonId: string;
   assignedAt: string;
 
   Hackathon?: Hackathon;
@@ -156,19 +177,19 @@ export interface HackathonModerator {
 }
 
 export interface HackathonModeratorRequest {
-  userId: string; // Part of composite PK
-  hackathonId: string; // Part of composite PK
+  userId: string;
+  hackathonId: string;
   assignedAt: string;
   expiresAt: string;
-  status: string; // defaults to "PENDING"
+  status: string;
 
   Hackathon?: Hackathon;
   User?: User;
 }
 
 export interface HackathonRegistration {
-  userId: string; // Part of composite PK
-  hackathonId: string; // Part of composite PK
+  userId: string;
+  hackathonId: string;
   registeredAt: string;
 
   Hackathon?: Hackathon;
@@ -177,16 +198,16 @@ export interface HackathonRegistration {
 
 export interface HackathonTag {
   id: string;
-  name: string; // unique constraint with hackathonId
+  name: string;
   hackathonId: string;
 
   Hackathon?: Hackathon;
 }
 
 export interface TeamMember {
-  teamId: string; // Part of composite PK
-  userId: string; // Part of composite PK
-  isLeader: boolean; // defaults to false
+  teamId: string;
+  userId: string;
+  isLeader: boolean;
   joinedAt: string;
 
   Team?: Team;
@@ -194,18 +215,18 @@ export interface TeamMember {
 }
 
 export interface TeamRequest {
-  teamId: string; // Part of composite PK
-  userId: string; // Part of composite PK
+  teamId: string;
+  userId: string;
   requestedAt: string;
   expiresAt: string;
 
-  team?: Team; // Note: lowercase 't' in schema
-  user?: User; // Note: lowercase 'u' in schema
+  team?: Team;
+  user?: User;
 }
 
 export interface UserRole {
-  userId: string; // Part of composite PK
-  roleId: string; // Part of composite PK
+  userId: string;
+  roleId: string;
   assignedAt: string;
   updatedAt: string;
 
@@ -217,7 +238,7 @@ export interface RoleRequest {
   id: string;
   userId: string;
   roleId: string;
-  status: RequestStatus; // Enum, defaults to PENDING
+  status: keyof typeof RequestStatus;
   reason: string;
   supportingUrl?: string;
   reviewedById?: string;

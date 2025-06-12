@@ -17,7 +17,26 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 150,
     }),
+    updateUserProfile: builder.mutation({
+      query: (data) => ({
+        url: "/users/profile",
+        method: "PATCH",
+        body: data,
+      }),
+    }),
+    registerTeam: builder.mutation({
+      query: ({ hackathonId, teamData }) => ({
+        url: `/hackathons/${hackathonId}/teams`,
+        method: "POST",
+        body: teamData,
+      }),
+    }),
   }),
 });
 
-export const { useGetUserDetailsQuery, useGetTeamRequestsQuery } = userApiSlice;
+export const {
+  useGetUserDetailsQuery,
+  useGetTeamRequestsQuery,
+  useUpdateUserProfileMutation,
+  useRegisterTeamMutation
+} = userApiSlice;

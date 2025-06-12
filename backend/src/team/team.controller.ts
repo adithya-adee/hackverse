@@ -6,6 +6,9 @@ import {
   Post,
   Request,
   UseGuards,
+  Delete,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -17,7 +20,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('team')
 export class TeamController {
-  constructor(private readonly teamsService: TeamService) {}
+  constructor(private readonly teamsService: TeamService) { }
 
   @Get('count')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,6 +29,7 @@ export class TeamController {
     return this.teamsService.getTeamCount();
   }
 
+  // Create a team
   @Post()
   @UseGuards(JwtAuthGuard)
   createTeam(
@@ -35,23 +39,28 @@ export class TeamController {
     return this.teamsService.createTeam(createTeamDto, req.user.userId);
   }
 
-  //FIXME: Why is @Request used if you are not importing it in createTeamReqDto
+  // Create a team request (join a team)
   @Post('team-req')
   @UseGuards(JwtAuthGuard)
   createTeamReq(
     @Request() req: { user: { userId: string } },
     @Body() createTeamReqDto: CreateTeamReqDto,
   ) {
-    return this.teamsService.createTeamReq(createTeamReqDto);
+    // Add userId from JWT token
+    return this.teamsService.createTeamReq({
+      ...createTeamReqDto,
+      userId: req.user.userId,
+    });
   }
 
+  // Get all team requests for current user
   @Get('all-team-reqs')
-  @Roles(RoleType.ORGANIZER)
   @UseGuards(JwtAuthGuard)
   getAllTeamReq(@Request() req: { user: { userId: string } }) {
     return this.teamsService.getAllTeamReq(req.user.userId);
   }
 
+  // Check registration status
   @Get(':hackathonId/registration')
   @UseGuards(JwtAuthGuard)
   checkRegistration(
@@ -61,6 +70,63 @@ export class TeamController {
     return this.teamsService.checkRegistration(req.user.userId, hackathonId);
   }
 
+  // Get all teams
+  @Get()
+  getAllTeams() {
+    return this.teamsService.getAllTeam();
+  }
+
+  // Get teams looking for members for a specific hackathon
+  @Get('hackathon/:hackathonId/looking-for-members')
+  getTeamsLookingForMembers(@Param('hackathonId') hackathonId: string) {
+    return this.teamsService.getTeamsLookingForMembers(hackathonId);
+  }
+
+  // Get a specific team by ID
+  @Get(':teamId')
+  getTeamById(@Param('teamId') teamId: string) {
+    return this.teamsService.getTeamById(teamId);
+  }
+
+  // Get all members of a team
+  @Get(':teamId/members')
+  getTeamMembers(@Param('teamId') teamId: string) {
+    return this.teamsService.getTeamMembers(teamId);
+  }
+
+  // Get all pending requests for a team
+  @Get(':teamId/requests')
+  @UseGuards(JwtAuthGuard)
+  getTeamRequests(
+    @Request() req: { user: { userId: string } },
+    @Param('teamId') teamId: string,
+  ) {
+    return this.teamsService.getTeamRequests(teamId, req.user.userId);
+  }
+
+  // Accept a team request
+  @Post(':teamId/accept-request/:userId')
+  @UseGuards(JwtAuthGuard)
+  acceptTeamRequest(
+    @Request() req: { user: { userId: string } },
+    @Param('teamId') teamId: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.teamsService.acceptTeamRequest(teamId, userId, req.user.userId);
+  }
+
+  // Reject a team request
+  @Delete(':teamId/reject-request/:userId')
+  @UseGuards(JwtAuthGuard)
+  rejectTeamRequest(
+    @Request() req: { user: { userId: string } },
+    @Param('teamId') teamId: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.teamsService.rejectTeamRequest(teamId, userId, req.user.userId);
+  }
+
+  // Create a team member (when user accepts an invite)
   @Post('create/team-member')
   @UseGuards(JwtAuthGuard)
   createTeamMember(

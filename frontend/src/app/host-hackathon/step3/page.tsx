@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { animate, motion } from "framer-motion";
+import { animate, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -20,6 +20,7 @@ import { useHackathonForm } from "@/contexts/hackathon-form-context";
 import ReactMarkdown from "react-markdown";
 import { useCreateMutation } from "@/apiSlice/hackathonApiSlice";
 import { formatDate } from "@/lib/formatters";
+import { toast } from "sonner";
 
 export default function CreateHackathonStep3() {
   const router = useRouter();
@@ -28,7 +29,29 @@ export default function CreateHackathonStep3() {
 
   const handleSubmit = async () => {
     try {
-      // TODO: addTOAST
+      const promise = new Promise<string>((resolve, reject) => {
+        const { moderatorEmails, ...data } = formData;
+        console.log("sending data:", data);
+        const data2 = { data };
+        create(data2)
+          .unwrap()
+          .then((result) => {
+            console.log(result);
+            resetFormData();
+            router.push("/events");
+            resolve("Successfully created hackathon!");
+          })
+          .catch((error) => {
+            console.error("Error creating hackathon:", error);
+            reject("Failed to create hackathon. Please try again.");
+          });
+      });
+
+      toast.promise(promise, {
+        loading: 'Creating hackathon...',
+        success: (message: string) => message as string,
+        error: (message: string) => message as string,
+      });
       const { moderatorEmails, ...data } = formData;
       console.log("sending data:", data);
       const data2 = { data };
@@ -254,7 +277,7 @@ export default function CreateHackathonStep3() {
               <CardContent>
                 <div className="space-y-2">
                   {formData.moderatorEmails &&
-                  formData.moderatorEmails.length > 0 ? (
+                    formData.moderatorEmails.length > 0 ? (
                     formData.moderatorEmails.map((email, index) => (
                       <div
                         key={index}

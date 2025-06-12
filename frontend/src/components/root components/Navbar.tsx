@@ -8,13 +8,23 @@ import { toggleTheme } from "@/store/themeSlice";
 import { ComputerIcon, MoonIcon, SunIcon } from "lucide-react";
 import { RootState } from "@/store/store";
 import UserProfileAvatar from "./UserProfileAvatar";
+import { RoleType } from "@/types/core_enum";
+
+interface UserState {
+  id: string,
+  email: string,
+  name: string,
+  roles: Array<RoleType>
+}
 
 function Navbar() {
   const dispatch = useDispatch();
   const [mounted, setMounted] = useState(false);
   const mode = useSelector((state: RootState) => state.theme.mode);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user: UserState = useSelector((state: RootState) => state.auth.user);
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+
+  console.log(user)
 
   useEffect(() => {
     setMounted(true);
@@ -50,20 +60,18 @@ function Navbar() {
               About Us
             </button>
           </Link>
-          {isLoggedIn && (
+        </div>
+
+        <div className="flex gap-3">
+          {isLoggedIn && user.roles.find(role => role === RoleType.ORGANIZER) && (
             <>
-              {/*TODO : Fix this host button*/}
-              <span className="cursor-pointer flex py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
+              <span className="cursor-pointer flex py-2 px-3 border-2 border-[var(--primary-8)] rounded-full text-[var(--primary-12)] hover:text-[var(--primary-10)] hover:border-[var(--primary-10)] font-bold transition-all ease-in duration-300 hover:shadow-md hover:rounded-2xl">
                 <Link href={"/host-hackathon/step1"}>
-                  {/* <ComputerIcon /> */}
-                  Host Hackathon
+                  Host
                 </Link>
               </span>
             </>
           )}
-        </div>
-
-        <div className="flex gap-3">
           <button
             className="cursor-pointer relative px-4 py-2 bg-transparent text-[var(--primary-12)] font-bold transition-colors"
             onClick={() => dispatch(toggleTheme())}
@@ -71,25 +79,22 @@ function Navbar() {
           >
             <span className="relative flex items-center justify-center w-7 h-7">
               <SunIcon
-                className={`absolute transition-all duration-300 scale-110 ${
-                  mode === "dark"
-                    ? "opacity-100 rotate-0"
-                    : "opacity-0 -rotate-45 scale-75"
-                } text-[var(--primary-12)] drop-shadow-[0_0_8px_rgba(255,221,51,0.3)]`}
+                className={`absolute transition-all duration-300 scale-110 ${mode === "dark"
+                  ? "opacity-100 rotate-0"
+                  : "opacity-0 -rotate-45 scale-75"
+                  } text-[var(--primary-12)] drop-shadow-[0_0_8px_rgba(255,221,51,0.3)]`}
               />
               <MoonIcon
-                className={`absolute transition-all duration-300 scale-110 ${
-                  mode === "light"
-                    ? "opacity-100 rotate-0"
-                    : "opacity-0 rotate-45 scale-75"
-                } text-[var(--primary-12)]`}
+                className={`absolute transition-all duration-300 scale-110 ${mode === "light"
+                  ? "opacity-100 rotate-0"
+                  : "opacity-0 rotate-45 scale-75"
+                  } text-[var(--primary-12)]`}
               />
             </span>
           </button>
           {isLoggedIn ? (
             <>
               <div>
-                {/* todo: complete this component */}
                 <UserProfileAvatar user={user} />
               </div>
             </>

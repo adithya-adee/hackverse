@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { HiOutlineStatusOnline, HiOutlineLocationMarker } from "react-icons/hi";
 import Link from "next/link";
+import { HackathonTag } from "@/types/core_interfaces";
 
 interface HackathonCardProps {
   id: string;
@@ -21,7 +22,7 @@ interface HackathonCardProps {
   startDate: string;
   mode: "ONLINE" | "OFFLINE" | "HYBRID";
   maxTeamSize: number;
-  tags: string[];
+  tags: HackathonTag[] | undefined;
   registeredParticipants: number;
 }
 
@@ -70,7 +71,7 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
   };
 
   return (
-    
+
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -143,9 +144,9 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
           className="flex flex-wrap gap-2 mb-4"
         >
           {/* {tags.slice(0, 4).map((tag, index) => ( */}
-          {tags.map((tag, index) => (
+          {tags && tags.map((tag, index) => (
             <motion.span
-              key={tag}
+              key={tag.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + index * 0.1 }}
@@ -156,7 +157,7 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
                 borderColor: "var(--primary-6)",
               }}
             >
-              {tag}
+              {tag.name}
             </motion.span>
           ))}
           {/* {tags.length > 4 && (

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Param } from '@nestjs/common';
+import { Injectable, NotFoundException, Param, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
@@ -7,7 +7,7 @@ import type { UpcomingHackathonDto } from './dto/get-upcoming-hackathon.dto';
 
 @Injectable()
 export class HackathonsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getAllHackathons() {
     const response = await this.prisma.hackathon.findMany({
@@ -203,9 +203,9 @@ export class HackathonsService {
         ...updateData,
         HackathonTag: tags
           ? {
-              deleteMany: {}, // Remove all old tags
-              create: tags.map((name) => ({ name })),
-            }
+            deleteMany: {}, // Remove all old tags
+            create: tags.map((name) => ({ name })),
+          }
           : undefined,
       },
       include: {
@@ -233,5 +233,39 @@ export class HackathonsService {
     });
 
     return deleteHackathon;
+  }
+
+  async registerParticipant(hackathonId: string, userId: string, userData: any) {
+    // Check if hackathon exists and is open for registration
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+      include: {
+        HackathonRegistration: {
+          where: { userId }
+        }
+      }
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException('Hackathon not found');
+    }
+
+    if (hackathon.status !== 'UPCOMING') {
+      throw new UnauthorizedException('Registration is closed for this hackathon');
+    }
+
+    if (hackathon.HackathonRegistration.length > 0) {
+      throw new UnauthorizedException('Already registered for this hackathon');
+    }
+
+    // Create registration
+    const registration = await this.prisma.hackathonRegistration.create({
+      data: {
+        userId,
+        hackathonId,
+      }
+    });
+
+    return registration;
   }
 }

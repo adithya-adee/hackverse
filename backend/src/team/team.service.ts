@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
@@ -6,29 +6,69 @@ import { TeamRequest } from '@prisma/client';
 
 @Injectable()
 export class TeamService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getTeamCount() {
     const respone = await this.prisma.team.count();
-
     return respone;
   }
 
   async createTeam(data: CreateTeamDto, userId: string) {
-    return await this.prisma.team.create({
+    // Create the team
+    const team = await this.prisma.team.create({
       data: {
         ...data,
         createdById: userId,
       },
     });
+
+    // Also create a team member entry for the creator as leader
+    await this.prisma.teamMember.create({
+      data: {
+        teamId: team.id,
+        userId,
+        isLeader: true,
+      },
+    });
+
+    return team;
   }
 
   async createTeamReq(data: CreateTeamReqDto) {
     const now = new Date();
 
+    // Check if the user is already in the team
+    const existingMember = await this.prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId: data.teamId,
+          userId: data.userId,
+        },
+      },
+    });
+
+    if (existingMember) {
+      throw new UnauthorizedException('You are already a member of this team');
+    }
+
+    // Check if a request already exists
+    const existingRequest = await this.prisma.teamRequest.findUnique({
+      where: {
+        teamId_userId: {
+          teamId: data.teamId,
+          userId: data.userId,
+        },
+      },
+    });
+
+    if (existingRequest) {
+      throw new UnauthorizedException('You have already requested to join this team');
+    }
+
     // Calculate expiration date (2 days from now)
     const expiresAt = new Date(now);
     expiresAt.setDate(now.getDate() + 2);
+
     return await this.prisma.teamRequest.create({
       data: {
         ...data,
@@ -62,7 +102,6 @@ export class TeamService {
     });
   }
 
-  //check if participant is registered
   async checkRegistration(
     userId: string,
     hackathonId: string,
@@ -76,11 +115,260 @@ export class TeamService {
       },
     });
 
-    //EXPLAIN : WHY !!
+    // The !! operator converts the value to a boolean
+    // If registration exists (not null/undefined), it returns true
+    // If registration doesn't exist (null/undefined), it returns false
     return !!registration;
   }
 
-  //participant accepts the invite--->delete teamMemReq and create teamMem
+  async getTeamsLookingForMembers(hackathonId: string) {
+    return await this.prisma.team.findMany({
+      where: {
+        hackathonId,
+        lookingForMembers: true,
+      },
+      include: {
+        TeamMember: {
+          include: {
+            User: {
+              select: {
+                name: true,
+                profileImageUrl: true,
+              },
+            },
+          },
+        },
+        Hackathon: {
+          select: {
+            id: true,
+            title: true,
+            maxTeamSize: true,
+          },
+        },
+        User: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getTeamById(teamId: string) {
+    const team = await this.prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      include: {
+        TeamMember: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImageUrl: true,
+              },
+            },
+          },
+        },
+        Hackathon: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Team with ID ${teamId} not found`);
+    }
+
+    return team;
+  }
+
+  async getTeamMembers(teamId: string) {
+    const team = await this.prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Team with ID ${teamId} not found`);
+    }
+
+    return await this.prisma.teamMember.findMany({
+      where: {
+        teamId,
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+            type: true,
+            institutionName: true,
+            biography: true,
+            Skill: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getTeamRequests(teamId: string, requestingUserId: string) {
+    // Check if the requesting user is a team leader
+    const teamMember = await this.prisma.teamMember.findFirst({
+      where: {
+        teamId,
+        userId: requestingUserId,
+        isLeader: true,
+      },
+    });
+
+    if (!teamMember) {
+      throw new UnauthorizedException('Only team leaders can view team requests');
+    }
+
+    return await this.prisma.teamRequest.findMany({
+      where: {
+        teamId,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+            type: true,
+            institutionName: true,
+            biography: true,
+            Skill: true,
+          },
+        },
+      },
+    });
+  }
+
+  async acceptTeamRequest(teamId: string, userId: string, requestingUserId: string) {
+    // Check if the requesting user is a team leader
+    const teamMember = await this.prisma.teamMember.findFirst({
+      where: {
+        teamId,
+        userId: requestingUserId,
+        isLeader: true,
+      },
+    });
+
+    if (!teamMember) {
+      throw new UnauthorizedException('Only team leaders can accept requests');
+    }
+
+    // Check team size limit
+    const currentMembers = await this.prisma.teamMember.count({
+      where: {
+        teamId,
+      },
+    });
+
+    const team = await this.prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      include: {
+        Hackathon: true,
+      },
+    });
+
+    if (team && currentMembers >= team.Hackathon.maxTeamSize) {
+      throw new UnauthorizedException('Team size limit reached');
+    }
+
+    // Check if the request exists
+    const request = await this.prisma.teamRequest.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId,
+        },
+      },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Team request not found');
+    }
+
+    // Delete the request
+    await this.deleteTeamReq(userId, teamId);
+
+    // Create the team member
+    return this.prisma.teamMember.create({
+      data: {
+        teamId,
+        userId,
+        isLeader: false,
+      },
+    });
+  }
+
+  async rejectTeamRequest(teamId: string, userId: string, requestingUserId: string) {
+    // Check if the requesting user is a team leader
+    const teamMember = await this.prisma.teamMember.findFirst({
+      where: {
+        teamId,
+        userId: requestingUserId,
+        isLeader: true,
+      },
+    });
+
+    if (!teamMember) {
+      throw new UnauthorizedException('Only team leaders can reject requests');
+    }
+
+    return await this.deleteTeamReq(userId, teamId);
+  }
+
+  async getAllTeam() {
+    return await this.prisma.team.findMany({
+      include: {
+        TeamMember: {
+          include: {
+            User: {
+              select: {
+                name: true,
+                profileImageUrl: true,
+              },
+            },
+          },
+        },
+        Hackathon: {
+          select: {
+            id: true,
+            title: true,
+            maxTeamSize: true,
+          },
+        },
+        User: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
+  // User accepts team invite or joins a team
   async createTeamMember(userId: string, teamId: string) {
     const teamReq = await this.prisma.teamRequest.findUnique({
       where: {
@@ -93,7 +381,7 @@ export class TeamService {
 
     // If request exists, delete it
     if (teamReq) {
-      await this.deleteTeamReq(userId, teamId); // Make sure this function is awaited
+      await this.deleteTeamReq(userId, teamId);
     }
 
     // Check if the user is the team leader
@@ -104,7 +392,7 @@ export class TeamService {
     });
 
     if (!team) {
-      throw new Error('Team not found');
+      throw new NotFoundException('Team not found');
     }
 
     const isLeader = team?.createdById === userId;
