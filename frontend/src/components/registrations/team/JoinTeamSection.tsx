@@ -2,13 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Users,
-  UserPlus,
-  Search,
-  ChevronRight,
-  Tag,
-} from "lucide-react";
+import { Users, UserPlus, Search, ChevronRight, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "motion/react";
@@ -192,7 +186,7 @@ export default function JoinTeamView() {
             >
               {filteredTeams.map((team, index) => (
                 <motion.div
-                className="shadow-sm rounded-2xl bg-[var(--primary-2)]"
+                  className="shadow-sm rounded-2xl bg-[var(--primary-2)]"
                   key={team.id}
                   variants={itemVariants}
                   custom={index}

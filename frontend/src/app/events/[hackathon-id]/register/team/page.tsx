@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -6,6 +5,7 @@ import JoinTeamView from "@/components/registrations/team/JoinTeamSection";
 import CreateTeamSection from "@/components/registrations/team/CreateTeamSection";
 import RightSectionCreate from "@/components/registrations/team/RightSectionCreate";
 import RightSectionJoin from "@/components/registrations/team/RightSectionJoin";
+import { useParams } from "next/navigation";
 interface Props {}
 
 function Page(props: Props) {
@@ -13,6 +13,8 @@ function Page(props: Props) {
   const [activeTab, setActiveTab] = useState<"Create Team" | "Join Team">(
     "Create Team",
   );
+  const params = useParams();
+  const hackathonId = params["hackathon-id"] as string;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[var(--primary-1)] to-[var(--primary-3)]">
@@ -55,13 +57,15 @@ function Page(props: Props) {
             </div>
           </div>
           <div className="shadow-lg rounded-2xl border-t-[1px] bg-[var(--primary-1)] p-2 my-4 ">
-            {activeTab == "Create Team" && <CreateTeamSection/>}
+            {activeTab == "Create Team" && (
+              <CreateTeamSection hackathonId={hackathonId} />
+            )}
             {activeTab == "Join Team" && <JoinTeamView />}
           </div>
         </div>
         <div className="col-span-2 shadow-lg border-t-[1px] rounded-2xl bg-[var(--primary-1)] p-2 my-4 h-screen ">
-          {activeTab == "Create Team" && <RightSectionCreate/>}
-            {activeTab == "Join Team" && <RightSectionJoin/>}
+          {activeTab == "Create Team" && <RightSectionCreate />}
+          {activeTab == "Join Team" && <RightSectionJoin />}
         </div>
       </div>
     </div>
