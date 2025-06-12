@@ -22,7 +22,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private prisma: PrismaService,
-  ) {}
+  ) { }
 
   async validateUser(
     email: string,
@@ -81,6 +81,8 @@ export class AuthService {
     };
   }
 
+
+  //TODO : Make google authentication
   async loginWithGoogle(googleUser: GoogleUserProps) {
     const { email, firstName, lastName, picture } = googleUser;
 

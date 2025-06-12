@@ -38,9 +38,9 @@ export class HackathonsController {
     return this.hackathonsService.getHackathonById(id);
   }
 
-  //TODO: role guard jwt+role
   @Post('create')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
   create(
     @Request() req: { user: { userId: string } },
     @Body() createHackathonDto: CreateHackathonDto,

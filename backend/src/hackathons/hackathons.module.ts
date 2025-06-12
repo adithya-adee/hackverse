@@ -25,4 +25,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   providers: [HackathonsService],
   exports: [HackathonsService],
 })
-export class HackathonsModule {}
+export class HackathonsModule { }

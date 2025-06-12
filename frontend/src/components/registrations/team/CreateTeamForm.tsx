@@ -16,6 +16,8 @@ import {
   containerVariants,
   itemVariants,
 } from "@/lib/animation";
+import { useCreateTeamMutation } from "@/apiSlice/teamApiSlice";
+import { toast } from "sonner";
 
 interface Props {
   hackathonId: string;
@@ -26,6 +28,7 @@ export default function CreateTeamForm({ hackathonId, setTeamId }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTeamCreated, setIsTeamCreated] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
+  const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
 
   const form = useForm<CreateTeamValues>({
     resolver: zodResolver(createTeamSchema),
@@ -38,21 +41,23 @@ export default function CreateTeamForm({ hackathonId, setTeamId }: Props) {
     },
   });
 
-  const onSubmit = (data: CreateTeamValues) => {
-    console.log(data);
-    setIsSubmitting(true);
+  const onSubmit = async (data: CreateTeamValues) => {
+    try {
+      setIsSubmitting(true);
 
-    //TODO: Create Team and set TeamCreated true.
-    //put teamid got after creating in setTeamId
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const response = await createTeam(data).unwrap();
+
+      setTeamId(response.id);
       setIsTeamCreated(true);
       setIsEditing(false);
-      const demoTeamId = "team-550e8400-e29b-41d4-a716-446655440001";
-      setTeamId(demoTeamId);
-    }, 1000);
 
-    // form.reset();
+      toast.success("Team created successfully!");
+    } catch (error) {
+      console.error("Failed to create team:", error);
+      toast.error("Failed to create team. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEdit = () => {
