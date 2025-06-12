@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  PlusCircle,
   Users,
   UserPlus,
   Search,
@@ -33,6 +31,10 @@ interface Team {
     title: string;
     maxTeamSize: number;
   };
+  User: {
+    id: string;
+    name: string;
+  };
 }
 
 interface TeamMember {
@@ -45,6 +47,7 @@ interface TeamMember {
   };
 }
 
+//TODO: fetch all the real teams with looking for members as true
 const teamsData: Team[] = [
   {
     id: "1",
@@ -58,6 +61,7 @@ const teamsData: Team[] = [
       { userId: "2", teamId: "1", isLeader: false },
     ],
     Hackathon: { id: "1", title: "Hackathon 2023", maxTeamSize: 4 },
+    User: { id: "1", name: "Demo" },
   },
   {
     id: "2",
@@ -68,6 +72,7 @@ const teamsData: Team[] = [
     requiredSkills: "UI/UX, React, Firebase",
     TeamMember: [{ userId: "3", teamId: "2", isLeader: true }],
     Hackathon: { id: "1", title: "Hackathon 2023", maxTeamSize: 4 },
+    User: { id: "1", name: "Demo" },
   },
   {
     id: "3",
@@ -82,6 +87,7 @@ const teamsData: Team[] = [
       { userId: "6", teamId: "3", isLeader: false },
     ],
     Hackathon: { id: "2", title: "Summer Code Fest", maxTeamSize: 4 },
+    User: { id: "1", name: "Demo" },
   },
   {
     id: "4",
@@ -92,37 +98,25 @@ const teamsData: Team[] = [
     requiredSkills: "Flutter, Firebase, UI Design",
     TeamMember: [{ userId: "7", teamId: "4", isLeader: true }],
     Hackathon: { id: "3", title: "Winter Hackathon", maxTeamSize: 5 },
+    User: { id: "1", name: "Demo" },
   },
 ];
 
 export default function JoinTeamView() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [joiningTeam, setJoiningTeam] = useState<string | null>(null);
 
-  // Simulate loading data
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTeams(teamsData);
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  //TODO: you won't need additional loading after RTK Query
+  const [teams, setTeams] = useState<Team[]>(teamsData);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleJoinTeam = (teamId: string) => {
     setJoiningTeam(teamId);
 
-    // Simulate API call
-    setTimeout(() => {
-      const team = teams.find((t) => t.id === teamId);
-      console.log({
-        title: "Team join request sent!",
-        description: `Your request to join ${team?.name || "the team"} has been sent.`,
-      });
-      setJoiningTeam(null);
-    }, 1000);
+    //TODO: find the current user using userId present in global state
+    //TODO:Create a team-joining request by current user, and if it succeeded change the button to sent(green).
+
+    setJoiningTeam(null);
   };
 
   // Filter teams based on search query
@@ -132,23 +126,24 @@ export default function JoinTeamView() {
       (team.description &&
         team.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (team.requiredSkills &&
-        team.requiredSkills.toLowerCase().includes(searchQuery.toLowerCase()))
+        team.requiredSkills.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   return (
     <motion.div
+      className=""
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="h-full">
-        <CardHeader className="bg-transparent text-[var(--primary-9)]">
-          <CardTitle className="text-xl font-semibold flex items-center">
+      <div className="h-full">
+        <div className="bg-transparent p-2  text-[var(--primary-9)]">
+          <div className="text-xl font-semibold flex items-center">
             <UserPlus className="h-5 w-5 mr-2" />
             Join a Team
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
+          </div>
+        </div>
+        <div className="p-6">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -164,6 +159,7 @@ export default function JoinTeamView() {
           </motion.div>
 
           {isLoading ? (
+            // change the loading state to our custumized one
             <div className="text-center py-10">
               <motion.div
                 animate={{ rotate: 360 }}
@@ -196,26 +192,32 @@ export default function JoinTeamView() {
             >
               {filteredTeams.map((team, index) => (
                 <motion.div
+                className="shadow-sm rounded-2xl bg-[var(--primary-2)]"
                   key={team.id}
                   variants={itemVariants}
                   custom={index}
                   initial="hidden"
                   animate="visible"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  whileHover={{ scale: 1.009 }}
+                  transition={{ type: "spring", stiffness: 100, damping: 17 }}
                 >
-                  <Card className="overflow-hidden">
-                    <CardContent className="p-4">
+                  <div className="overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-[var(--primary-12)]">
                             {team.name}
                           </h3>
-                          <p className="text-sm text-gray-500">
-                            {team.Hackathon?.title || "Unknown Hackathon"}
-                          </p>
+                          <div className="flex gap-5">
+                            <p className="text-sm text-gray-500">
+                              {team.Hackathon?.title || "Unknown Hackathon"}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Leader-{team.User?.name || "Unknown Name"}
+                            </p>
+                          </div>
                         </div>
-                        <Badge className="bg-[var(--primary-4)] text-[var(--primary-9)]">
+                        <Badge className="bg-[var(--primary-4)] text-[var(--primary-12)]">
                           <Users className="h-3 w-3 mr-1" />
                           {team.TeamMember.length}/
                           {team.Hackathon?.maxTeamSize || 4}
@@ -223,7 +225,7 @@ export default function JoinTeamView() {
                       </div>
 
                       {team.description && (
-                        <p className="mt-2 text-sm text-gray-600">
+                        <p className="mt-2 text-sm text-[var(--primary-12)]">
                           {team.description}
                         </p>
                       )}
@@ -242,7 +244,10 @@ export default function JoinTeamView() {
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: i * 0.05 }}
                               >
-                                <Badge variant="outline" className="text-xs">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-[var(--primary-2)]"
+                                >
                                   {skill.trim()}
                                 </Badge>
                               </motion.div>
@@ -261,13 +266,13 @@ export default function JoinTeamView() {
                                 animate={{ x: 0, opacity: 1 }}
                                 transition={{ delay: i * 0.1 + 0.2 }}
                               >
-                                <Avatar className="border-2 border-white h-8 w-8">
+                                <Avatar className="border-1 border-white h-8 w-8">
                                   <AvatarFallback className="bg-[var(--primary-3)] text-[var(--primary-9)] text-xs">
                                     {String.fromCharCode(65 + i)}
                                   </AvatarFallback>
                                 </Avatar>
                               </motion.div>
-                            )
+                            ),
                           )}
                           {team.TeamMember.length > 3 && (
                             <motion.div
@@ -289,7 +294,7 @@ export default function JoinTeamView() {
                           <Button
                             onClick={() => handleJoinTeam(team.id)}
                             disabled={joiningTeam === team.id}
-                            className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-10)]"
+                            className="bg-[var(--primary-10)] text-white"
                           >
                             {joiningTeam === team.id ? (
                               <>
@@ -300,7 +305,7 @@ export default function JoinTeamView() {
                                     repeat: Infinity,
                                     ease: "linear",
                                   }}
-                                  className="h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                                  className=" h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"
                                 />
                                 Sending...
                               </>
@@ -313,14 +318,14 @@ export default function JoinTeamView() {
                           </Button>
                         </motion.div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

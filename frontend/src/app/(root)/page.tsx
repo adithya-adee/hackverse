@@ -1,11 +1,15 @@
-import React from "react";
+import React from 'react'
 
-function Page() {
+interface Props {}
+
+function Page(props: Props) {
+  const {} = props
+
   return (
-    <div className="w-full h-200 bg-primary-2">
-      <section className=""></section>
+    <div>
+      
     </div>
-  );
+  )
 }
 
-export default Page;
+export default Page

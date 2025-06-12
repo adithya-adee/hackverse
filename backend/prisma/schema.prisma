@@ -24,6 +24,7 @@ model Hackathon {
   location                  String?
   mode                      HackathonMode?              @default(ONLINE)
   maxTeamSize               Int                         @default(4)
+  minTeamSize               Int                         @default(1)
   createdById               String                      @db.Uuid
   registrationDate          DateTime                    @db.Timestamp(6)
   startDate                 DateTime                    @db.Timestamp(6)
@@ -32,7 +33,6 @@ model Hackathon {
   bannerImageUrl            String?
   createdAt                 DateTime                    @default(now()) @db.Timestamp(6)
   updatedAt                 DateTime                    @default(now()) @db.Timestamp(6)
-  minTeamSize               Int                         @default(1)
   User                      User                        @relation(fields: [createdById], references: [id], onDelete: NoAction)
   HackathonModerator        HackathonModerator[]
   HackathonModeratorRequest HackathonModeratorRequest[]
@@ -181,10 +181,10 @@ model Team {
   hackathonId       String        @db.Uuid
   createdById       String        @db.Uuid
   lookingForMembers Boolean       @default(false)
+  registered        Boolean       @default(false)
   requiredSkills    String?
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @default(now()) @db.Timestamp(6)
-  registered        Boolean       @default(false)
   Submission        Submission[]
   User              User          @relation(fields: [createdById], references: [id], onDelete: NoAction)
   Hackathon         Hackathon     @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
@@ -218,7 +218,11 @@ model User {
   id                               String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                             String
   email                            String                      @unique
+  phoneNo                          String?                     @unique @db.VarChar(10)
   password                         String?
+  institutionName                  String?
+  type                             UserType                    @default(STUDENT)
+  gender                           Sex                         @default(UNSPECIFIED)
   biography                        String?
   profileImageUrl                  String?
   resumeUrl                        String?
@@ -226,10 +230,6 @@ model User {
   linkedinUrl                      String?
   createdAt                        DateTime                    @default(now()) @db.Timestamp(6)
   updatedAt                        DateTime                    @default(now()) @db.Timestamp(6)
-  gender                           Sex                         @default(UNSPECIFIED)
-  institutionName                  String?
-  phoneNo                          String?                     @unique @db.VarChar(10)
-  type                             UserType                    @default(STUDENT)
   Hackathon                        Hackathon[]
   HackathonModerator               HackathonModerator[]
   HackathonModeratorRequest        HackathonModeratorRequest[]

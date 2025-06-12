@@ -165,7 +165,7 @@ function RequestTable({
               ) : (
                 team_request.map((request, index) => {
                   const statusConfig = getStatusConfig(
-                    request.team?.Hackathon?.status
+                    request.team?.Hackathon?.status,
                   );
 
                   return (
@@ -193,7 +193,7 @@ function RequestTable({
                             <AvatarFallback className="bg-gradient-to-br from-[var(--primary-9)] to-[var(--primary-8)] text-white text-xs font-semibold">
                               {getUserInitials(
                                 request.user?.name,
-                                request.user?.email
+                                request.user?.email,
                               )}
                             </AvatarFallback>
                           </Avatar>
