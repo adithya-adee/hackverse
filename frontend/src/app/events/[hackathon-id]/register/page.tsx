@@ -73,12 +73,8 @@ function Page() {
         return;
       }
 
-      // Update user profile
-      await updateProfile({
-        ...data,
-        gender: Sex[data.gender as keyof typeof Sex],
-        type: UserType[data.type as keyof typeof UserType]
-      }).unwrap();
+      // No need for complex conversions since enums are now string-based
+      await updateProfile(data).unwrap();
 
       // Register for hackathon
       await registerForHackathon({
@@ -103,15 +99,9 @@ function Page() {
     }
   };
 
-  // Gender options with proper typing
-  const genderOptions = Object.keys(Sex).filter(
-    (key) => !isNaN(Number(Sex[key as keyof typeof Sex]))
-  ) as Array<keyof typeof Sex>;
-
-  // User type options with proper typing
-  const typeOptions = Object.keys(UserType).filter(
-    (key) => !isNaN(Number(UserType[key as keyof typeof UserType]))
-  ) as Array<keyof typeof UserType>;
+  // Replace the complex enum filtering with direct arrays
+  const genderOptions = Object.values(Sex);
+  const typeOptions = Object.values(UserType);
 
   // Show loading state
   if (isLoadingUser || isLoadingHackathon) {
@@ -236,7 +226,7 @@ function Page() {
                   Gender
                 </label>
                 <div className="flex gap-4">
-                  {genderOptions.map((option) => (
+                  {Object.values(Sex).map((option) => (
                     <motion.label
                       key={option}
                       className="flex items-center gap-2 cursor-pointer"
@@ -310,7 +300,7 @@ function Page() {
                   {...form.register("type")}
                   className="w-full px-4 py-3"
                 >
-                  {typeOptions.map((option) => (
+                  {Object.values(UserType).map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>

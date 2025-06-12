@@ -4,7 +4,7 @@ import React, { useDebugValue, useEffect, useState } from "react";
 import Link from "next/link";
 import Logo from "@/assets/logo.svg";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleTheme } from "@/store/themeSlice";
+import { initTheme, toggleTheme } from "@/store/themeSlice";
 import { ComputerIcon, MoonIcon, SunIcon } from "lucide-react";
 import { RootState } from "@/store/store";
 import UserProfileAvatar from "./UserProfileAvatar";
@@ -29,6 +29,11 @@ function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+
+  useEffect(() => {
+    dispatch(initTheme());
+  }, [dispatch])
 
   if (!mounted) {
     return <NavbarSkeleton />;
