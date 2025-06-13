@@ -1,125 +1,215 @@
 "use client";
 
-import React, { useDebugValue, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Logo from "@/assets/logo.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { initTheme, toggleTheme } from "@/store/themeSlice";
-import { ComputerIcon, MoonIcon, SunIcon } from "lucide-react";
+import { MoonIcon, SunIcon, Menu, X } from "lucide-react";
 import { RootState } from "@/store/store";
 import UserProfileAvatar from "./UserProfileAvatar";
 import { RoleType } from "@/types/core_enum";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "motion/react";
 
 interface UserState {
-  id: string,
-  email: string,
-  name: string,
-  roles: Array<RoleType>
+  id: string;
+  email: string;
+  name: string;
+  roles: Array<RoleType>;
 }
 
 function Navbar() {
   const dispatch = useDispatch();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mode = useSelector((state: RootState) => state.theme.mode);
   const user: UserState = useSelector((state: RootState) => state.auth.user);
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-
-  console.log(user)
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-
   useEffect(() => {
     dispatch(initTheme());
-  }, [dispatch])
+  }, [dispatch]);
+
+  // Close mobile menu when path changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   if (!mounted) {
     return <NavbarSkeleton />;
   }
 
+  const isOrganizer = isLoggedIn && user?.roles?.includes(RoleType.ORGANIZER);
+
+  const navigationItems = [
+    { name: "Events", path: "/events" },
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "About Us", path: "/about" },
+    { name: "Contact Us", path: "/contact" },
+  ];
+
   return (
-    <div
-      // suppressHydrationWarning
-      className="fixed top-0 left-0 w-full z-100 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md"
-    >
-      <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-        <a className="flex items-center justify-center" href="/">
-          <Logo className="h-18 w-48" />
-        </a>
+    <header className="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-[var(--primary-1)]/90 backdrop-blur-md border-b border-[var(--primary-5)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center shrink-0">
+            <Logo className="lg:h-48 md:h-32 sm:h-22 w-auto" />
+          </Link>
 
-        <div className=" flex gap-5">
-          <Link href="/events">
-            <button className="cursor-pointer px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
-              Events
-            </button>
-          </Link>
-          <Link href="/dashboard">
-            <button className="cursor-pointer px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
-              Dashboard
-            </button>
-          </Link>
-          <Link href="/about-us">
-            <button className="cursor-pointer px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
-              About Us
-            </button>
-          </Link>
-        </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.path}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === item.path
+                    ? "text-[var(--primary-12)] bg-[var(--primary-3)]"
+                    : "text-[var(--primary-11)] hover:text-[var(--primary-12)] hover:bg-[var(--primary-3)]"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
 
-        <div className="flex gap-3">
-          {isLoggedIn && user.roles.find(role => role === RoleType.ORGANIZER) && (
-            <>
-              <span className="cursor-pointer flex py-2 px-3 border-2 border-[var(--primary-8)] rounded-full text-[var(--primary-12)] hover:text-[var(--primary-10)] hover:border-[var(--primary-10)] font-bold transition-all ease-in duration-300 hover:shadow-md hover:rounded-2xl">
-                <Link href={"/host-hackathon/step1"}>
-                  Host
-                </Link>
-              </span>
-            </>
-          )}
-          <button
-            className="cursor-pointer relative px-4 py-2 bg-transparent text-[var(--primary-12)] font-bold transition-colors"
-            onClick={() => dispatch(toggleTheme())}
-            aria-label="Toggle theme"
-          >
-            <span className="relative flex items-center justify-center w-7 h-7">
-              <SunIcon
-                className={`absolute transition-all duration-300 scale-110 ${mode === "dark"
-                  ? "opacity-100 rotate-0"
-                  : "opacity-0 -rotate-45 scale-75"
-                  } text-[var(--primary-12)] drop-shadow-[0_0_8px_rgba(255,221,51,0.3)]`}
-              />
-              <MoonIcon
-                className={`absolute transition-all duration-300 scale-110 ${mode === "light"
-                  ? "opacity-100 rotate-0"
-                  : "opacity-0 rotate-45 scale-75"
-                  } text-[var(--primary-12)]`}
-              />
-            </span>
-          </button>
-          {isLoggedIn ? (
-            <>
-              <div>
-                <UserProfileAvatar user={user} />
+          {/* Right Side - Actions */}
+          <div className="flex items-center space-x-3 md:space-x-4">
+            {/* Host Button (desktop) */}
+            {isOrganizer && (
+              <Button
+                asChild
+                className="hidden md:flex bg-[var(--primary-9)] text-[var(--primary-1)] hover:bg-[var(--primary-10)] transition-all"
+                size="sm"
+              >
+                <Link href="/host-hackathon/step1">Host Hackathon</Link>
+              </Button>
+            )}
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => dispatch(toggleTheme())}
+              className="p-2 rounded-full bg-[var(--primary-3)] text-[var(--primary-11)] hover:text-[var(--primary-12)] hover:bg-[var(--primary-4)] transition-colors"
+              aria-label="Toggle theme"
+            >
+              <div className="relative w-5 h-5">
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: mode === "dark" ? 1 : 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <SunIcon className="w-5 h-5" />
+                </motion.div>
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: mode === "light" ? 1 : 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <MoonIcon className="w-5 h-5" />
+                </motion.div>
               </div>
-            </>
-          ) : (
-            <div>
-              <Link href="/sign-in">
-                <button className="px-4 py-2 text-[var(--primary-12)] hover:text-[var(--primary-10)] font-bold transition-colors">
-                  Login
-                </button>
-              </Link>
-              <Link href="/sign-up">
-                <button className="px-6 py-2.5 bg-[var(--primary-6)] hover:bg-[var(--primary-10)] text-[var(--primary-12)] rounded-full hover:shadow-lg hover:shadow-primary/20 font-medium transition-all hover:scale-105 active:scale-100">
-                  Sign Up
-                </button>
-              </Link>
-            </div>
-          )}
-        </div>
+            </button>
+
+            {/* Authentication Actions */}
+            {isLoggedIn ? (
+              <UserProfileAvatar user={user} />
+            ) : (
+              <div className="hidden md:flex items-center space-x-3">
+                <Link
+                  href="/sign-in"
+                  className="text-sm font-medium text-[var(--primary-11)] hover:text-[var(--primary-12)] transition-colors"
+                >
+                  Log in
+                </Link>
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-[var(--primary-9)] text-[var(--primary-1)] hover:bg-[var(--primary-10)] transition-all"
+                >
+                  <Link href="/sign-up">Sign up</Link>
+                </Button>
+              </div>
+            )}
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-md text-[var(--primary-11)] hover:text-[var(--primary-12)] hover:bg-[var(--primary-3)] transition-colors"
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+        </nav>
       </div>
-    </div>
+
+      {/* Mobile Navigation Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-[var(--primary-2)] border-b border-[var(--primary-5)] overflow-hidden"
+          >
+            <div className="px-4 py-3 space-y-1">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.path}
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    pathname === item.path
+                      ? "text-[var(--primary-12)] bg-[var(--primary-4)]"
+                      : "text-[var(--primary-11)] hover:text-[var(--primary-12)] hover:bg-[var(--primary-3)]"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              {isOrganizer && (
+                <Link
+                  href="/host-hackathon/step1"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-[var(--primary-1)] bg-[var(--primary-9)] hover:bg-[var(--primary-10)] transition-colors"
+                >
+                  Host Hackathon
+                </Link>
+              )}
+              {!isLoggedIn && (
+                <div className="pt-2 pb-1 border-t border-[var(--primary-5)]">
+                  <Link
+                    href="/sign-in"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-[var(--primary-11)] hover:text-[var(--primary-12)] hover:bg-[var(--primary-3)] transition-colors"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="block px-3 py-2 mt-1 rounded-md text-base font-medium text-[var(--primary-1)] bg-[var(--primary-9)] hover:bg-[var(--primary-10)] transition-colors"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }
 
@@ -128,29 +218,27 @@ export default Navbar;
 // Skeleton Loading Component
 const NavbarSkeleton = () => {
   return (
-    <div className="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b-2 border-[var(--primary-6)] bg-[var(--primary-1)] backdrop-blur-md">
-      <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-        {/* Logo Skeleton */}
-        <div className="flex items-center justify-center">
-          <div className="h-12 w-12 bg-gray-300 dark:bg-gray-600 rounded-md animate-pulse"></div>
-        </div>
+    <div className="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-[var(--primary-5)] bg-[var(--primary-1)]/90 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
+        <div className="flex items-center justify-between h-full">
+          {/* Logo Skeleton */}
+          <div className="h-8 w-36 bg-[var(--primary-4)] rounded animate-pulse"></div>
 
-        {/* Navigation Links Skeleton */}
-        <div className="flex gap-3">
-          <div className="h-8 w-16 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-          <div className="h-8 w-20 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-          <div className="h-8 w-18 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-        </div>
+          {/* Navigation Links Skeleton */}
+          <div className="hidden md:flex space-x-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-8 w-20 bg-[var(--primary-4)] rounded animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              ></div>
+            ))}
+          </div>
 
-        {/* Right Side Actions Skeleton */}
-        <div className="flex gap-3 items-center">
-          {/* Theme Toggle Skeleton */}
-          <div className="w-7 h-7 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-
-          {/* Auth Buttons Skeleton - Show both to maintain consistent layout */}
-          <div className="flex gap-2">
-            <div className="h-8 w-12 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-            <div className="h-9 w-20 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse"></div>
+          {/* Right Side Actions Skeleton */}
+          <div className="flex items-center space-x-3">
+            <div className="h-9 w-9 bg-[var(--primary-4)] rounded-full animate-pulse"></div>
+            <div className="h-9 w-9 bg-[var(--primary-4)] rounded-full animate-pulse"></div>
           </div>
         </div>
       </div>
