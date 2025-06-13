@@ -7,13 +7,15 @@ import {
   Patch,
   Delete,
   UseGuards,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 
-import { RoleType } from '@prisma/client';
+import { RoleType, Skill } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -48,18 +50,39 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: { user: { userId: string; roles: RoleType[] } },
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    // Check if user is updating their own profile or is an admin
     const isAdmin = req.user.roles.includes(RoleType.ADMIN);
-    const isSelf = req.user.userId === id;
+    const isSelf = req.user.userId === userId;
 
-    if (!isAdmin && !isSelf) {
+    if (!isAdmin && isSelf) {
       throw new Error('You can only update your own profile');
     }
 
-    return this.usersService.update(id, updateUserDto);
+    console.log(updateUserDto);
+
+    return this.usersService.update(req.user.userId, updateUserDto);
+  }
+
+  @Patch(':id/skills')
+  @UseGuards(JwtAuthGuard)
+  async updateSkills(
+    @Request() req: { user: { userId: string } },
+    @Param('userId') userId: string,
+    @Body() updateSkillsDto: { skills: string[] },
+  ) {
+    if (req.user.userId !== userId) {
+      throw new UnauthorizedException('Only user can modify his skills');
+    }
+
+    const { skills } = updateSkillsDto;
+
+    if (!Array.isArray(skills)) {
+      throw new BadRequestException('Skills must be an array of strings');
+    }
+
+    return this.usersService.updateSkills(req.user.userId, skills);
   }
 
   @Delete(':id')
@@ -67,21 +90,5 @@ export class UsersController {
   @Roles(RoleType.ADMIN)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
-  }
-
-  @Patch(':id/skills')
-  @UseGuards(JwtAuthGuard)
-  async updateSkills(
-    @Request() req: { user: { userId: string; roles: RoleType[] } },
-    @Param('id') id: string,
-    @Body() data: { skillIds: string[] },
-  ) {
-    const isAdmin = req.user.roles.includes(RoleType.ADMIN);
-    const isSelf = req.user.userId === id;
-
-    if (!isAdmin && !isSelf) {
-      throw new Error('You can only update your own skills');
-    }
-    return this.usersService.updateSkills(id, data.skillIds);
   }
 }

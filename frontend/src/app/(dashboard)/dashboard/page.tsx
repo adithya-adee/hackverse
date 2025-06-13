@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Edit3, Loader2 } from "lucide-react";
+import { Edit3, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import type { Role, User as UserType } from "@/types/core_interfaces";
 import { UserDetailsFormValues } from "@/schemas/user-schema";
+import { toast } from "sonner"; // Import toast
 
 import { ProfileInformationSection } from "@/components/dashboard/profile/ProfileInformationSection";
 import { StatsSection } from "@/components/dashboard/profile/StatsSection";
@@ -14,6 +15,7 @@ import { RolesSection } from "@/components/dashboard/profile/RolesSection";
 import {
   useGetTeamRequestsQuery,
   useGetUserDetailsQuery,
+  useUpdateUserProfileMutation,
 } from "@/apiSlice/userApiSlice";
 
 const statsInitial = {
@@ -34,21 +36,39 @@ const UserDetailsUpdatePage = () => {
 
   const { data: user, isLoading, error, refetch } = useGetUserDetailsQuery();
   const { data: pendingTeamRequests } = useGetTeamRequestsQuery();
-  // const [updateProfile, { isLoading: isUpdating }] =
-  //   useUpdateUserDetailsMutation();
+  const [updateProfile, { isLoading: isUpdating }] =
+    useUpdateUserProfileMutation();
 
   const handleProfileSave = async (data: UserDetailsFormValues) => {
     try {
-      // await updateProfile({
-      //   ...data,
-      //   // Only include fields that are actually defined in the form
-      //   // This prevents sending undefined values to the API
-      // }).unwrap();
+      console.log("Saving profile data:", data);
+
+      const apiData = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => {
+          return [key, value === "" ? null : value];
+        })
+      );
+
+      await updateProfile({ id: user?.id, ...apiData }).unwrap();
+
+      // Show success toast
+      toast.success("Profile updated successfully", {
+        icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+      });
 
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update profile:", err);
-      // You could add a toast notification here
+
+      // Show error toast with detailed message if available
+      const errorMessage =
+        err && typeof err === "object" && "data" in err
+          ? (err.data as any)?.message || "Failed to update profile"
+          : "An error occurred while updating your profile";
+
+      toast.error(errorMessage, {
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      });
     }
   };
 
@@ -144,7 +164,7 @@ const UserDetailsUpdatePage = () => {
             {!isEditing ? (
               <Button
                 onClick={startEditing}
-                // disabled={isUpdating}
+                disabled={isUpdating}
                 className="bg-[var(--primary-9)] text-white hover:bg-[var(--primary-5)] transition duration-200 ease-in"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
@@ -160,10 +180,11 @@ const UserDetailsUpdatePage = () => {
             <ProfileInformationSection
               user={user}
               isEditing={isEditing}
+              isSubmitting={isUpdating} // Pass the isUpdating state from the mutation
               handleProfileSave={handleProfileSave}
               handleCancel={handleCancel}
             />
-            <SkillsSection skills={skills} />
+            <SkillsSection userId={user.id} skills={skills} />
             <RolesSection roles={roles} />
           </div>
 

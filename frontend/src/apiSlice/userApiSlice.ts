@@ -10,16 +10,17 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 300,
     }),
-    getTeamRequests: builder.query<TeamRequest, void>({
+    getTeamRequests: builder.query<TeamRequest[], void>({
       query: () => ({
         url: "/team/all-team-reqs",
         method: "GET",
       }),
       keepUnusedDataFor: 150,
+      transformResponse: (response: TeamRequest[] | null) => response || [],
     }),
     updateUserProfile: builder.mutation({
-      query: (data) => ({
-        url: "/users/profile",
+      query: ({ userId, data }) => ({
+        url: `/users/${userId}/profile`,
         method: "PATCH",
         body: data,
       }),
@@ -31,6 +32,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: teamData,
       }),
     }),
+    updateSkills: builder.mutation<void, { userId: string; skills: string[] }>({
+      query: ({ userId, skills }) => ({
+        url: `/users/${userId}/skills`,
+        method: "PATCH",
+        body: { skills },
+      }),
+    }),
   }),
 });
 
@@ -38,5 +46,6 @@ export const {
   useGetUserDetailsQuery,
   useGetTeamRequestsQuery,
   useUpdateUserProfileMutation,
-  useRegisterTeamMutation
+  useRegisterTeamMutation,
+  useUpdateSkillsMutation, // Export the new mutation
 } = userApiSlice;

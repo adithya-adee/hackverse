@@ -70,6 +70,10 @@ export class UsersService {
         email: true,
         biography: true,
         profileImageUrl: true,
+        institutionName: true,
+        gender: true,
+        type: true,
+        phoneNo: true,
         resumeUrl: true,
         githubUrl: true,
         linkedinUrl: true,
@@ -111,21 +115,24 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UpdateUserDto> {
-    if (updateUserDto.password) {
+    if (updateUserDto && updateUserDto.password) {
       const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
       updateUserDto.password = hashedPassword;
     }
+
+    // Remove skill updates from general user update
 
     const updateUser = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
     });
 
-    console.log(updateUser);
-
     if (!updateUser) {
       throw new NotFoundException('User not found');
     }
+
+    console.log(updateUser);
+
     // Convert password: null to password: undefined for UpdateUserDto compatibility
     const { password, ...rest } = updateUser;
     return {
@@ -134,32 +141,50 @@ export class UsersService {
     } as UpdateUserDto;
   }
 
+  async updateSkills(userId: string, skills: string[]) {
+    try {
+      // Validate if all skills exist or create new ones
+      const existingSkills = await this.prisma.skill.findMany({
+        where: {
+          name: {
+            in: skills,
+          },
+        },
+      });
+
+      const existingSkillNames = existingSkills.map((skill) => skill.name);
+      const newSkills = skills.filter(
+        (skill) => !existingSkillNames.includes(skill),
+      );
+
+      // Create new skills if they don't exist
+      await this.prisma.skill.createMany({
+        data: newSkills.map((name) => ({ name })),
+        skipDuplicates: true,
+      });
+
+      // Connect all skills to the user
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          Skill: {
+            set: [], // Disconnect all existing skills
+            connect: skills.map((name) => ({ name })),
+          },
+        },
+        include: {
+          Skill: true, // Include updated skills in the response
+        },
+      });
+    } catch (error) {
+      console.error('Failed to update skills:', error);
+      throw new Error('Failed to update skills');
+    }
+  }
+
   async remove(id: string) {
     return this.prisma.user.delete({
       where: { id },
-    });
-  }
-
-  //TODO: don't know how to deal with this
-  async updateSkills(userId: string, skillIds: string[]) {
-    // First disconnect all existing skills
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        Skill: {
-          set: [],
-        },
-      },
-    });
-
-    // Then connect the new skills
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        Skill: {
-          connect: skillIds.map((id) => ({ id })),
-        },
-      },
     });
   }
 

@@ -22,7 +22,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private prisma: PrismaService,
-  ) { }
+  ) {}
 
   async validateUser(
     email: string,
@@ -70,6 +70,8 @@ export class AuthService {
       roles: roles,
     };
 
+    //TODO : Update stats and push it in this to set stats in cookie
+    // const userStats = await this.prisma.$queryRaw``;
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -80,7 +82,6 @@ export class AuthService {
       },
     };
   }
-
 
   //TODO : Make google authentication
   async loginWithGoogle(googleUser: GoogleUserProps) {
