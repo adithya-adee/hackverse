@@ -110,7 +110,8 @@ export default function OrganizerDashboard() {
   // Calculate dashboard metrics
   const hackathonCount = hackathonData?.length || 0;
   const activeHackathons =
-    hackathonData?.filter((h: Hackathon) => h.status === "ONGOING").length || 0;
+    hackathonData?.filter((h: Hackathon) => h.status === "UPCOMING").length ||
+    0;
   const completedHackathons =
     hackathonData?.filter((h: Hackathon) => h.status === "COMPLETED").length ||
     0;
