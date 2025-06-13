@@ -18,6 +18,8 @@ import {
   Trophy,
   Settings,
   ChevronDown,
+  UserCog,
+  UserLock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -29,7 +31,7 @@ interface UserData {
   name?: string;
   email?: string;
   profileImageUrl?: string;
-  role?: string;
+  roles?: string[];
 }
 
 interface Props {
@@ -40,6 +42,8 @@ function UserProfileAvatar({ user }: Props) {
   const router = useRouter();
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
+
+  console.log(user);
 
   // Get initials from name or email
   const getInitials = (): string => {
@@ -107,21 +111,34 @@ function UserProfileAvatar({ user }: Props) {
                 <span>Profile</span>
               </DropdownMenuItem>
             </Link>
-
+            {user.roles?.includes("ADMIN") && (
+              <Link href="/admin">
+                <DropdownMenuItem className="gap-2 cursor-pointer focus:bg-[var(--primary-4)] hover:bg-[var(--primary-4)]">
+                  <UserLock className="h-4 w-4 text-[var(--primary-9)]" />
+                  <span>Admin</span>
+                </DropdownMenuItem>
+              </Link>
+            )}
+            {user.roles?.includes("ORGANIZER") && (
+              <Link href="/organiser">
+                <DropdownMenuItem className="gap-2 cursor-pointer focus:bg-[var(--primary-4)] hover:bg-[var(--primary-4)]">
+                  <UserCog className="h-4 w-4 text-[var(--primary-9)]" />
+                  <span>Organizer</span>
+                </DropdownMenuItem>
+              </Link>
+            )}
             <Link href="/dashboard/team-requests">
               <DropdownMenuItem className="gap-2 cursor-pointer focus:bg-[var(--primary-4)] hover:bg-[var(--primary-4)]">
                 <Trophy className="h-4 w-4 text-[var(--primary-9)]" />
                 <span>Requests</span>
               </DropdownMenuItem>
             </Link>
-
             <Link href="/dashboard/history">
               <DropdownMenuItem className="gap-2 cursor-pointer focus:bg-[var(--primary-4)] hover:bg-[var(--primary-4)]">
                 <History className="h-4 w-4 text-[var(--primary-9)]" />
                 <span>History</span>
               </DropdownMenuItem>
             </Link>
-
             <Link href="/dashboard/settings">
               <DropdownMenuItem className="gap-2 cursor-pointer focus:bg-[var(--primary-4)] hover:bg-[var(--primary-4)]">
                 <Settings className="h-4 w-4 text-[var(--primary-9)]" />
