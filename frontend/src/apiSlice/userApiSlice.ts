@@ -39,6 +39,37 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: { skills },
       }),
     }),
+    // Fetch hackathons created by the organizer
+    getHackathonsByOrganizer: builder.query({
+      query: () => ({
+        url: "/users/organizer/hackathons",
+        method: "GET",
+      }),
+    }),
+
+    // Fetch teams for hackathons organized by the user
+    getTeamsByOrganizer: builder.query({
+      query: () => ({
+        url: "/users/organizer/teams",
+        method: "GET",
+      }),
+    }),
+
+    // Fetch submissions for hackathons organized by the user
+    getSubmissionsByOrganizer: builder.query({
+      query: () => ({
+        url: "/users/organizer/submissions",
+        method: "GET",
+      }),
+    }),
+
+    // Fetch participants for hackathons organized by the user
+    getParticipantsByOrganizer: builder.query({
+      query: () => ({
+        url: "/users/organizer/participants",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -48,4 +79,8 @@ export const {
   useUpdateUserProfileMutation,
   useRegisterTeamMutation,
   useUpdateSkillsMutation, // Export the new mutation
+  useGetHackathonsByOrganizerQuery,
+  useGetTeamsByOrganizerQuery,
+  useGetSubmissionsByOrganizerQuery,
+  useGetParticipantsByOrganizerQuery,
 } = userApiSlice;

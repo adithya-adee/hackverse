@@ -188,6 +188,74 @@ export class UsersService {
     });
   }
 
+  async getHackathonsByOrganizer(userId: string) {
+    return this.prisma.hackathon.findMany({
+      where: { createdById: userId },
+      include: { Team: true, Submission: true },
+    });
+  }
+
+  async getTeamsByOrganizer(userId: string) {
+    return this.prisma.team.findMany({
+      where: {
+        Hackathon: {
+          createdById: userId,
+        },
+      },
+      include: { TeamMember: true },
+    });
+  }
+
+  async getSubmissionsByOrganizer(userId: string) {
+    return this.prisma.submission.findMany({
+      where: {
+        Hackathon: {
+          createdById: userId,
+        },
+      },
+      include: { Feedback: true, Rating: true },
+    });
+  }
+
+  async getParticipantsByOrganizer(userId: string) {
+    // Get unique participants across all hackathons created by this organizer
+    const teams = await this.prisma.team.findMany({
+      where: {
+        Hackathon: {
+          createdById: userId,
+        },
+      },
+      include: {
+        TeamMember: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImageUrl: true,
+                institutionName: true,
+                type: true,
+                Skill: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Extract unique participants
+    const participantsMap = new Map();
+    teams.forEach((team) => {
+      team.TeamMember.forEach((member) => {
+        if (member.User && !participantsMap.has(member.User.id)) {
+          participantsMap.set(member.User.id, member.User);
+        }
+      });
+    });
+
+    return Array.from(participantsMap.values());
+  }
   // async getUserRoles(userId: string) {
   //   const userWithRoles = await this.prisma.user.findUnique({
   //     where: { id: userId },

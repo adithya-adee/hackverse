@@ -46,6 +46,21 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @Get('/profile/hackathons')
+  async getHackathons(@Request() req: { user: { userId: string } }) {
+    return this.usersService.getHackathonsByOrganizer(req.user.userId);
+  }
+
+  @Get('/profile/teams')
+  async getTeams(@Request() req: { user: { userId: string } }) {
+    return this.usersService.getTeamsByOrganizer(req.user.userId);
+  }
+
+  @Get('/profile/submissions')
+  async getSubmissions(@Request() req: { user: { userId: string } }) {
+    return this.usersService.getSubmissionsByOrganizer(req.user.userId);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   async update(
@@ -90,5 +105,33 @@ export class UsersController {
   @Roles(RoleType.ADMIN)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  // Add these endpoints to your UsersController
+
+  @Get('organizer/hackathons')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizerHackathons(@Request() req) {
+    return this.usersService.getHackathonsByOrganizer(req.user.userId);
+  }
+
+  @Get('organizer/teams')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizerTeams(@Request() req) {
+    return this.usersService.getTeamsByOrganizer(req.user.userId);
+  }
+
+  @Get('organizer/submissions')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizerSubmissions(@Request() req) {
+    return this.usersService.getSubmissionsByOrganizer(req.user.userId);
+  }
+
+  @Get('organizer/participants')
+  @UseGuards(JwtAuthGuard)
+  async getParticipantsByOrganizer(
+    @Request() req: { user: { userId: string } },
+  ) {
+    return this.usersService.getParticipantsByOrganizer(req.user.userId);
   }
 }
