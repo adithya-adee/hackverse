@@ -20,39 +20,54 @@ import { formatDate } from "@/lib/formatters";
 export const ProfileInformationSection = ({
   user,
   isEditing,
+  isSubmitting = false, // Add isSubmitting prop with default value
   handleProfileSave,
   handleCancel,
 }: {
   user: UserType;
   isEditing: boolean;
+  isSubmitting?: boolean; // Make it optional
   handleProfileSave: (data: UserDetailsFormValues) => void;
   handleCancel: () => void;
 }) => {
+// In ProfileInformationSection.tsx
+const defaultValues = {
+  name: user?.name || '',
+  email: user?.email || '',
+  biography: user?.biography ?? '',  // Use nullish coalescing
+  phoneNo: user?.phoneNo ?? '',
+  gender: user?.gender ?? 'UNSPECIFIED',
+  institutionName: user?.institutionName ?? '',
+  type: user?.type ?? 'STUDENT',
+  githubUrl: user?.githubUrl ?? '',
+  linkedinUrl: user?.linkedinUrl ?? '',
+  profileImageUrl: user?.profileImageUrl ?? '',
+  resumeUrl: user?.resumeUrl ?? '',
+};
+
   const form = useForm<UserDetailsFormValues>({
-    resolver: zodResolver(userDetailsSchema),
-    defaultValues: {
-      name: user.name,
-      email: user.email,
-      biography: user.biography,
-      githubUrl: user.githubUrl,
-      linkedinUrl: user.linkedinUrl,
-      profileImageUrl: user.profileImageUrl,
-      resumeUrl: user.resumeUrl,
-    },
+    resolver: zodResolver(userDetailsSchema) as any,
+    defaultValues,
     mode: "onChange",
   });
 
-  // Reset form when user data changes
+  // Reset form when user data changes - also handle nulls properly
   useEffect(() => {
-    form.reset({
-      name: user.name,
-      email: user.email,
-      biography: user.biography,
-      githubUrl: user.githubUrl,
-      linkedinUrl: user.linkedinUrl,
-      profileImageUrl: user.profileImageUrl,
-      resumeUrl: user.resumeUrl,
-    });
+    if (user) {
+      form.reset({
+        name: user.name || '',
+        email: user.email || '',
+        biography: user.biography || '',
+        phoneNo: user.phoneNo || '',
+        gender: user.gender || 'UNSPECIFIED',
+        institutionName: user.institutionName || '',
+        type: user.type || 'OTHERS',
+        githubUrl: user.githubUrl || '',
+        linkedinUrl: user.linkedinUrl || '',
+        profileImageUrl: user.profileImageUrl || '',
+        resumeUrl: user.resumeUrl || '',
+      });
+    }
   }, [user, form]);
 
   return (
@@ -70,10 +85,11 @@ export const ProfileInformationSection = ({
         <ProfileForm
           form={form}
           isEditing={isEditing}
+          isSubmitting={isSubmitting} // Pass isSubmitting to ProfileForm
           onSubmit={handleProfileSave}
           onCancel={handleCancel}
         />
-        {!isEditing && (
+        {!isEditing && user && (
           <div className="pt-4 text-sm text-[var(--muted-foreground)]">
             <p>Created: {formatDate(user.createdAt)}</p>
             <p>Last Updated: {formatDate(user.updatedAt)}</p>

@@ -6,19 +6,27 @@ interface ThemeState {
   mode: ThemeMode;
 }
 
-// Always default to "light" for SSR compatibility
-const initialState: ThemeState = {
-  mode: "light",
+const getSavedTheme = (): ThemeMode => {
+  if (typeof window === 'undefined') return "light";
+
+  const savedTheme = localStorage.getItem("theme");
+
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
+
+  return "light";
 };
 
-const applyThemeClass = (mode: ThemeMode) => {
-  if (typeof document !== "undefined") {
-    if (mode === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+const applyTheme = (mode: ThemeMode) => {
+  if (typeof window !== 'undefined') {
+    document.documentElement.setAttribute("data-theme", mode);
+    document.body.className = mode;
   }
+};
+
+const initialState: ThemeState = {
+  mode: "light",
 };
 
 const themeSlice = createSlice({
@@ -27,14 +35,25 @@ const themeSlice = createSlice({
   reducers: {
     toggleTheme(state) {
       state.mode = state.mode === "light" ? "dark" : "light";
-      applyThemeClass(state.mode);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("theme", state.mode);
+        applyTheme(state.mode);
+      }
     },
     setTheme(state, action: PayloadAction<ThemeMode>) {
       state.mode = action.payload;
-      applyThemeClass(state.mode);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("theme", state.mode);
+        applyTheme(state.mode);
+      }
     },
-  },
+    initTheme(state) {
+      const savedTheme = getSavedTheme();
+      state.mode = savedTheme;
+      applyTheme(savedTheme);
+    }
+  }
 });
 
-export const { toggleTheme, setTheme } = themeSlice.actions;
+export const { toggleTheme, setTheme, initTheme } = themeSlice.actions;
 export default themeSlice.reducer;

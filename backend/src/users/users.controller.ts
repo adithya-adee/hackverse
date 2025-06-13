@@ -7,13 +7,15 @@ import {
   Patch,
   Delete,
   UseGuards,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 
-import { RoleType } from '@prisma/client';
+import { RoleType, Skill } from '@prisma/client';
 import { Roles } from 'src/auth/decorator/role.decorator';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -44,22 +46,58 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @Get('/profile/hackathons')
+  async getHackathons(@Request() req: { user: { userId: string } }) {
+    return this.usersService.getHackathonsByOrganizer(req.user.userId);
+  }
+
+  @Get('/profile/teams')
+  async getTeams(@Request() req: { user: { userId: string } }) {
+    return this.usersService.getTeamsByOrganizer(req.user.userId);
+  }
+
+  @Get('/profile/submissions')
+  async getSubmissions(@Request() req: { user: { userId: string } }) {
+    return this.usersService.getSubmissionsByOrganizer(req.user.userId);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: { user: { userId: string; roles: RoleType[] } },
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    // Check if user is updating their own profile or is an admin
     const isAdmin = req.user.roles.includes(RoleType.ADMIN);
-    const isSelf = req.user.userId === id;
+    const isSelf = req.user.userId === userId;
 
-    if (!isAdmin && !isSelf) {
+    if (!isAdmin && isSelf) {
       throw new Error('You can only update your own profile');
     }
 
-    return this.usersService.update(id, updateUserDto);
+    console.log(updateUserDto);
+
+    return this.usersService.update(req.user.userId, updateUserDto);
+  }
+
+  @Patch(':id/skills')
+  @UseGuards(JwtAuthGuard)
+  async updateSkills(
+    @Request() req: { user: { userId: string } },
+    @Param('userId') userId: string,
+    @Body() updateSkillsDto: { skills: string[] },
+  ) {
+    if (req.user.userId !== userId) {
+      throw new UnauthorizedException('Only user can modify his skills');
+    }
+
+    const { skills } = updateSkillsDto;
+
+    if (!Array.isArray(skills)) {
+      throw new BadRequestException('Skills must be an array of strings');
+    }
+
+    return this.usersService.updateSkills(req.user.userId, skills);
   }
 
   @Delete(':id')
@@ -69,19 +107,31 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
-  @Patch(':id/skills')
-  @UseGuards(JwtAuthGuard)
-  async updateSkills(
-    @Request() req: { user: { userId: string; roles: RoleType[] } },
-    @Param('id') id: string,
-    @Body() data: { skillIds: string[] },
-  ) {
-    const isAdmin = req.user.roles.includes(RoleType.ADMIN);
-    const isSelf = req.user.userId === id;
+  // Add these endpoints to your UsersController
 
-    if (!isAdmin && !isSelf) {
-      throw new Error('You can only update your own skills');
-    }
-    return this.usersService.updateSkills(id, data.skillIds);
+  @Get('organizer/hackathons')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizerHackathons(@Request() req) {
+    return this.usersService.getHackathonsByOrganizer(req.user.userId);
+  }
+
+  @Get('organizer/teams')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizerTeams(@Request() req) {
+    return this.usersService.getTeamsByOrganizer(req.user.userId);
+  }
+
+  @Get('organizer/submissions')
+  @UseGuards(JwtAuthGuard)
+  async getOrganizerSubmissions(@Request() req) {
+    return this.usersService.getSubmissionsByOrganizer(req.user.userId);
+  }
+
+  @Get('organizer/participants')
+  @UseGuards(JwtAuthGuard)
+  async getParticipantsByOrganizer(
+    @Request() req: { user: { userId: string } },
+  ) {
+    return this.usersService.getParticipantsByOrganizer(req.user.userId);
   }
 }

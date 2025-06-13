@@ -26,13 +26,13 @@ export enum RoleType {
 }
 
 export enum Sex {
-  MALE,
-  FEMALE,
-  UNSPECIFIED
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  UNSPECIFIED = "UNSPECIFIED"
 }
 
 export enum UserType {
-  STUDENT,
-  PROFESSIONAL,
-  OTHERS
+  STUDENT = "STUDENT",
+  PROFESSIONAL = "PROFESSIONAL",
+  OTHERS = "OTHERS"
 }

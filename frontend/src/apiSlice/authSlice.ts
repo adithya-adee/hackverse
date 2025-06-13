@@ -5,6 +5,7 @@ interface AuthState {
   user: any | null;
   token: string | null;
   isLoggedIn: boolean;
+  userStats: any | null;
 }
 
 // Helper to safely parse cookie JSON
@@ -21,6 +22,7 @@ const initialState: AuthState = {
   user: getCookieJSON("user"),
   token: Cookies.get("token") || null,
   isLoggedIn: Cookies.get("isLoggedIn") === "true",
+  userStats: getCookieJSON("userStats"),
 };
 
 const authSlice = createSlice({
@@ -29,16 +31,17 @@ const authSlice = createSlice({
   reducers: {
     setUserCredentials: (
       state,
-      action: PayloadAction<{ user: any; access_token: string }>,
+      action: PayloadAction<{ user: any; access_token: string; userStats: any }>
     ) => {
       console.log(action.payload);
-      const { user, access_token } = action.payload;
+      const { user, access_token, userStats } = action.payload;
       state.user = user;
       state.token = access_token;
       state.isLoggedIn = !!user && !!access_token;
       Cookies.set("user", JSON.stringify(user), { expires: 7 });
       Cookies.set("token", access_token, { expires: 7 });
       Cookies.set("isLoggedIn", "true", { expires: 7 });
+      Cookies.set("userStats", JSON.stringify(userStats), { expires: 7 });
     },
     logoutUser: (state) => {
       state.user = null;

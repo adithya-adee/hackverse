@@ -70,6 +70,10 @@ export class UsersService {
         email: true,
         biography: true,
         profileImageUrl: true,
+        institutionName: true,
+        gender: true,
+        type: true,
+        phoneNo: true,
         resumeUrl: true,
         githubUrl: true,
         linkedinUrl: true,
@@ -111,21 +115,24 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UpdateUserDto> {
-    if (updateUserDto.password) {
+    if (updateUserDto && updateUserDto.password) {
       const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
       updateUserDto.password = hashedPassword;
     }
+
+    // Remove skill updates from general user update
 
     const updateUser = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
     });
 
-    console.log(updateUser);
-
     if (!updateUser) {
       throw new NotFoundException('User not found');
     }
+
+    console.log(updateUser);
+
     // Convert password: null to password: undefined for UpdateUserDto compatibility
     const { password, ...rest } = updateUser;
     return {
@@ -134,35 +141,121 @@ export class UsersService {
     } as UpdateUserDto;
   }
 
+  async updateSkills(userId: string, skills: string[]) {
+    try {
+      // Validate if all skills exist or create new ones
+      const existingSkills = await this.prisma.skill.findMany({
+        where: {
+          name: {
+            in: skills,
+          },
+        },
+      });
+
+      const existingSkillNames = existingSkills.map((skill) => skill.name);
+      const newSkills = skills.filter(
+        (skill) => !existingSkillNames.includes(skill),
+      );
+
+      // Create new skills if they don't exist
+      await this.prisma.skill.createMany({
+        data: newSkills.map((name) => ({ name })),
+        skipDuplicates: true,
+      });
+
+      // Connect all skills to the user
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          Skill: {
+            set: [], // Disconnect all existing skills
+            connect: skills.map((name) => ({ name })),
+          },
+        },
+        include: {
+          Skill: true, // Include updated skills in the response
+        },
+      });
+    } catch (error) {
+      console.error('Failed to update skills:', error);
+      throw new Error('Failed to update skills');
+    }
+  }
+
   async remove(id: string) {
     return this.prisma.user.delete({
       where: { id },
     });
   }
 
-  //TODO: don't know how to deal with this
-  async updateSkills(userId: string, skillIds: string[]) {
-    // First disconnect all existing skills
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        Skill: {
-          set: [],
-        },
-      },
-    });
-
-    // Then connect the new skills
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        Skill: {
-          connect: skillIds.map((id) => ({ id })),
-        },
-      },
+  async getHackathonsByOrganizer(userId: string) {
+    return this.prisma.hackathon.findMany({
+      where: { createdById: userId },
+      include: { Team: true, Submission: true },
     });
   }
 
+  async getTeamsByOrganizer(userId: string) {
+    return this.prisma.team.findMany({
+      where: {
+        Hackathon: {
+          createdById: userId,
+        },
+      },
+      include: { TeamMember: true },
+    });
+  }
+
+  async getSubmissionsByOrganizer(userId: string) {
+    return this.prisma.submission.findMany({
+      where: {
+        Hackathon: {
+          createdById: userId,
+        },
+      },
+      include: { Feedback: true, Rating: true },
+    });
+  }
+
+  async getParticipantsByOrganizer(userId: string) {
+    // Get unique participants across all hackathons created by this organizer
+    const teams = await this.prisma.team.findMany({
+      where: {
+        Hackathon: {
+          createdById: userId,
+        },
+      },
+      include: {
+        TeamMember: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImageUrl: true,
+                institutionName: true,
+                type: true,
+                Skill: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Extract unique participants
+    const participantsMap = new Map();
+    teams.forEach((team) => {
+      team.TeamMember.forEach((member) => {
+        if (member.User && !participantsMap.has(member.User.id)) {
+          participantsMap.set(member.User.id, member.User);
+        }
+      });
+    });
+
+    return Array.from(participantsMap.values());
+  }
   // async getUserRoles(userId: string) {
   //   const userWithRoles = await this.prisma.user.findUnique({
   //     where: { id: userId },
