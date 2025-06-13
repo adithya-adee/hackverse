@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { HackathonCard } from "@/components/root components/HackathonCard";
 import { useGetAllHackathonsQuery } from "@/apiSlice/adminApiSlice";
 import { Loader } from "@/components/ui/loader";
-import { HackathonTag } from "@/types/core_interfaces";
+import { Hackathon, HackathonTag } from "@/types/core_interfaces";
 import { toast } from "sonner";
 import { Calendar, Plus, RefreshCcw } from "lucide-react";
 import Link from "next/link";
@@ -50,8 +50,9 @@ function Page() {
             Upcoming hackathons
           </h1>
           <div className="m-4 max-w-[50%] font-normal text-[var(--primary-11)]">
-            Discover exciting hackathon events, register for upcoming competitions,
-            and showcase your skills with fellow developers around the world.
+            Discover exciting hackathon events, register for upcoming
+            competitions, and showcase your skills with fellow developers around
+            the world.
           </div>
 
           {/* Empty state or hackathons list */}
@@ -88,7 +89,7 @@ function Page() {
           ) : (
             <div className="flex justify-center items-center min-h-screen">
               <div className="md:m-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-24">
-                {hackathons.map((hackathon) => (
+                {hackathons.map((hackathon: Hackathon) => (
                   <HackathonCard
                     key={hackathon.id}
                     id={hackathon.id}
@@ -98,9 +99,17 @@ function Page() {
                     startDate={hackathon.startDate}
                     mode={hackathon.mode || "ONLINE"}
                     maxTeamSize={hackathon.maxTeamSize}
-                    tags={hackathon.HackathonTag?.map((tag: HackathonTag) => tag.name) || []}
+                    // tags={
+                    //   hackathon.HackathonTag?.map(
+                    //     (tag: HackathonTag) => tag.name,
+                    // ) || []
+                    // }
+                    tags={hackathon.HackathonTag || []}
+                    // registeredParticipants={
+                    //   hackathon._count?.HackathonRegistration || 0
+                    // }
                     registeredParticipants={
-                      hackathon._count?.HackathonRegistration || 0
+                      hackathon.HackathonRegistration?.length || 0
                     }
                   />
                 ))}

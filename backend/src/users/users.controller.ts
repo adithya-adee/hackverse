@@ -9,6 +9,8 @@ import {
   UseGuards,
   BadRequestException,
   UnauthorizedException,
+  Query,
+  NotFoundException,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
@@ -32,6 +34,22 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('isRegistered')
+    @UseGuards(JwtAuthGuard)
+    async checkRegistration(
+      @Query('email') memberEmail: string
+    ) {
+      try {
+        const user = await this.usersService.findOneByEmail(memberEmail);
+        return { isRegistered: true, user:user };
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          return { isRegistered: false, user:null };
+        }
+      throw error;
+    }
+  }
+
   // Get currently logged in user profile
   @Get('profile')
   @UseGuards(JwtAuthGuard)
@@ -39,12 +57,6 @@ export class UsersController {
     return this.usersService.findOne(req.user.userId);
   }
 
-  // Get a specific user - when fetching other user
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
 
   @Get('/profile/hackathons')
   async getHackathons(@Request() req: { user: { userId: string } }) {
@@ -61,23 +73,34 @@ export class UsersController {
     return this.usersService.getSubmissionsByOrganizer(req.user.userId);
   }
 
-  @Patch(':id')
+  // Get a specific user - when fetching other user
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
+
+
+  @Patch(':id/profile')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Request() req: { user: { userId: string; roles: RoleType[] } },
-    @Param('userId') userId: string,
+    @Request() req: { user: { userId: string; roles: RoleType[] }},
+    @Param('id') userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
+    console.log("----------------------------body------------------------------");
+    console.log(updateUserDto);
+    console.log("----------------------------body------------------------------");
+
     const isAdmin = req.user.roles.includes(RoleType.ADMIN);
     const isSelf = req.user.userId === userId;
 
-    if (!isAdmin && isSelf) {
-      throw new Error('You can only update your own profile');
+    if (!isAdmin && !isSelf) {
+      throw new UnauthorizedException('You can only update your own profile');
     }
 
-    console.log(updateUserDto);
-
-    return this.usersService.update(req.user.userId, updateUserDto);
+    return this.usersService.update(userId, updateUserDto);
   }
 
   @Patch(':id/skills')

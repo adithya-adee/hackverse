@@ -13,64 +13,27 @@ import {
   Trophy,
   Share2,
 } from "lucide-react";
-import { sampleHackathonData } from "@/assets/data/hackathon_individual_.data";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { toast } from "sonner";
-
-// Types
-export interface FindHackathonDto {
-  id: string;
-  title: string;
-  description?: string;
-  startDate: Date;
-  endDate: Date;
-  registrationDate: Date;
-  location?: string;
-  maxTeamSize: number;
-  mode: "ONLINE" | "OFFLINE" | "HYBRID";
-  status: "UPCOMING" | "LIVE" | "COMPLETED";
-  bannerImageUrl?: string;
-  createdBy: {
-    id: string;
-    name: string;
-    profileImageUrl?: string;
-  };
-  registeredParticipants: number;
-  tags: string[];
-  tabs: {
-    title: string;
-    content: string; // Markdown content
-  }[];
-}
+import { useGetHackathonDetailsQuery } from "@/apiSlice/hackathonApiSlice";
+import { FindHackathonDto } from "@/types/core_interfaces";
 
 const Page = () => {
   const params = useParams();
   const hackathonId = params["hackathon-id"];
 
-  // const [hackathon, setHackathon] = useState<FindHackathonDto>(sampleHackathonData.aiHackathon);
-  const hackathon: FindHackathonDto = sampleHackathonData.healthHackathon;
+  const {
+    data: hackathonDetails,
+    isError: hackathonError,
+    isLoading: hackathonLoading,
+  } = useGetHackathonDetailsQuery(hackathonId);
+
+  const hackathon: FindHackathonDto = hackathonDetails;
   const [activeTab, setActiveTab] = useState(0);
 
-  //Mock API call - replace with your actual API call
-  useEffect(() => {
-    const fetchHackathon = async () => {
-      try {
-        console.log(hackathonId);
-        // Replace this with your actual API call
-        // const response = await fetch(`/api/hackathons/${hackathonId}`);
-        // setHackathon(response);
-      } catch (err) {
-        console.error("Error fetching hackathon:", err);
-      }
-    };
-    if (hackathonId) {
-      fetchHackathon();
-    }
-  }, [hackathonId]);
-
   const formatDate = (dateString: Date) => {
-    return dateString.toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -99,19 +62,18 @@ const Page = () => {
     );
   };
 
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-  //         <p className="text-gray-600">Loading hackathon details...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (hackathonLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading hackathon details...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // if (error || !hackathon) {
-  if (!hackathon) {
+  if (!hackathon || hackathonError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -262,10 +224,11 @@ const Page = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 300 }}
-                      className={`w-full m-2 p-3 font-bold text-sm  rounded-xl ${activeTab === index
-                        ? "bg-gradient-to-r from-blue-500 to-green-500 text-white"
-                        : " text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`}
+                      className={`w-full m-2 p-3 font-bold text-sm  rounded-xl ${
+                        activeTab === index
+                          ? "bg-gradient-to-r from-blue-500 to-green-500 text-white"
+                          : " text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
                     >
                       {tab.title}
                     </motion.button>
@@ -403,6 +366,8 @@ const Page = () => {
             >
               <div className="flex flex-col space-y-3">
                 {/* Register button */}
+
+                {/* FIXNOW: navigate to teams if user is registered already  */}
                 <Link href={`/events/${hackathonId}/register`}>
                   <motion.button
                     whileHover={{ scale: 1.02 }}

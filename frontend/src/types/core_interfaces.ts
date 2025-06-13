@@ -1,4 +1,11 @@
-import { HackathonStatus, HackathonMode, RoleType, RequestStatus, UserType, Sex } from "./core_enum";
+import {
+  HackathonStatus,
+  HackathonMode,
+  RoleType,
+  RequestStatus,
+  UserType,
+  Sex,
+} from "./core_enum";
 
 // Core Interfaces
 export interface User {
@@ -164,6 +171,31 @@ export interface Message {
 
   User_Message_receiverIdToUser?: User;
   User_Message_senderIdToUser?: User;
+}
+
+export interface FindHackathonDto {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  registrationDate: Date;
+  location?: string;
+  maxTeamSize: number;
+  mode: "ONLINE" | "OFFLINE" | "HYBRID";
+  status: "UPCOMING" | "LIVE" | "COMPLETED";
+  bannerImageUrl?: string;
+  createdBy: {
+    id: string;
+    name: string;
+    profileImageUrl?: string;
+  };
+  registeredParticipants: number;
+  tags: string[];
+  tabs: {
+    title: string;
+    content: string; // Markdown content
+  }[];
 }
 
 // Junction Table Interfaces

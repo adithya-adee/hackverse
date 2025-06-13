@@ -85,15 +85,19 @@ function Page() {
         return;
       }
 
+      console.log("--------uppdating-------");
       // Update user profile
-      await updateProfile({
-        ...data,
-        gender: Sex[data.gender as keyof typeof Sex],
-        type: UserType[data.type as keyof typeof UserType],
+      const updated_user = await updateProfile({
+        id: user?.id,
+        data,
       }).unwrap();
 
+      console.log("_________________");
+      console.log(updated_user);
+      console.log("_________________");
+
       // Register for hackathon
-      await registerForHackathon({
+      const registered = await registerForHackathon({
         hackathonId,
         userData: {
           userId: user?.id,
@@ -101,13 +105,17 @@ function Page() {
         },
       }).unwrap();
 
+      console.log("_________________");
+      console.log(registered);
+      console.log("_________________");
+
       toast.success("Registration successful!");
 
       // Redirect based on team size
-      if (hackathon?.maxTeamSize > 1) {
-        router.push(`/events/${hackathonId}/register/team`);
-      } else {
+      if (hackathon?.maxTeamSize == 1) {
         router.push(`/events/${hackathonId}`);
+      } else {
+        router.push(`/events/${hackathonId}/register/team`);
       }
     } catch (error) {
       toast.error("Registration failed. Please try again.");
@@ -116,14 +124,10 @@ function Page() {
   };
 
   // Gender options with proper typing
-  const genderOptions = Object.keys(Sex).filter(
-    (key) => !isNaN(Number(Sex[key as keyof typeof Sex])),
-  ) as Array<keyof typeof Sex>;
+  const genderOptions = Object.keys(Sex) as Array<keyof typeof Sex>;
 
   // User type options with proper typing
-  const typeOptions = Object.keys(UserType).filter(
-    (key) => !isNaN(Number(UserType[key as keyof typeof UserType])),
-  ) as Array<keyof typeof UserType>;
+  const typeOptions = Object.keys(UserType) as Array<keyof typeof UserType>;
 
   // Show loading state
   if (isLoadingUser || isLoadingHackathon) {
