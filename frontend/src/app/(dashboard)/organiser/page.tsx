@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // Fixed import
+import { useState, useMemo } from "react";
+import { motion } from "motion/react"; // Fixed import
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart3,
@@ -60,8 +60,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
+
 import { Hackathon, Team, Submission } from "@/types/core_interfaces";
+
+// Import the real API hooks
+import {
+  useGetHackathonsByOrganizerQuery,
+  useGetTeamsByOrganizerQuery,
+  useGetSubmissionsByOrganizerQuery,
+  useGetParticipantsByOrganizerQuery,
+} from "@/apiSlice/userApiSlice";
 
 // Dashboard Page Component with all inline components
 export default function OrganizerDashboard() {
@@ -70,34 +78,34 @@ export default function OrganizerDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Custom hooks to fetch data - using mocked implementations for now
+  // Use the real API hooks instead of mock implementations
   const {
     data: hackathonData = [],
     isLoading: hackathonLoading,
     error: hackathonError,
     refetch: refetchHackathons,
-  } = useGetHackathonsByOrganizerQuery();
+  } = useGetHackathonsByOrganizerQuery(undefined);
 
   const {
     data: teamsData = [],
     isLoading: teamsLoading,
     error: teamsError,
     refetch: refetchTeams,
-  } = useGetTeamsByOrganizerQuery();
+  } = useGetTeamsByOrganizerQuery(undefined);
 
   const {
     data: submissionsData = [],
     isLoading: submissionsLoading,
     error: submissionsError,
     refetch: refetchSubmissions,
-  } = useGetSubmissionsByOrganizerQuery();
+  } = useGetSubmissionsByOrganizerQuery(undefined);
 
   const {
     data: participantsData = [],
     isLoading: participantsLoading,
     error: participantsError,
     refetch: refetchParticipants,
-  } = useGetParticipantsByOrganizerQuery();
+  } = useGetParticipantsByOrganizerQuery(undefined);
 
   // Calculate dashboard metrics
   const hackathonCount = hackathonData?.length || 0;
@@ -1329,228 +1337,4 @@ function ParticipantCard({ participant }: { participant: any }) {
       </CardFooter>
     </Card>
   );
-}
-
-// The mock API implementations remain the same
-function useGetHackathonsByOrganizerQuery() {
-  // Mock implementation - replace with your actual API call
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setData([
-        {
-          id: "1",
-          name: "AI Innovation Hackathon",
-          description: "Build AI solutions for real-world problems",
-          status: "ONGOING",
-          startDate: new Date(2025, 5, 1),
-          endDate: new Date(2025, 5, 15),
-          prizeMoney: 5000,
-          Team: [{ id: "1" }, { id: "2" }, { id: "3" }],
-          Submission: [{ id: "1" }, { id: "2" }],
-        },
-        {
-          id: "2",
-          name: "Mobile Dev Challenge",
-          description: "Create innovative mobile applications",
-          status: "UPCOMING",
-          startDate: new Date(2025, 6, 10),
-          endDate: new Date(2025, 6, 24),
-          prizeMoney: 3000,
-          Team: [],
-          Submission: [],
-        },
-        {
-          id: "3",
-          name: "Web3 Hackathon",
-          description: "Develop blockchain and web3 solutions",
-          status: "COMPLETED",
-          startDate: new Date(2025, 4, 5),
-          endDate: new Date(2025, 4, 19),
-          prizeMoney: 7000,
-          Team: [{ id: "4" }, { id: "5" }],
-          Submission: [{ id: "3" }, { id: "4" }, { id: "5" }],
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  const refetch = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      // Same data for demo purposes
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  return { data, isLoading, error, refetch };
-}
-
-function useGetTeamsByOrganizerQuery() {
-  // Mock implementation - replace with your actual API call
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setData([
-        {
-          id: "1",
-          name: "Team Alpha",
-          Hackathon: { id: "1", name: "AI Innovation Hackathon" },
-          TeamMember: [
-            {
-              id: "1",
-              isLeader: true,
-              User: { name: "John Doe", profileImageUrl: "" },
-            },
-            {
-              id: "2",
-              isLeader: false,
-              User: { name: "Jane Smith", profileImageUrl: "" },
-            },
-          ],
-          Submission: { id: "1", name: "AlphaBot" },
-        },
-        {
-          id: "2",
-          name: "Team Beta",
-          Hackathon: { id: "1", name: "AI Innovation Hackathon" },
-          TeamMember: [
-            {
-              id: "3",
-              isLeader: true,
-              User: { name: "Mike Johnson", profileImageUrl: "" },
-            },
-          ],
-          Submission: null,
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  const refetch = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  return { data, isLoading, error, refetch };
-}
-
-function useGetSubmissionsByOrganizerQuery() {
-  // Mock implementation - replace with your actual API call
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setData([
-        {
-          id: "1",
-          name: "AlphaBot",
-          description:
-            "An AI assistant that helps developers write better code",
-          submittedAt: new Date(2025, 5, 10),
-          Team: { name: "Team Alpha" },
-          Feedback: [],
-          Rating: [],
-        },
-        {
-          id: "3",
-          name: "BlockChain Explorer",
-          description: "A visualization tool for blockchain transactions",
-          submittedAt: new Date(2025, 4, 18),
-          Team: { name: "Team Gamma" },
-          Feedback: [{ id: "1" }],
-          Rating: [{ id: "1", value: 4.5 }],
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  const refetch = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  return { data, isLoading, error, refetch };
-}
-
-function useGetParticipantsByOrganizerQuery() {
-  // Mock implementation - replace with your actual API call
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setData([
-        {
-          id: "1",
-          name: "John Doe",
-          email: "john@example.com",
-          profileImageUrl: "",
-          institutionName: "Tech University",
-          type: "STUDENT",
-          Skill: [
-            { id: "1", name: "JavaScript" },
-            { id: "2", name: "React" },
-            { id: "3", name: "Node.js" },
-            { id: "4", name: "MongoDB" },
-          ],
-        },
-        {
-          id: "2",
-          name: "Jane Smith",
-          email: "jane@example.com",
-          profileImageUrl: "",
-          institutionName: "Design College",
-          type: "STUDENT",
-          Skill: [
-            { id: "5", name: "UI/UX" },
-            { id: "6", name: "Figma" },
-          ],
-        },
-        {
-          id: "3",
-          name: "Mike Johnson",
-          email: "mike@example.com",
-          profileImageUrl: "",
-          institutionName: "Tech Corp",
-          type: "PROFESSIONAL",
-          Skill: [
-            { id: "7", name: "Python" },
-            { id: "8", name: "Machine Learning" },
-            { id: "9", name: "AI" },
-          ],
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  const refetch = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  return { data, isLoading, error, refetch };
 }
