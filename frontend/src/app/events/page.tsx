@@ -104,6 +104,7 @@ function Page() {
                     //     (tag: HackathonTag) => tag.name,
                     // ) || []
                     // }
+                    createdById={hackathon.createdById}
                     tags={hackathon.HackathonTag || []}
                     // registeredParticipants={
                     //   hackathon._count?.HackathonRegistration || 0

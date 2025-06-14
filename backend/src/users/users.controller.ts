@@ -1,31 +1,34 @@
 import {
   Controller,
   Get,
+  Post,
   Body,
-  Request,
-  Param,
   Patch,
+  Param,
   Delete,
   UseGuards,
-  BadRequestException,
   UnauthorizedException,
+  Request,
   Query,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
-
 import { UsersService } from './users.service';
-
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
-import { RoleType, Skill } from '@prisma/client';
-import { Roles } from 'src/auth/decorator/role.decorator';
-
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorator/role.decorator';
+import { RoleType } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -35,18 +38,13 @@ export class UsersController {
   }
 
   @Get('isRegistered')
-    @UseGuards(JwtAuthGuard)
-    async checkRegistration(
-      @Query('email') memberEmail: string
-    ) {
-      try {
-        const user = await this.usersService.findOneByEmail(memberEmail);
-        return { isRegistered: true, user:user };
-      } catch (error) {
-        if (error instanceof NotFoundException) {
-          return { isRegistered: false, user:null };
-        }
-      throw error;
+  @UseGuards(JwtAuthGuard)
+  async checkRegistration(@Query('email') memberEmail: string) {
+    try {
+      const user = await this.usersService.findOneByEmail(memberEmail);
+      return { isRegistered: true, user: user };
+    } catch (error) {
+      return new NotFoundException('Registered false', error);
     }
   }
 
@@ -56,7 +54,6 @@ export class UsersController {
   getProfile(@Request() req: { user: { userId: string } }) {
     return this.usersService.findOne(req.user.userId);
   }
-
 
   @Get('/profile/hackathons')
   async getHackathons(@Request() req: { user: { userId: string } }) {
@@ -80,18 +77,20 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-
-
   @Patch(':id/profile')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Request() req: { user: { userId: string; roles: RoleType[] }},
+    @Request() req: { user: { userId: string; roles: RoleType[] } },
     @Param('id') userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    console.log("----------------------------body------------------------------");
+    console.log(
+      '----------------------------body------------------------------',
+    );
     console.log(updateUserDto);
-    console.log("----------------------------body------------------------------");
+    console.log(
+      '----------------------------body------------------------------',
+    );
 
     const isAdmin = req.user.roles.includes(RoleType.ADMIN);
     const isSelf = req.user.userId === userId;
@@ -128,33 +127,5 @@ export class UsersController {
   @Roles(RoleType.ADMIN)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
-  }
-
-  // Add these endpoints to your UsersController
-
-  @Get('organizer/hackathons')
-  @UseGuards(JwtAuthGuard)
-  async getOrganizerHackathons(@Request() req) {
-    return this.usersService.getHackathonsByOrganizer(req.user.userId);
-  }
-
-  @Get('organizer/teams')
-  @UseGuards(JwtAuthGuard)
-  async getOrganizerTeams(@Request() req) {
-    return this.usersService.getTeamsByOrganizer(req.user.userId);
-  }
-
-  @Get('organizer/submissions')
-  @UseGuards(JwtAuthGuard)
-  async getOrganizerSubmissions(@Request() req) {
-    return this.usersService.getSubmissionsByOrganizer(req.user.userId);
-  }
-
-  @Get('organizer/participants')
-  @UseGuards(JwtAuthGuard)
-  async getParticipantsByOrganizer(
-    @Request() req: { user: { userId: string } },
-  ) {
-    return this.usersService.getParticipantsByOrganizer(req.user.userId);
   }
 }

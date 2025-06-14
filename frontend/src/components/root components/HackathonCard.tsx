@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   FiCalendar,
@@ -13,6 +13,7 @@ import {
 import { HiOutlineStatusOnline, HiOutlineLocationMarker } from "react-icons/hi";
 import Link from "next/link";
 import { HackathonTag } from "@/types/core_interfaces";
+import Cookies from "js-cookie";
 
 interface HackathonCardProps {
   id: string;
@@ -21,6 +22,7 @@ interface HackathonCardProps {
   bannerImageUrl: string | null;
   startDate: string;
   mode: "ONLINE" | "OFFLINE" | "HYBRID";
+  createdById: string;
   maxTeamSize: number;
   tags: HackathonTag[] | undefined;
   registeredParticipants: number;
@@ -34,9 +36,22 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
   startDate,
   mode,
   maxTeamSize,
+  createdById,
   tags,
   registeredParticipants,
 }) => {
+  const userCookie = Cookies.get("user");
+  const user: { id: string } | null = userCookie
+    ? JSON.parse(userCookie)
+    : null;
+  const [isOrganiser, setIsOrganizer] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (user && user?.id == createdById) {
+      setIsOrganizer(true);
+    }
+  }, [user]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
@@ -71,7 +86,6 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
   };
 
   return (
-
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -144,22 +158,23 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
           className="flex flex-wrap gap-2 mb-4"
         >
           {/* {tags.slice(0, 4).map((tag, index) => ( */}
-          {tags && tags.map((tag, index) => (
-            <motion.span
-              key={tag.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-              className="px-3 py-2 text-xs font-bold rounded-full border"
-              style={{
-                backgroundColor: "var(--primary-3)",
-                color: "var(--primary-11)",
-                borderColor: "var(--primary-6)",
-              }}
-            >
-              {tag.name}
-            </motion.span>
-          ))}
+          {tags &&
+            tags.map((tag, index) => (
+              <motion.span
+                key={tag.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.1 }}
+                className="px-3 py-2 text-xs font-bold rounded-full border"
+                style={{
+                  backgroundColor: "var(--primary-3)",
+                  color: "var(--primary-11)",
+                  borderColor: "var(--primary-6)",
+                }}
+              >
+                {tag.name}
+              </motion.span>
+            ))}
           {/* {tags.length > 4 && (
             <span
               className="px-3 py-2 text-xs font-bold rounded-full"
@@ -251,7 +266,11 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
           }}
         >
           <FiExternalLink className="w-4 h-4" />
-          <Link href={`/events/${id}`}>Apply Now</Link>
+          {isOrganiser ? (
+            <Link href={`/events/${id}/view-analytics`}>View Analytics</Link>
+          ) : (
+            <Link href={`/events/${id}`}>Apply Now</Link>
+          )}
         </motion.button>
       </div>
     </motion.div>

@@ -1,13 +1,19 @@
-import { Injectable, NotFoundException, Param, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Param,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateHackathonDto } from './dto/create-hackathon.dto';
 import { UpdateHackathonDto } from './dto/update-hackathon.dto';
 import { FindHackathonDto } from './dto/find-hackathon.dto';
 import type { UpcomingHackathonDto } from './dto/get-upcoming-hackathon.dto';
+import { RoleType } from '@prisma/client';
 
 @Injectable()
 export class HackathonsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getAllHackathons() {
     const response = await this.prisma.hackathon.findMany({
@@ -103,6 +109,165 @@ export class HackathonsService {
       ),
       createdAt: hackathon.createdAt ?? undefined,
     };
+  }
+
+  async getSubmissionsByHackathonId(hackathonId: string, userId: string) {
+    // Check permissions
+    const canView = await this.canViewHackathonData(hackathonId, userId);
+    if (!canView) {
+      throw new UnauthorizedException(
+        'You do not have permission to view this data',
+      );
+    }
+
+    const submissions = await this.prisma.submission.findMany({
+      where: {
+        hackathonId,
+      },
+      include: {
+        Team: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    return submissions;
+  }
+
+  async getParticipantsByHackathonId(hackathonId: string, userId: string) {
+    // Check permissions
+    const canView = await this.canViewHackathonData(hackathonId, userId);
+    if (!canView) {
+      throw new UnauthorizedException(
+        'You do not have permission to view this data',
+      );
+    }
+
+    // Get all participants registered for this hackathon
+    const registrations = await this.prisma.hackathonRegistration.findMany({
+      where: {
+        hackathonId,
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+            TeamMember: {
+              where: {
+                Team: {
+                  hackathonId,
+                },
+              },
+              include: {
+                Team: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Map the data to a more convenient structure
+    const participants = registrations.map((reg) => ({
+      id: reg.User.id,
+      name: reg.User.name,
+      email: reg.User.email,
+      profileImageUrl: reg.User.profileImageUrl,
+      registeredAt: reg.registeredAt,
+      teamId: reg.User.TeamMember[0]?.Team?.id || null,
+      teamName: reg.User.TeamMember[0]?.Team?.name || null,
+      isTeamLeader: reg.User.TeamMember[0]?.isLeader || false,
+    }));
+
+    return participants;
+  }
+
+  // Helper method to check if the user can view hackathon data
+  async canViewHackathonData(
+    hackathonId: string,
+    userId: string,
+  ): Promise<boolean> {
+    // Get the hackathon
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException('Hackathon not found');
+    }
+
+    // Get user's roles
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      include: { Role: true },
+    });
+
+    const roles = userRoles.map((ur) => ur.Role.name);
+
+    // User is admin or organizer
+    if (roles.includes(RoleType.ADMIN) || roles.includes(RoleType.ORGANIZER)) {
+      return true;
+    }
+
+    // User is the creator of the hackathon
+    if (hackathon.createdById === userId) {
+      return true;
+    }
+
+    // User is a moderator for this hackathon
+    const isModerator = await this.prisma.hackathonModerator.findFirst({
+      where: {
+        hackathonId,
+        userId,
+      },
+    });
+
+    if (isModerator) {
+      return true;
+    }
+
+    // User is registered for this hackathon
+    const isRegistered = await this.prisma.hackathonRegistration.findFirst({
+      where: {
+        hackathonId,
+        userId,
+      },
+    });
+
+    // Registered participants can see limited hackathon data
+    return !!isRegistered;
+  }
+
+  // New methods for hackathon dashboard
+  async getTeamsByHackathonId(hackathonId: string, userId: string) {
+    // First check if user has permission to view
+    const canView = await this.canViewHackathonData(hackathonId, userId);
+    if (!canView) {
+      throw new UnauthorizedException(
+        'You do not have permission to view this data',
+      );
+    }
+
+    const teams = await this.prisma.team.findMany({
+      where: {
+        hackathonId,
+      },
+      include: {
+        TeamMember: true,
+      },
+    });
+
+    return teams;
   }
 
   async createHackathon(
@@ -203,9 +368,9 @@ export class HackathonsService {
         ...updateData,
         HackathonTag: tags
           ? {
-            deleteMany: {}, // Remove all old tags
-            create: tags.map((name) => ({ name })),
-          }
+              deleteMany: {}, // Remove all old tags
+              create: tags.map((name) => ({ name })),
+            }
           : undefined,
       },
       include: {
@@ -235,15 +400,19 @@ export class HackathonsService {
     return deleteHackathon;
   }
 
-  async registerParticipant(hackathonId: string, userId: string, userData: any) {
+  async registerParticipant(
+    hackathonId: string,
+    userId: string,
+    userData: any,
+  ) {
     // Check if hackathon exists and is open for registration
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id: hackathonId },
       include: {
         HackathonRegistration: {
-          where: { userId }
-        }
-      }
+          where: { userId },
+        },
+      },
     });
 
     if (!hackathon) {
@@ -251,7 +420,9 @@ export class HackathonsService {
     }
 
     if (hackathon.status !== 'UPCOMING') {
-      throw new UnauthorizedException('Registration is closed for this hackathon');
+      throw new UnauthorizedException(
+        'Registration is closed for this hackathon',
+      );
     }
 
     if (hackathon.HackathonRegistration.length > 0) {
@@ -263,7 +434,7 @@ export class HackathonsService {
       data: {
         userId,
         hackathonId,
-      }
+      },
     });
 
     return registration;

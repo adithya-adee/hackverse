@@ -32,22 +32,16 @@ export default function AboutPage() {
   // Team members data
   const leadershipTeam = [
     {
-      name: "Sarah Johnson",
-      role: "Chief Executive Officer",
+      name: "Adithya A",
+      role: "Founder",
       image: "/images/team/sarah-johnson.jpg",
-      bio: "Former tech lead at Major Tech Co. with 15+ years experience in hackathon management.",
+      bio: "Full stack Web Developer",
     },
     {
-      name: "Michael Chen",
-      role: "Chief Technology Officer",
+      name: "Priyanshu Kumar Rai",
+      role: "Founder",
       image: "/images/team/michael-chen.jpg",
-      bio: "Full-stack developer and architect with experience scaling platforms to millions of users.",
-    },
-    {
-      name: "Aisha Patel",
-      role: "Chief Operating Officer",
-      image: "/images/team/aisha-patel.jpg",
-      bio: "Event management professional who has organized over 200 successful hackathons.",
+      bio: "Full-stack developer and architect",
     },
   ];
 
@@ -170,21 +164,18 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative h-[400px] rounded-lg overflow-hidden shadow-xl"
+            className="relative h-[400px] rounded-lg overflow-hidden shadow-xl flex items-center justify-center bg-gradient-to-br from-[var(--primary-4)] via-[var(--primary-5)] to-[var(--primary-6)]"
           >
-            <Image
-              src="/images/about/mission-image.jpg"
-              alt="Hackathon participants collaborating"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary-12)]/60 to-transparent flex items-end">
-              <div className="p-6">
-                <p className="text-[var(--primary-1)] text-lg font-medium">
-                  "Innovation happens when diverse minds collaborate with
-                  purpose."
-                </p>
-              </div>
+            <div className="absolute inset-0 bg-[var(--primary-12)]/60" />
+            <div className="relative z-10 p-8 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold text-[var(--primary-1)] mb-4">
+                "Innovation happens when diverse minds collaborate with
+                purpose."
+              </h3>
+              <p className="text-lg text-[var(--primary-2)]">
+                At Hackverse, we foster an environment where creativity,
+                teamwork, and technology unite to solve real-world problems.
+              </p>
             </div>
           </motion.div>
         </div>
@@ -300,7 +291,7 @@ export default function AboutPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center items-center mx-auto min-w-50 max-w-fit">
             {leadershipTeam.map((member, index) => (
               <motion.div
                 key={member.name}

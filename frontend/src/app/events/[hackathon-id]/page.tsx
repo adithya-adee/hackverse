@@ -246,9 +246,15 @@ const Page = () => {
                   className="prose prose-sm text-[var(--primary-11)] 
                   prose-headings:text-[var(--primary-12)]"
                 >
-                  <ReactMarkdown>
-                    {hackathon.tabs[activeTab].content}
-                  </ReactMarkdown>
+                  {hackathon.tabs === undefined ||
+                  !hackathon.tabs[activeTab] ||
+                  hackathon.tabs[activeTab].content === undefined ? (
+                    <p>No content for this hackathon</p>
+                  ) : (
+                    <ReactMarkdown>
+                      {hackathon.tabs[activeTab].content}
+                    </ReactMarkdown>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
