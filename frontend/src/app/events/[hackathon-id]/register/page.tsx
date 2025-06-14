@@ -85,18 +85,11 @@ function Page() {
         return;
       }
 
-      console.log("--------uppdating-------");
-      // Update user profile
       const updated_user = await updateProfile({
         id: user?.id,
         data,
       }).unwrap();
 
-      console.log("_________________");
-      console.log(updated_user);
-      console.log("_________________");
-
-      // Register for hackathon
       const registered = await registerForHackathon({
         hackathonId,
         userData: {
@@ -104,10 +97,6 @@ function Page() {
           ...data,
         },
       }).unwrap();
-
-      console.log("_________________");
-      console.log(registered);
-      console.log("_________________");
 
       toast.success("Registration successful!");
 

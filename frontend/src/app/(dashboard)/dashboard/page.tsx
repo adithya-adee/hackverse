@@ -53,7 +53,7 @@ const UserDetailsUpdatePage = () => {
         })
       );
 
-      await updateProfile({ id: user?.id, ...apiData }).unwrap();
+      await updateProfile({ id: user?.id, data: apiData }).unwrap();
 
       toast.success("Profile updated successfully", {
         icon: <CheckCircle className="h-5 w-5 text-green-500" />,
