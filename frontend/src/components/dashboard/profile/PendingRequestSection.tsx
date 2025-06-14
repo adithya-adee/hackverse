@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export const PendingRequestsSection = ({ count }: { count: number }) => (
   <Card className="shadow-lg border-border bg-card text-card-foreground">
@@ -25,6 +26,9 @@ export const PendingRequestsSection = ({ count }: { count: number }) => (
           Team invitations waiting
         </div>
         <Button
+          onClick={() => {
+            redirect("/dashboard/team-requests");
+          }}
           size="sm"
           className="mt-3 bg-[var(--primary-9)] text-white hover:bg-[var(--primary-9)]/90"
         >

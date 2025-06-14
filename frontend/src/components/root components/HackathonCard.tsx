@@ -250,28 +250,30 @@ export const HackathonCard: React.FC<HackathonCardProps> = ({
         </motion.div>
 
         {/* Apply Button */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full py-3 px-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200"
-          style={{
-            backgroundColor: "var(--primary-9)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--primary-10)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--primary-9)";
-          }}
+        <Link
+          href={isOrganiser ? `/events/${id}/view-analytics` : `/events/${id}`}
         >
-          <FiExternalLink className="w-4 h-4" />
-          {isOrganiser ? (
-            <Link href={`/events/${id}/view-analytics`}>View Analytics</Link>
-          ) : (
-            <Link href={`/events/${id}`}>Apply Now</Link>
-          )}
-        </motion.button>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200"
+            style={{
+              backgroundColor: "var(--primary-9)",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.backgroundColor =
+                "var(--primary-10)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.backgroundColor =
+                "var(--primary-9)";
+            }}
+          >
+            <FiExternalLink className="w-4 h-4" />
+            {isOrganiser ? "View Analytics" : "Apply Now"}
+          </motion.div>
+        </Link>
       </div>
     </motion.div>
   );

@@ -60,7 +60,22 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: { skills },
       }),
     }),
-
+    deleteSkills: builder.mutation({
+      query: ({ skillId }) => ({
+        url: `/users/skills`,
+        method: "DELETE",
+        body: { id: skillId },
+      }),
+    }),
+    deleteUserSkill: builder.mutation<
+      { Skill: { id: string; name: string }[] },
+      { userId: string; skillId: string }
+    >({
+      query: ({ userId, skillId }) => ({
+        url: `/users/${userId}/skills/${skillId}`,
+        method: "DELETE",
+      }),
+    }),
     getHackathonsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/hackathons",
@@ -97,9 +112,11 @@ export const {
   useUpdateUserProfileMutation,
   useRegisterTeamMutation,
   useUpdateSkillsMutation,
+  useDeleteSkillsMutation,
   useGetHackathonsByOrganizerQuery,
   useGetTeamsByOrganizerQuery,
   useGetSubmissionsByOrganizerQuery,
   useGetParticipantsByOrganizerQuery,
   useLazyIsRegisteredQuery,
+  useDeleteUserSkillMutation,
 } = userApiSlice;

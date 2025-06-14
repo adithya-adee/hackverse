@@ -457,4 +457,26 @@ export class UsersService {
 
     return participants;
   }
+
+  async deleteSkill(id: { skillId: string }): Promise<any> {
+    console.log(id);
+    return await this.prisma.skill.delete({
+      where: {
+        id: id.skillId,
+      },
+    });
+  }
+
+  async deleteUserSkill(userId: string, skillId: string) {
+    // Disconnect the skill from the user, but do not delete the skill itself
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        Skill: {
+          disconnect: [{ id: skillId }],
+        },
+      },
+      include: { Skill: true },
+    });
+  }
 }

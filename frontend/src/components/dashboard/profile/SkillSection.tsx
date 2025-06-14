@@ -11,7 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Target, PlusIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useUpdateSkillsMutation } from "@/apiSlice/userApiSlice";
+import {
+  useUpdateSkillsMutation,
+  useDeleteUserSkillMutation,
+} from "@/apiSlice/userApiSlice";
 
 interface Skill {
   id: string;
@@ -30,6 +33,7 @@ export const SkillsSection = ({ skills, userId }: SkillSectionProps) => {
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const [updateSkills] = useUpdateSkillsMutation();
+  const [deleteUserSkill] = useDeleteUserSkillMutation();
 
   const handleAddSkill = async () => {
     if (!newSkill.trim()) {
@@ -69,10 +73,7 @@ export const SkillsSection = ({ skills, userId }: SkillSectionProps) => {
 
     try {
       setIsUpdating(true);
-      await updateSkills({
-        userId,
-        skills: updatedSkills.map((skill) => skill.name),
-      }).unwrap();
+      await deleteUserSkill({ userId, skillId }).unwrap();
       toast.success("Skill removed successfully");
     } catch (error) {
       console.error("Failed to remove skill:", error);
@@ -96,17 +97,23 @@ export const SkillsSection = ({ skills, userId }: SkillSectionProps) => {
       <CardContent>
         <div className="flex flex-wrap gap-2 mb-4">
           {currentSkills.map((skill) => (
-            <Badge
+            <Button
               key={skill.id}
-              variant="secondary"
-              className="px-3 py-1 bg-[var(--secondary)] text-[var(--secondary-foreground)] flex items-center gap-2"
+              className="p-0 bg-[var(--secondary)] text-[var(--secondary-foreground)]"
+              onClick={() => handleRemoveSkill(skill.id)}
             >
-              {skill.name}
-              <Trash2
-                className="h-4 w-4 cursor-pointer text-red-500"
-                onClick={() => handleRemoveSkill(skill.id)}
-              />
-            </Badge>
+              <Badge
+                key={skill.id}
+                variant="secondary"
+                className="px-3 py-1 flex items-center gap-2"
+              >
+                {skill.name}
+                <Trash2
+                  key={skill.id}
+                  className="h-4 w-4 cursor-pointer text-red-500"
+                />
+              </Badge>
+            </Button>
           ))}
         </div>
         <div className="flex items-center gap-2">

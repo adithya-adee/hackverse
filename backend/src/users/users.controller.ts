@@ -106,7 +106,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async updateSkills(
     @Request() req: { user: { userId: string } },
-    @Param('userId') userId: string,
+    @Param('id') userId: string,
     @Body() updateSkillsDto: { skills: string[] },
   ) {
     if (req.user.userId !== userId) {
@@ -120,6 +120,19 @@ export class UsersController {
     }
 
     return this.usersService.updateSkills(req.user.userId, skills);
+  }
+
+  @Delete(':userId/skills/:skillId')
+  @UseGuards(JwtAuthGuard)
+  async deleteUserSkill(
+    @Request() req: { user: { userId: string } },
+    @Param('userId') userId: string,
+    @Param('skillId') skillId: string,
+  ) {
+    if (req.user.userId !== userId) {
+      throw new UnauthorizedException('Only user can modify their skills');
+    }
+    return this.usersService.deleteUserSkill(userId, skillId);
   }
 
   @Delete(':id')
