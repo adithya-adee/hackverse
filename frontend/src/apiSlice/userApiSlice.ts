@@ -60,7 +60,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: { skills },
       }),
     }),
-    // Fetch hackathons created by the organizer
+
     getHackathonsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/hackathons",
@@ -68,7 +68,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Fetch teams for hackathons organized by the user
     getTeamsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/teams",
@@ -76,7 +75,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Fetch submissions for hackathons organized by the user
     getSubmissionsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/submissions",
@@ -84,7 +82,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Fetch participants for hackathons organized by the user
     getParticipantsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/participants",
@@ -99,7 +96,7 @@ export const {
   useGetTeamRequestsQuery,
   useUpdateUserProfileMutation,
   useRegisterTeamMutation,
-  useUpdateSkillsMutation, // Export the new mutation
+  useUpdateSkillsMutation,
   useGetHackathonsByOrganizerQuery,
   useGetTeamsByOrganizerQuery,
   useGetSubmissionsByOrganizerQuery,

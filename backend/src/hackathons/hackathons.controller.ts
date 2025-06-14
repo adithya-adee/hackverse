@@ -20,7 +20,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('hackathons')
 export class HackathonsController {
-  constructor(private readonly hackathonsService: HackathonsService) { }
+  constructor(private readonly hackathonsService: HackathonsService) {}
 
   @Get()
   findAll() {
@@ -36,6 +36,42 @@ export class HackathonsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.hackathonsService.getHackathonById(id);
+  }
+
+  @Get(':id/teams')
+  @UseGuards(JwtAuthGuard)
+  async getTeamsByHackathonId(
+    @Param('id') hackathonId: string,
+    @Request() req: { user: { userId: string } },
+  ) {
+    const userId = req.user.userId;
+    return this.hackathonsService.getTeamsByHackathonId(hackathonId, userId);
+  }
+
+  @Get(':id/submissions')
+  @UseGuards(JwtAuthGuard)
+  async getSubmissionsByHackathonId(
+    @Param('id') hackathonId: string,
+    @Request() req: { user: { userId: string } },
+  ) {
+    const userId = req.user.userId;
+    return this.hackathonsService.getSubmissionsByHackathonId(
+      hackathonId,
+      userId,
+    );
+  }
+
+  @Get(':id/participants')
+  @UseGuards(JwtAuthGuard)
+  async getParticipantsByHackathonId(
+    @Param('id') hackathonId: string,
+    @Request() req: { user: { userId: string } },
+  ) {
+    const userId = req.user.userId;
+    return this.hackathonsService.getParticipantsByHackathonId(
+      hackathonId,
+      userId,
+    );
   }
 
   @Post('create')

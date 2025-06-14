@@ -175,7 +175,7 @@ function Page(props: Props) {
                   {/* Placeholder for an actual illustration - you should replace this */}
                   <div className="relative w-full h-full">
                     <Image
-                      src="/images/hero-illustration.svg"
+                      src="/images/hero-illustration.jpg"
                       alt="Hackathon collaboration illustration"
                       fill
                       className="object-contain p-6"

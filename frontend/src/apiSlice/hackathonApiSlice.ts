@@ -22,11 +22,39 @@ export const hackathonApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getHackathonById: builder.query({
+      query: (hackathonId) => ({
+        url: `/hackathons/${hackathonId}`,
+        method: "GET",
+      }),
+    }),
+    getTeamsByHackathonId: builder.query({
+      query: (hackathonId) => ({
+        url: `/hackathons/${hackathonId}/teams`,
+        method: "GET",
+      }),
+    }),
+    getSubmissionsByHackathonId: builder.query({
+      query: (hackathonId) => ({
+        url: `/hackathons/${hackathonId}/submissions`,
+        method: "GET",
+      }),
+    }),
+    getParticipantsByHackathonId: builder.query({
+      query: (hackathonId) => ({
+        url: `/hackathons/${hackathonId}/participants`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
   useCreateMutation,
   useRegisterForHackathonMutation,
-  useGetHackathonDetailsQuery
+  useGetHackathonDetailsQuery,
+  useGetHackathonByIdQuery,
+  useGetTeamsByHackathonIdQuery,
+  useGetSubmissionsByHackathonIdQuery,
+  useGetParticipantsByHackathonIdQuery,
 } = hackathonApiSlice;

@@ -2,11 +2,13 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RoleType } from '@prisma/client';
 
 import * as bcrypt from 'bcrypt';
 
@@ -188,41 +190,81 @@ export class UsersService {
     });
   }
 
+  // Organizer dashboard methods
   async getHackathonsByOrganizer(userId: string) {
-    return this.prisma.hackathon.findMany({
-      where: { createdById: userId },
-      include: { Team: true, Submission: true },
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      include: { Role: true },
     });
+
+    const roles = userRoles.map((ur) => ur.Role.name);
+
+    // Check if user is an organizer or admin
+    if (
+      !roles.includes(RoleType.ORGANIZER) &&
+      !roles.includes(RoleType.ADMIN)
+    ) {
+      throw new UnauthorizedException(
+        'You do not have permission to access organizer data',
+      );
+    }
+
+    // Get hackathons created by this user
+    const hackathons = await this.prisma.hackathon.findMany({
+      where: {
+        createdById: userId,
+      },
+      include: {
+        HackathonTag: true,
+        _count: {
+          select: {
+            HackathonRegistration: true,
+            Team: true,
+            Submission: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return hackathons;
   }
 
   async getTeamsByOrganizer(userId: string) {
-    return this.prisma.team.findMany({
-      where: {
-        Hackathon: {
-          createdById: userId,
-        },
-      },
-      include: { TeamMember: true },
+    // Verify organizer role
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      include: { Role: true },
     });
-  }
 
-  async getSubmissionsByOrganizer(userId: string) {
-    return this.prisma.submission.findMany({
+    const roles = userRoles.map((ur) => ur.Role.name);
+
+    if (
+      !roles.includes(RoleType.ORGANIZER) &&
+      !roles.includes(RoleType.ADMIN)
+    ) {
+      throw new UnauthorizedException(
+        'You do not have permission to access organizer data',
+      );
+    }
+
+    // Get hackathons created by this user
+    const hackathons = await this.prisma.hackathon.findMany({
       where: {
-        Hackathon: {
-          createdById: userId,
-        },
+        createdById: userId,
       },
-      include: { Feedback: true, Rating: true },
+      select: { id: true },
     });
-  }
 
-  async getParticipantsByOrganizer(userId: string) {
-    // Get unique participants across all hackathons created by this organizer
+    const hackathonIds = hackathons.map((h) => h.id);
+
+    // Get all teams for these hackathons
     const teams = await this.prisma.team.findMany({
       where: {
-        Hackathon: {
-          createdById: userId,
+        hackathonId: {
+          in: hackathonIds,
         },
       },
       include: {
@@ -234,40 +276,185 @@ export class UsersService {
                 name: true,
                 email: true,
                 profileImageUrl: true,
-                institutionName: true,
-                type: true,
-                Skill: true,
               },
             },
+          },
+        },
+        Hackathon: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
           },
         },
       },
     });
 
-    // Extract unique participants
-    const participantsMap = new Map();
-    teams.forEach((team) => {
-      team.TeamMember.forEach((member) => {
-        if (member.User && !participantsMap.has(member.User.id)) {
-          participantsMap.set(member.User.id, member.User);
-        }
-      });
+    return teams;
+  }
+
+  async getSubmissionsByOrganizer(userId: string) {
+    // Verify organizer role
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      include: { Role: true },
     });
 
-    return Array.from(participantsMap.values());
-  }
-  // async getUserRoles(userId: string) {
-  //   const userWithRoles = await this.prisma.user.findUnique({
-  //     where: { id: userId },
-  //     include: {
-  //       UserRole: {
-  //         include: {
-  //           Role: true,
-  //         },
-  //       },
-  //     },
-  //   });
+    const roles = userRoles.map((ur) => ur.Role.name);
 
-  //   return userWithRoles?.UserRole.map((ur) => ur.Role) || [];
-  // }
+    if (
+      !roles.includes(RoleType.ORGANIZER) &&
+      !roles.includes(RoleType.ADMIN)
+    ) {
+      throw new UnauthorizedException(
+        'You do not have permission to access organizer data',
+      );
+    }
+
+    // Get hackathons created by this user
+    const hackathons = await this.prisma.hackathon.findMany({
+      where: {
+        createdById: userId,
+      },
+      select: { id: true },
+    });
+
+    const hackathonIds = hackathons.map((h) => h.id);
+
+    // Get all submissions for these hackathons
+    const submissions = await this.prisma.submission.findMany({
+      where: {
+        hackathonId: {
+          in: hackathonIds,
+        },
+      },
+      include: {
+        Team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        Hackathon: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+          },
+        },
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        Rating: {
+          select: {
+            category: true,
+            score: true,
+          },
+        },
+      },
+    });
+
+    return submissions;
+  }
+
+  async getParticipantsByOrganizer(userId: string) {
+    // Verify organizer role
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      include: { Role: true },
+    });
+
+    const roles = userRoles.map((ur) => ur.Role.name);
+
+    if (
+      !roles.includes(RoleType.ORGANIZER) &&
+      !roles.includes(RoleType.ADMIN)
+    ) {
+      throw new UnauthorizedException(
+        'You do not have permission to access organizer data',
+      );
+    }
+
+    // Get hackathons created by this user
+    const hackathons = await this.prisma.hackathon.findMany({
+      where: {
+        createdById: userId,
+      },
+      select: { id: true },
+    });
+
+    const hackathonIds = hackathons.map((h) => h.id);
+
+    // Get all participants for these hackathons
+    const registrations = await this.prisma.hackathonRegistration.findMany({
+      where: {
+        hackathonId: {
+          in: hackathonIds,
+        },
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+            biography: true,
+            linkedinUrl: true,
+            githubUrl: true,
+            TeamMember: {
+              where: {
+                Team: {
+                  hackathonId: {
+                    in: hackathonIds,
+                  },
+                },
+              },
+              include: {
+                Team: {
+                  select: {
+                    id: true,
+                    name: true,
+                    hackathonId: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        Hackathon: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    // Transform the data for easier use in the frontend
+    const participants = registrations.map((reg) => ({
+      id: reg.User.id,
+      name: reg.User.name,
+      email: reg.User.email,
+      profileImageUrl: reg.User.profileImageUrl,
+      biography: reg.User.biography,
+      linkedinUrl: reg.User.linkedinUrl,
+      githubUrl: reg.User.githubUrl,
+      registeredAt: reg.registeredAt,
+      hackathonId: reg.hackathonId,
+      hackathonTitle: reg.Hackathon.title,
+      teams: reg.User.TeamMember.map((tm) => ({
+        teamId: tm.Team.id,
+        teamName: tm.Team.name,
+        hackathonId: tm.Team.hackathonId,
+        isLeader: tm.isLeader,
+      })),
+    }));
+
+    return participants;
+  }
 }
