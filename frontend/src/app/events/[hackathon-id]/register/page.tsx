@@ -8,9 +8,18 @@ import { motion } from "motion/react";
 import { useParams } from "next/navigation";
 import { Sex, UserType, HackathonStatus } from "@/types/core_enum";
 import { User } from "@/types/core_interfaces";
-import { UserDetailsFormValues, userDetailsSchema } from "@/schemas/user-schema";
-import { useGetUserDetailsQuery, useUpdateUserProfileMutation } from "@/apiSlice/userApiSlice";
-import { useGetHackathonDetailsQuery, useRegisterForHackathonMutation } from "@/apiSlice/hackathonApiSlice";
+import {
+  UserDetailsFormValues,
+  userDetailsSchema,
+} from "@/schemas/user-schema";
+import {
+  useGetUserDetailsQuery,
+  useUpdateUserProfileMutation,
+} from "@/apiSlice/userApiSlice";
+import {
+  useGetHackathonDetailsQuery,
+  useRegisterForHackathonMutation,
+} from "@/apiSlice/hackathonApiSlice";
 import { Loader } from "@/components/ui/loader";
 
 function Page() {
@@ -20,9 +29,12 @@ function Page() {
 
   // Fetch user and hackathon details
   const { data: user, isLoading: isLoadingUser } = useGetUserDetailsQuery();
-  const { data: hackathon, isLoading: isLoadingHackathon } = useGetHackathonDetailsQuery(hackathonId);
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateUserProfileMutation();
-  const [registerForHackathon, { isLoading: isRegistering }] = useRegisterForHackathonMutation();
+  const { data: hackathon, isLoading: isLoadingHackathon } =
+    useGetHackathonDetailsQuery(hackathonId);
+  const [updateProfile, { isLoading: isUpdating }] =
+    useUpdateUserProfileMutation();
+  const [registerForHackathon, { isLoading: isRegistering }] =
+    useRegisterForHackathonMutation();
 
   const form = useForm<UserDetailsFormValues>({
     resolver: zodResolver(userDetailsSchema),
@@ -55,7 +67,7 @@ function Page() {
         "githubUrl",
         "linkedinUrl",
         "profileImageUrl",
-        "resumeUrl"
+        "resumeUrl",
       ];
 
       userFields.forEach((field) => {
@@ -73,25 +85,37 @@ function Page() {
         return;
       }
 
-      // No need for complex conversions since enums are now string-based
-      await updateProfile(data).unwrap();
+      console.log("--------uppdating-------");
+      // Update user profile
+      const updated_user = await updateProfile({
+        id: user?.id,
+        data,
+      }).unwrap();
+
+      console.log("_________________");
+      console.log(updated_user);
+      console.log("_________________");
 
       // Register for hackathon
-      await registerForHackathon({
+      const registered = await registerForHackathon({
         hackathonId,
         userData: {
           userId: user?.id,
-          ...data
-        }
+          ...data,
+        },
       }).unwrap();
+
+      console.log("_________________");
+      console.log(registered);
+      console.log("_________________");
 
       toast.success("Registration successful!");
 
       // Redirect based on team size
-      if (hackathon?.maxTeamSize > 1) {
-        router.push(`/events/${hackathonId}/register/team`);
-      } else {
+      if (hackathon?.maxTeamSize == 1) {
         router.push(`/events/${hackathonId}`);
+      } else {
+        router.push(`/events/${hackathonId}/register/team`);
       }
     } catch (error) {
       toast.error("Registration failed. Please try again.");
@@ -99,9 +123,11 @@ function Page() {
     }
   };
 
-  // Replace the complex enum filtering with direct arrays
-  const genderOptions = Object.values(Sex);
-  const typeOptions = Object.values(UserType);
+  // Gender options with proper typing
+  const genderOptions = Object.keys(Sex) as Array<keyof typeof Sex>;
+
+  // User type options with proper typing
+  const typeOptions = Object.keys(UserType) as Array<keyof typeof UserType>;
 
   // Show loading state
   if (isLoadingUser || isLoadingHackathon) {
@@ -118,31 +144,31 @@ function Page() {
     type: string;
     placeholder: string;
   }> = [
-      {
-        name: "name",
-        label: "Full Name",
-        type: "text",
-        placeholder: "Enter your full name",
-      },
-      {
-        name: "email",
-        label: "Email Address",
-        type: "email",
-        placeholder: "Enter your email",
-      },
-      {
-        name: "phoneNo",
-        label: "Phone Number",
-        type: "tel",
-        placeholder: "Enter your phone number",
-      },
-      {
-        name: "institutionName",
-        label: "Institution Name",
-        type: "text",
-        placeholder: "Enter your institution",
-      },
-    ];
+    {
+      name: "name",
+      label: "Full Name",
+      type: "text",
+      placeholder: "Enter your full name",
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      type: "email",
+      placeholder: "Enter your email",
+    },
+    {
+      name: "phoneNo",
+      label: "Phone Number",
+      type: "tel",
+      placeholder: "Enter your phone number",
+    },
+    {
+      name: "institutionName",
+      label: "Institution Name",
+      type: "text",
+      placeholder: "Enter your institution",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[var(--primary-1)] to-[var(--primary-3)]">
@@ -226,7 +252,7 @@ function Page() {
                   Gender
                 </label>
                 <div className="flex gap-4">
-                  {Object.values(Sex).map((option) => (
+                  {genderOptions.map((option) => (
                     <motion.label
                       key={option}
                       className="flex items-center gap-2 cursor-pointer"
@@ -237,7 +263,9 @@ function Page() {
                         {...form.register("gender")}
                         className="w-4 h-4"
                       />
-                      <span className="text-sm capitalize">{option.toLowerCase()}</span>
+                      <span className="text-sm capitalize">
+                        {option.toLowerCase()}
+                      </span>
                     </motion.label>
                   ))}
                 </div>
@@ -300,7 +328,7 @@ function Page() {
                   {...form.register("type")}
                   className="w-full px-4 py-3"
                 >
-                  {Object.values(UserType).map((option) => (
+                  {typeOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>

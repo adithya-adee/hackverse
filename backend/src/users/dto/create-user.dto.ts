@@ -16,10 +16,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   email: string;
 
-  // @IsNotEmpty()
-  // @MinLength(6)
-  // password: string;
-
   // Password is optional if coming from Google (i.e., if not a local signup)
   @ValidateIf((o: CreateUserDto) => o.strategy !== 'google')
   @IsNotEmpty({ message: 'Password is required for local signups' })

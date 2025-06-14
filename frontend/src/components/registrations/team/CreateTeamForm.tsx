@@ -16,19 +16,28 @@ import {
   containerVariants,
   itemVariants,
 } from "@/lib/animation";
-import { useCreateTeamMutation } from "@/apiSlice/teamApiSlice";
+import {
+  useCreateTeamMutation,
+  useUpdateTeamMutation,
+} from "@/apiSlice/teamApiSlice";
 import { toast } from "sonner";
 
 interface Props {
   hackathonId: string;
+  teamId: string | undefined;
   setTeamId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-export default function CreateTeamForm({ hackathonId, setTeamId }: Props) {
+export default function CreateTeamForm({
+  hackathonId,
+  teamId,
+  setTeamId,
+}: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTeamCreated, setIsTeamCreated] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
   const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
+  const [updateTeam, { isLoading: isupdatingTeam }] = useUpdateTeamMutation();
 
   const form = useForm<CreateTeamValues>({
     resolver: zodResolver(createTeamSchema),
@@ -44,12 +53,17 @@ export default function CreateTeamForm({ hackathonId, setTeamId }: Props) {
   const onSubmit = async (data: CreateTeamValues) => {
     try {
       setIsSubmitting(true);
-
-      const response = await createTeam(data).unwrap();
-
-      setTeamId(response.id);
-      setIsTeamCreated(true);
-      setIsEditing(false);
+      if (isTeamCreated) {
+        const response = await updateTeam({ teamId, ...data }).unwrap();
+        setIsEditing(false);
+        console.log("updated------->", response);
+      } else {
+        const response = await createTeam(data).unwrap();
+        setTeamId(response.id);
+        setIsTeamCreated(true);
+        setIsEditing(false);
+        console.log(response);
+      }
 
       toast.success("Team created successfully!");
     } catch (error) {
@@ -64,15 +78,18 @@ export default function CreateTeamForm({ hackathonId, setTeamId }: Props) {
     setIsEditing(true);
   };
 
+  //TODO:Restrict to only 1 team per participant per hackathon....
+  //TODO:make default values filled with team created even on refresh...
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="p-2"
+      className="p-2 "
     >
       <div className="h-full">
-        <div className="bg-transparent text-[var(--primary-9)] flex items-center justify-between">
+        <div className="bg-transparent text-[var(--primary-9)] items-center justify-between">
           <div className="text-xl font-semibold flex items-center">
             <UsersRoundIcon className="h-5 w-5 mr-2" />
             Create Your Team
@@ -92,10 +109,18 @@ export default function CreateTeamForm({ hackathonId, setTeamId }: Props) {
         <div className="p-6">
           <motion.form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 flex gap-4 w-full border-dashed border-2 px-4 py-2 rounded-2xl"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+            className="space-y-6 flex md:flex gap-4 w-full border-dashed border-blue-300/60 shadow-lg backdrop-blur-sm border-2 p-6 rounded-2xl"
+            // variants={containerVariants}
+            // initial="hidden"
+            // animate="visible"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            whileHover={{
+              scale: 1.01,
+              boxShadow:
+                "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+            }}
           >
             <div className="grid grid-cols-1 gap-2 w-[50%]">
               <motion.div variants={itemVariants}>

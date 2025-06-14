@@ -9,6 +9,7 @@ import {
   Delete,
   NotFoundException,
   UnauthorizedException,
+  Patch,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -17,6 +18,7 @@ import { CreateTeamReqDto } from './dto/create-team-req.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { RoleType } from '@prisma/client';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Controller('team')
 export class TeamController {
@@ -39,18 +41,28 @@ export class TeamController {
     return this.teamsService.createTeam(createTeamDto, req.user.userId);
   }
 
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  updateTeam(
+    @Request() req: { user: { userId: string } },
+    @Body() updateTeamDto: UpdateTeamDto,
+  ){
+    console.log("BODY",updateTeamDto);
+    const userId = req.user.userId;
+    return this.teamsService.updateTeam(updateTeamDto, userId);
+  }
+
+
   // Create a team request (join a team)
   @Post('team-req')
   @UseGuards(JwtAuthGuard)
   createTeamReq(
-    @Request() req: { user: { userId: string } },
-    @Body() createTeamReqDto: CreateTeamReqDto,
+    @Body() {userId, teamId}
   ) {
-    // Add userId from JWT token
-    return this.teamsService.createTeamReq({
-      ...createTeamReqDto,
-      userId: req.user.userId,
-    });
+    console.log("---------------body---------")
+    console.log(userId,teamId);
+    console.log("---------------body---------")
+    return this.teamsService.createTeamReq({userId,teamId});
   }
 
   // Get all team requests for current user
@@ -74,6 +86,16 @@ export class TeamController {
   @Get()
   getAllTeams() {
     return this.teamsService.getAllTeam();
+  }
+
+  // Create a team member (when user accepts an invite)
+  @Post('create/team-member')
+  @UseGuards(JwtAuthGuard)
+  createTeamMember(
+    @Request() req: { user: { userId: string } },
+    @Body('teamId') teamId: string,
+  ) {
+    return this.teamsService.createTeamMember(req.user.userId, teamId);
   }
 
   // Get teams looking for members for a specific hackathon
@@ -126,13 +148,5 @@ export class TeamController {
     return this.teamsService.rejectTeamRequest(teamId, userId, req.user.userId);
   }
 
-  // Create a team member (when user accepts an invite)
-  @Post('create/team-member')
-  @UseGuards(JwtAuthGuard)
-  createTeamMember(
-    @Request() req: { user: { userId: string } },
-    @Body('teamId') teamId: string,
-  ) {
-    return this.teamsService.createTeamMember(req.user.userId, teamId);
-  }
+
 }

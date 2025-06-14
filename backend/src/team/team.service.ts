@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
 import { TeamRequest } from '@prisma/client';
+import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
 export class TeamService {
@@ -32,6 +33,37 @@ export class TeamService {
     });
 
     return team;
+  }
+
+  async updateTeam(data: UpdateTeamDto, userId: string) {
+    // 1. Get the team
+    const team = await this.getTeamById(data.teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    // 2. Check if the user is the team leader
+    if (team.createdById !== userId) {
+      throw new ForbiddenException('You are not allowed to update this team');
+    }
+
+    // 3. Update the team
+    const updatedTeam = await this.prisma.team.update({
+      where: { id: data.teamId },
+      data: {
+        name: data.name,
+        description: data.description,
+        requiredSkills: data.requiredSkills,
+        lookingForMembers: data.lookingForMembers
+      },
+    });
+
+    // 4. Return the updated data
+    return {
+      statusCode: 200,
+      message: 'Team updated successfully',
+      data: updatedTeam,
+    };
   }
 
   async createTeamReq(data: CreateTeamReqDto) {

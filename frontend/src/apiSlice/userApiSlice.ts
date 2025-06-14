@@ -1,5 +1,6 @@
 import { apiSlice } from "@/store/apiSlice";
 import { TeamRequest, type User } from "@/types/core_interfaces";
+import { url } from "inspector";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,6 +11,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 300,
     }),
+
     getTeamRequests: builder.query<TeamRequest[], void>({
       query: () => ({
         url: "/team/all-team-reqs",
@@ -18,13 +20,32 @@ export const userApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 150,
       transformResponse: (response: TeamRequest[] | null) => response || [],
     }),
-    updateUserProfile: builder.mutation({
-      query: ({ userId, data }) => ({
-        url: `/users/${userId}/profile`,
-        method: "PATCH",
-        body: data,
+
+    isRegistered: builder.query<
+      { isRegistered: boolean; user: User },
+      { memberEmail: string }
+    >({
+      query: ({ memberEmail }) => ({
+        url: `users/isRegistered?email=${encodeURIComponent(memberEmail)}`,
+        method: "GET",
       }),
     }),
+
+    updateUserProfile: builder.mutation({
+      query: ({ id, data }) => {
+        console.log("updating user...", id);
+        console.log("Sending update data:", data);
+        return {
+          url: `/users/${id}/profile`,
+          method: "PATCH",
+          body: data,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+      },
+    }),
+
     registerTeam: builder.mutation({
       query: ({ hackathonId, teamData }) => ({
         url: `/hackathons/${hackathonId}/teams`,
@@ -83,4 +104,5 @@ export const {
   useGetTeamsByOrganizerQuery,
   useGetSubmissionsByOrganizerQuery,
   useGetParticipantsByOrganizerQuery,
+  useLazyIsRegisteredQuery,
 } = userApiSlice;

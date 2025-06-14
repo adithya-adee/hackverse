@@ -48,6 +48,7 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
     error: membersError,
   } = useGetTeamMembersQuery(teamId);
 
+  //TODO: Add a boolean value in team req to figure out wheather this req is done by team or by user
   // Fetch team requests using RTK Query
   const {
     data: teamRequests = [],
@@ -55,9 +56,16 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
     error: requestsError,
   } = useGetTeamRequestsQuery(teamId);
 
+  console.log("--------------------------");
+  console.log("--------------------------");
+  console.log(teamRequests);
+  console.log("--------------------------");
+  console.log("--------------------------");
   // Accept and reject request mutations
-  const [acceptRequest, { isLoading: isAccepting }] = useAcceptTeamRequestMutation();
-  const [rejectRequest, { isLoading: isRejecting }] = useRejectTeamRequestMutation();
+  const [acceptRequest, { isLoading: isAccepting }] =
+    useAcceptTeamRequestMutation();
+  const [rejectRequest, { isLoading: isRejecting }] =
+    useRejectTeamRequestMutation();
 
   // Handle accept request with API call
   const handleAcceptRequest = async (userId: string) => {
@@ -236,8 +244,9 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
                 email: member.User?.email || "No email provided",
                 type: member.User?.type || "UNSPECIFIED",
                 institutionName: member.User?.institutionName,
-                profileImageUrl: member.User?.profileImageUrl || "/default-avatar.png",
-                Skill: member.User?.Skill || []
+                profileImageUrl:
+                  member.User?.profileImageUrl || "/default-avatar.png",
+                Skill: member.User?.Skill || [],
               };
 
               return (
@@ -293,8 +302,9 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
                   email: request.user?.email || "No email provided",
                   type: request.user?.type || "UNSPECIFIED",
                   institutionName: request.user?.institutionName || "",
-                  profileImageUrl: request.user?.profileImageUrl || "/default-avatar.png",
-                  Skill: request.user?.Skill || []
+                  profileImageUrl:
+                    request.user?.profileImageUrl || "/default-avatar.png",
+                  Skill: request.user?.Skill || [],
                 };
 
                 return (
@@ -321,7 +331,9 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
                     actions={
                       <div className="space-y-3">
                         <div className="text-xs text-gray-500">
-                          <div>Requested: {formatDate(request.requestedAt)}</div>
+                          <div>
+                            Requested: {formatDate(request.requestedAt)}
+                          </div>
                           <div>Expires: {formatDate(request.expiresAt)}</div>
                         </div>
                         <div className="flex gap-2">
