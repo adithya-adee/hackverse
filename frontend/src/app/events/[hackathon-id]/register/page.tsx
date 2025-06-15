@@ -21,6 +21,7 @@ import {
   useRegisterForHackathonMutation,
 } from "@/apiSlice/hackathonApiSlice";
 import { Loader } from "@/components/ui/loader";
+import Loading from "@/app/loading";
 
 function Page() {
   const router = useRouter();
@@ -85,18 +86,11 @@ function Page() {
         return;
       }
 
-      console.log("--------uppdating-------");
-      // Update user profile
       const updated_user = await updateProfile({
         id: user?.id,
         data,
       }).unwrap();
 
-      console.log("_________________");
-      console.log(updated_user);
-      console.log("_________________");
-
-      // Register for hackathon
       const registered = await registerForHackathon({
         hackathonId,
         userData: {
@@ -104,10 +98,6 @@ function Page() {
           ...data,
         },
       }).unwrap();
-
-      console.log("_________________");
-      console.log(registered);
-      console.log("_________________");
 
       toast.success("Registration successful!");
 
@@ -132,8 +122,8 @@ function Page() {
   // Show loading state
   if (isLoadingUser || isLoadingHackathon) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader />
+      <div className="h-screen flex items-center justify-center">
+        <Loading />
       </div>
     );
   }

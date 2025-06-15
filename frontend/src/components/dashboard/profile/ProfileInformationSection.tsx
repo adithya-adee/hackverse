@@ -20,7 +20,7 @@ import { formatDate } from "@/lib/formatters";
 export const ProfileInformationSection = ({
   user,
   isEditing,
-  isSubmitting = false, // Add isSubmitting prop with default value
+  isSubmitting = false,
   handleProfileSave,
   handleCancel,
 }: {
@@ -30,20 +30,20 @@ export const ProfileInformationSection = ({
   handleProfileSave: (data: UserDetailsFormValues) => void;
   handleCancel: () => void;
 }) => {
-// In ProfileInformationSection.tsx
-const defaultValues = {
-  name: user?.name || '',
-  email: user?.email || '',
-  biography: user?.biography ?? '',  // Use nullish coalescing
-  phoneNo: user?.phoneNo ?? '',
-  gender: user?.gender ?? 'UNSPECIFIED',
-  institutionName: user?.institutionName ?? '',
-  type: user?.type ?? 'STUDENT',
-  githubUrl: user?.githubUrl ?? '',
-  linkedinUrl: user?.linkedinUrl ?? '',
-  profileImageUrl: user?.profileImageUrl ?? '',
-  resumeUrl: user?.resumeUrl ?? '',
-};
+  // In ProfileInformationSection.tsx
+  const defaultValues = {
+    name: user?.name || "",
+    email: user?.email || "",
+    biography: user?.biography ?? "",
+    phoneNo: user?.phoneNo ?? "",
+    gender: user?.gender ?? "UNSPECIFIED",
+    institutionName: user?.institutionName ?? "",
+    type: user?.type ?? "STUDENT",
+    githubUrl: user?.githubUrl ?? "",
+    linkedinUrl: user?.linkedinUrl ?? "",
+    profileImageUrl: user?.profileImageUrl ?? "",
+    resumeUrl: user?.resumeUrl ?? "",
+  };
 
   const form = useForm<UserDetailsFormValues>({
     resolver: zodResolver(userDetailsSchema) as any,
@@ -55,17 +55,17 @@ const defaultValues = {
   useEffect(() => {
     if (user) {
       form.reset({
-        name: user.name || '',
-        email: user.email || '',
-        biography: user.biography || '',
-        phoneNo: user.phoneNo || '',
-        gender: user.gender || 'UNSPECIFIED',
-        institutionName: user.institutionName || '',
-        type: user.type || 'OTHERS',
-        githubUrl: user.githubUrl || '',
-        linkedinUrl: user.linkedinUrl || '',
-        profileImageUrl: user.profileImageUrl || '',
-        resumeUrl: user.resumeUrl || '',
+        name: user.name || "",
+        email: user.email || "",
+        biography: user.biography || "",
+        phoneNo: user.phoneNo || "",
+        gender: user.gender || "UNSPECIFIED",
+        institutionName: user.institutionName || "",
+        type: user.type || "OTHERS",
+        githubUrl: user.githubUrl || "",
+        linkedinUrl: user.linkedinUrl || "",
+        profileImageUrl: user.profileImageUrl || "",
+        resumeUrl: user.resumeUrl || "",
       });
     }
   }, [user, form]);

@@ -291,7 +291,7 @@ export default function AboutPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center items-center mx-auto min-w-50 max-w-fit">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 justify-center items-center mx-auto min-w-50 max-w-fit">
             {leadershipTeam.map((member, index) => (
               <motion.div
                 key={member.name}

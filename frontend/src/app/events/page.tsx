@@ -28,11 +28,7 @@ function Page() {
   }, [hackathonError]);
 
   if (hackathonLoading) {
-    return (
-      <div className="pt-16 min-h-screen flex items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <Loader />;
   }
 
   // Check if there are no hackathons or if there was an error
