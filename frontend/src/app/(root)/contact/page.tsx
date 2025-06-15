@@ -36,6 +36,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { sendContactEmail } from "@/lib/email";
+import Loading from "@/app/loading";
 
 export default function ContactUsPage() {
   const [formData, setFormData] = useState({
@@ -63,15 +65,37 @@ export default function ContactUsPage() {
     e.preventDefault();
     setFormStatus("submitting");
 
-    // Simulate API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Validate form data
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.subject ||
+        !formData.message
+      ) {
+        throw new Error("Please fill in all fields");
+      }
+
+      // Send email using EmailJS
+      await sendContactEmail({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+      // Reset form and show success message
       setFormStatus("success");
       setFormData({ name: "", email: "", subject: "", message: "" });
       toast.success("Message sent successfully! We'll get back to you soon.");
     } catch (error) {
+      console.error("Contact form error:", error);
       setFormStatus("error");
-      toast.error("Failed to send message. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to send message. Please try again."
+      );
     }
   };
 
@@ -79,26 +103,26 @@ export default function ContactUsPage() {
     {
       icon: Mail,
       title: "Email",
-      value: "contact@hackverse.io",
-      link: "mailto:contact@hackverse.io",
+      value: "adithya25905@gmail.com",
+      link: "mailto:adithya25905@gmail.com",
     },
     {
       icon: Phone,
       title: "Phone",
-      value: "+1 (555) 123-4567",
-      link: "tel:+15551234567",
+      value: "+91 7676763455",
+      link: "tel:+91 7676763455",
     },
     {
       icon: MapPin,
       title: "Address",
-      value: "123 Innovation Street, San Francisco, CA 94103",
-      link: "https://maps.google.com/?q=123+Innovation+Street,+San+Francisco,+CA+94103",
+      value: "NITK, Manglore, Karnataka",
+      link: "https://hackverse.vercel.app",
     },
     {
       icon: Globe,
       title: "Website",
-      value: "www.hackverse.io",
-      link: "https://www.hackverse.io",
+      value: "hackverse.vercel.app",
+      link: "https://hackverse.vercel.app",
     },
   ];
 
@@ -430,7 +454,7 @@ export default function ContactUsPage() {
               </Card>
 
               {/* Newsletter Card */}
-              <Card className="border-[var(--primary-6)] bg-[var(--primary-3)]">
+              {/* <Card className="border-[var(--primary-6)] bg-[var(--primary-3)]">
                 <CardHeader>
                   <CardTitle>Stay Updated</CardTitle>
                   <CardDescription>Subscribe to our newsletter</CardDescription>
@@ -455,7 +479,7 @@ export default function ContactUsPage() {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </motion.div>
           </div>
         </div>
@@ -469,18 +493,26 @@ export default function ContactUsPage() {
         viewport={{ once: true }}
         className="mt-16"
       >
-        <div className="w-full h-[400px] bg-[var(--primary-3)] rounded-t-lg overflow-hidden relative">
-          <div className="absolute inset-0 bg-[var(--primary-3)] flex items-center justify-center">
-            <p className="text-[var(--primary-9)]">
-              <MapPin className="h-8 w-8 mx-auto mb-2" />
-              Interactive map would be displayed here
+        <div className="w-full h-[400px] bg-[var(--primary-3)] rounded-lg overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-4)] to-[var(--primary-3)] flex flex-col items-center justify-center">
+            <MapPin className="h-12 w-12 text-[var(--primary-9)] mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--primary-12)] mb-2">
+              Visit Our Campus
+            </h3>
+            <p className="text-[var(--primary-11)] text-center max-w-md px-4">
+              National Institute of Technology Karnataka
+              <br />
+              NH 66, Surathkal, Mangalore
+              <br />
+              Karnataka, India - 575025
             </p>
+            <div className="mt-6 flex items-center gap-2 text-[var(--primary-9)]">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">
+                Open for visitors: Mon-Fri, 9AM-5PM
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="bg-[var(--primary-2)] py-6 text-center">
-          <p className="text-[var(--primary-11)]">
-            123 Innovation Street, San Francisco, CA 94103
-          </p>
         </div>
       </motion.div>
     </div>

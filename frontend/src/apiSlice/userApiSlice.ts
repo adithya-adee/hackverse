@@ -76,13 +76,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+
     getHackathonsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/hackathons",
         method: "GET",
       }),
     }),
-
     getTeamsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/teams",

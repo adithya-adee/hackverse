@@ -23,6 +23,7 @@ import {
   useGetUserDetailsQuery,
   useUpdateUserProfileMutation,
 } from "@/apiSlice/userApiSlice";
+import Loading from "@/app/loading";
 
 // const statsInitial = {
 //   totalHackathonsParticipated: 3,
@@ -78,22 +79,9 @@ const UserDetailsUpdatePage = () => {
   // Loading state
   if (isLoading) {
     return (
-      <motion.div
-        className="h-screen flex items-center justify-center"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col items-center space-y-4"
-        >
-          <Loader2 className="h-12 w-12 animate-spin text-[var(--primary-9)]" />
-          <p className="text-lg font-medium text-[var(--primary-11)]">
-            Loading your profile...
-          </p>
-        </motion.div>
-      </motion.div>
+      <div className="h-screen flex items-center justify-center">
+        <Loading />
+      </div>
     );
   }
 

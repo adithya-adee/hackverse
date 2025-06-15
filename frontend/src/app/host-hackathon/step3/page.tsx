@@ -21,6 +21,7 @@ import ReactMarkdown from "react-markdown";
 import { useCreateMutation } from "@/apiSlice/hackathonApiSlice";
 import { formatDate } from "@/lib/formatters";
 import { toast } from "sonner";
+import Loading from "@/app/loading";
 
 export default function CreateHackathonStep3() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function CreateHackathonStep3() {
       });
 
       toast.promise(promise, {
-        loading: 'Creating hackathon...',
+        loading: "Creating hackathon...",
         success: (message: string) => message as string,
         error: (message: string) => message as string,
       });
@@ -67,6 +68,14 @@ export default function CreateHackathonStep3() {
   const goBack = () => {
     router.push("/host-hackathon/step2");
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -277,7 +286,7 @@ export default function CreateHackathonStep3() {
               <CardContent>
                 <div className="space-y-2">
                   {formData.moderatorEmails &&
-                    formData.moderatorEmails.length > 0 ? (
+                  formData.moderatorEmails.length > 0 ? (
                     formData.moderatorEmails.map((email, index) => (
                       <div
                         key={index}

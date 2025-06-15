@@ -21,6 +21,7 @@ import {
   useRegisterForHackathonMutation,
 } from "@/apiSlice/hackathonApiSlice";
 import { Loader } from "@/components/ui/loader";
+import Loading from "@/app/loading";
 
 function Page() {
   const router = useRouter();
@@ -121,8 +122,8 @@ function Page() {
   // Show loading state
   if (isLoadingUser || isLoadingHackathon) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader />
+      <div className="h-screen flex items-center justify-center">
+        <Loading />
       </div>
     );
   }

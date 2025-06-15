@@ -7,8 +7,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoginMutation } from "@/apiSlice/authApiSlice";
 import { setUserCredentials } from "@/apiSlice/authSlice";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { motion } from "motion/react";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
+import Loading from "@/app/loading";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email" }),
@@ -61,6 +62,15 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const togglePassword = () => setShowPassword((prev) => !prev);
+
+  // Render the DebuggingLoader while loading
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <motion.div
