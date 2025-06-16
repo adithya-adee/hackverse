@@ -281,3 +281,28 @@ export interface RoleRequest {
   Role?: Role;
   User?: User;
 }
+
+export interface Participant {
+  id: string;
+  name: string;
+  email: string;
+  profileImageUrl?: string;
+  biography?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  registeredAt: string;
+  hackathonId?: string;
+  hackathonTitle?: string;
+  Skill?: {
+    id: string;
+    name: string;
+  }[];
+  institutionName?: string;
+  type?: string;
+  teams?: {
+    teamId: string;
+    teamName: string;
+    hackathonId: string;
+    isLeader: boolean;
+  }[];
+}

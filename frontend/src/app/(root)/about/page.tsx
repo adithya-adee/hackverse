@@ -34,14 +34,14 @@ export default function AboutPage() {
     {
       name: "Adithya A",
       role: "Founder",
-      image: "/images/team/sarah-johnson.jpg",
+      image: "/images/adithya.jpg",
       bio: "Full stack Web Developer",
     },
     {
       name: "Priyanshu Kumar Rai",
       role: "Founder",
-      image: "/images/team/michael-chen.jpg",
-      bio: "Full-stack developer and architect",
+      image: "/images/priyanshu.png",
+      bio: "Full-stack developer",
     },
   ];
 

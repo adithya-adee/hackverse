@@ -30,6 +30,8 @@ export default function OverviewTab({ data, setActiveTab }: OverviewTabProps) {
     submissionCount,
   } = data;
 
+  console.log(data);
+
   const stats = [
     {
       title: "Total Users",
