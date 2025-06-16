@@ -26,6 +26,7 @@ import HackathonsTab from "@/components/dashboard/admin/tabs/HackathonsTab";
 import RequestsTab from "@/components/dashboard/admin/tabs/RequestsTab";
 import SettingsTab from "@/components/dashboard/admin/tabs/SettingsTab";
 import { Hackathon } from "@/types/core_interfaces";
+import { HackathonStatus } from "@/types/core_enum";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -71,11 +72,12 @@ export default function AdminDashboard() {
   const totalUsers = userData?.count || 0;
   const activeHackathons =
     hackathonData?.response?.filter(
-      (h: Hackathon) => h.status === ("ONGOING" as Hackathon["status"])
+      (h: Hackathon) => h.status === HackathonStatus.UPCOMING
     ).length || 0;
+
   const hackathonCount = hackathonData?.count || 0;
-  const teamCount = teamsData?.count || 0;
-  const submissionCount = submissionsData?.count || 0;
+  const teamCount = teamsData || 0;
+  const submissionCount = submissionsData || 0;
 
   // Dashboard refreshing
   const refreshDashboard = () => {
@@ -156,7 +158,7 @@ export default function AdminDashboard() {
               Hackathons
             </TabsTrigger>
             <TabsTrigger
-              value="requests"
+              value=" "
               className="py-2 data-[state=active]:bg-[var(--primary-9)] data-[state=active]:text-white"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
