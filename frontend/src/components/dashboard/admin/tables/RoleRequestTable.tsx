@@ -19,6 +19,7 @@ import {
   useUpdateRoleRequestNotesMutation,
 } from "@/apiSlice/roleRequestApiSlice";
 import { toast } from "sonner";
+import Loading from "@/app/loading";
 
 interface RoleRequestsTableProps {
   requests: RoleRequest[];
@@ -73,11 +74,7 @@ export default function RoleRequestsTable({
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center py-16">
-        <div className="h-12 w-12 rounded-full border-4 border-t-transparent border-[var(--primary-9)] animate-spin"></div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -101,9 +98,11 @@ export default function RoleRequestsTable({
   if (!requests || requests.length === 0) {
     return (
       <div className="text-center py-16">
-        <MessageSquare className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">No role requests</h3>
-        <p className="text-gray-500 mt-1 max-w-sm mx-auto">
+        <MessageSquare className="h-12 w-12 mx-auto text-[var(--primary-6)] mb-4" />
+        <h3 className="text-lg font-medium text-[var(--primary-12)]">
+          No role requests
+        </h3>
+        <p className="text-[var(--primary-11)] mt-1 max-w-sm mx-auto">
           When users request role changes, they will appear here for your
           review.
         </p>

@@ -17,6 +17,8 @@ export default function RequestsTab({ data }: RequestsTabProps) {
     roleRequestsError,
     refetchRoleRequests,
   } = data;
+
+  console.log("This is aweasome");
   const [requestSearchQuery, setRequestSearchQuery] = useState("");
 
   const filteredRequests = roleRequests.filter(

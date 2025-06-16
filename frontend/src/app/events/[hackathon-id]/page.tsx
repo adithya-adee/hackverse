@@ -41,8 +41,6 @@ const Page = () => {
     isLoading: hackathonLoading,
   } = useGetHackathonDetailsQuery(hackathonId);
 
-  console.log(hackathonDetails);
-
   useEffect(() => {
     if (user && user?.id == hackathonDetails?.createdBy?.id) {
       setIsOrganizer(true);
