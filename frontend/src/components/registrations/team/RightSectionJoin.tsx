@@ -138,7 +138,6 @@ function RightSectionJoin({ hackathonId }: Props) {
     useRejectTeamRequestMutation();
 
   const handleAcceptRequest = async (teamID: string, userID: string) => {
-    console.log("Accepting request:", teamID, userID);
     const res = await acceptTeamRequestByPart({
       teamId: teamID,
       userId: userID,
@@ -151,7 +150,6 @@ function RightSectionJoin({ hackathonId }: Props) {
   };
 
   const handleRejectRequest = async (teamID: string, userID: string) => {
-    console.log("Accepting request:", teamID, userID);
     const res = await rejectTeamRequest({
       teamId: teamID,
       userId: userID,

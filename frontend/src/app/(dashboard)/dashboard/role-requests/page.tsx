@@ -53,7 +53,6 @@ export default function RequestRolePage() {
 
   const onSubmit = async (data: RoleRequestValues) => {
     try {
-      console.log(data);
       await createRoleRequest(data).unwrap();
 
       toast.success("Role request submitted", {
