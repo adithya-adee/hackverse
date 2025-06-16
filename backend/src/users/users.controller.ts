@@ -41,10 +41,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async checkRegistration(@Query('email') memberEmail: string) {
     try {
+      console.log(memberEmail);
       const user = await this.usersService.findOneByEmail(memberEmail);
       return { isRegistered: true, user: user };
     } catch (error) {
-      return new NotFoundException('Registered false', error);
+      return {isRegistered: false};
+      // return new NotFoundException({isRegistered: false, error});
     }
   }
 

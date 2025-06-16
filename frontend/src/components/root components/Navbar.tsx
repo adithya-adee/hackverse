@@ -56,12 +56,12 @@ function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-[var(--primary-1)]/90 backdrop-blur-md border-b border-[var(--primary-5)]">
+    <header className="fixed top-0 left-0 w-full z-100 transition-all duration-300 bg-[var(--primary-1)]/90 backdrop-blur-md border-b border-[var(--primary-5)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
-            <Logo className="lg:h-48 md:h-32 sm:h-22 w-auto" />
+            <Logo className="lg:w-48 md:w-32 sm:w-22 h-25" />
           </Link>
 
           {/* Desktop Navigation */}

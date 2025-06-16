@@ -17,6 +17,10 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
+      invalidatesTags: (result, error, { teamId }) => [
+        { type: "TeamMembers", id: teamId },
+        { type: "TeamRequests", id: teamId },
+      ],
     }),
 
     // Get all teams looking for members for a specific hackathon
@@ -35,28 +39,75 @@ export const teamApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    // getTeamByHackathonCreator: builder.query({
+    //   query: ({ createdById, hackathonId }) => ({
+    //     url: `team/by-creator-hackathon?createdById=${createdById}&hackathonId=${hackathonId}`,
+    //     method: "GET",
+    //   }),
+    // }),
+
+    getTeamByHackathonMember: builder.query({
+      query: ({ memberId, hackathonId }) => ({
+        url: `team/by-member-hackathon?memberId=${memberId}&hackathonId=${hackathonId}`,
+        method: "GET",
+      }),
+    }),
+
+    deleteTeam: builder.mutation({
+      query: (teamId) => ({
+        url: `team/${teamId}`,
+        method: "DELETE",
+      }),
+    }),
+
     // Get all members of a specific team
     getTeamMembers: builder.query({
       query: (teamId) => ({
         url: `/team/${teamId}/members`,
         method: "GET",
       }),
+      providesTags: (teamId) => [{ type: "TeamMembers", id: teamId }],
     }),
 
     // Get all pending requests for a team
-    getTeamRequests: builder.query({
+    getTeamRequestsForATeamByTeam: builder.query({
       query: (teamId) => ({
-        url: `/team/${teamId}/requests`,
+        url: `/team/${teamId}/requests-by-team`,
         method: "GET",
       }),
+      providesTags: (teamId) => [{ type: "TeamRequests", id: teamId }],
     }),
 
-    // Get all team requests for current user
-    getUserTeamRequests: builder.query({
-      query: () => ({
-        url: "/team/all-team-reqs",
+    getTeamRequestsForATeambyParticipants: builder.query({
+      query: (teamId) => ({
+        url: `/team/${teamId}/requests-by-participants`,
         method: "GET",
       }),
+      providesTags: (teamId) => [{ type: "TeamRequests", id: teamId }],
+    }),
+
+    // Get all team requests by perticular user
+    getUserTeamRequestsByUser: builder.query({
+      query: () => ({
+        url: "/team/all-team-reqs-by-user",
+        method: "GET",
+      }),
+      providesTags: (result) =>
+        result
+          ? result.map((req: any) => ({ type: "TeamRequests", id: req.teamId }))
+          : [{ type: "TeamRequests" }],
+    }),
+
+    // Get all team Requests for Current User by the teams
+    getUserTeamRequestsByTeam: builder.query({
+      query: () => ({
+        url: "/team/all-team-reqs-by-team",
+        method: "GET",
+      }),
+      providesTags: (result) =>
+        result
+          ? result.map((req: any) => ({ type: "TeamRequests", id: req.teamId }))
+          : [{ type: "TeamRequests" }],
     }),
 
     // Create a team request (join a team)
@@ -66,14 +117,33 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ({ teamId }) => [
+        { type: "TeamMembers", id: teamId },
+        { type: "TeamRequests", id: teamId },
+      ],
     }),
 
     // Accept a team request
     acceptTeamRequest: builder.mutation({
       query: ({ teamId, userId }) => ({
-        url: `/team/${teamId}/accept-request/${userId}`,
+        url: `/team/${teamId}/accept-request-by-team/${userId}`,
         method: "POST",
       }),
+      invalidatesTags: ({ teamId }) => [
+        { type: "TeamMembers", id: teamId },
+        { type: "TeamRequests", id: teamId },
+      ],
+    }),
+
+    acceptTeamRequestByPart: builder.mutation({
+      query: ({ teamId, userId }) => ({
+        url: `/team/${teamId}/accept-request-by-part/${userId}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { teamId }) => [
+        { type: "TeamMembers", id: teamId },
+        { type: "TeamRequests", id: teamId },
+      ],
     }),
 
     // Reject a team request
@@ -82,14 +152,10 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         url: `/team/${teamId}/reject-request/${userId}`,
         method: "DELETE",
       }),
-    }),
-
-    // Check registration status
-    checkRegistration: builder.query({
-      query: (hackathonId) => ({
-        url: `/team/${hackathonId}/registration`,
-        method: "GET",
-      }),
+      invalidatesTags: (result, error, { teamId }) => [
+        { type: "TeamMembers", id: teamId },
+        { type: "TeamRequests", id: teamId },
+      ],
     }),
   }),
 });
@@ -99,11 +165,15 @@ export const {
   useGetTeamsLookingForMembersQuery,
   useGetTeamByIdQuery,
   useGetTeamMembersQuery,
-  useGetTeamRequestsQuery,
-  useGetUserTeamRequestsQuery,
   useCreateTeamRequestMutation,
   useAcceptTeamRequestMutation,
   useRejectTeamRequestMutation,
-  useCheckRegistrationQuery,
   useUpdateTeamMutation,
+  useDeleteTeamMutation,
+  useGetTeamRequestsForATeamByTeamQuery,
+  useGetTeamRequestsForATeambyParticipantsQuery,
+  useAcceptTeamRequestByPartMutation,
+  useGetUserTeamRequestsByTeamQuery,
+  useGetUserTeamRequestsByUserQuery,
+  useGetTeamByHackathonMemberQuery,
 } = teamApiSlice;

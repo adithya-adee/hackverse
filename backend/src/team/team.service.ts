@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException, UnauthorizedExceptio
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
-import { TeamRequest } from '@prisma/client';
+import { Team, TeamRequest } from '@prisma/client';
 import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
@@ -104,18 +104,20 @@ export class TeamService {
     return await this.prisma.teamRequest.create({
       data: {
         ...data,
+        isSentByTeam:data.isSentByTeam,
         expiresAt,
       },
     });
   }
 
-  async getAllTeamReq(userId: string): Promise<TeamRequest[]> {
+  async getAllTeamReqbyTeam(userId: string): Promise<TeamRequest[]> {
     return this.prisma.teamRequest.findMany({
       where: {
         userId,
         expiresAt: {
           gt: new Date(),
         },
+        isSentByTeam: true,
       },
       include: {
         user: {
@@ -134,30 +136,40 @@ export class TeamService {
     });
   }
 
-  async checkRegistration(
-    userId: string,
-    hackathonId: string,
-  ): Promise<boolean> {
-    const registration = await this.prisma.hackathonRegistration.findUnique({
+  async getAllTeamReqbyUser(userId: string): Promise<TeamRequest[]> {
+    return this.prisma.teamRequest.findMany({
       where: {
-        userId_hackathonId: {
-          userId,
-          hackathonId,
+        userId,
+        expiresAt: {
+          gt: new Date(),
+        },
+        isSentByTeam: false,
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+            name: true,
+            profileImageUrl: true,
+          },
+        },
+        team: {
+          include: {
+            Hackathon: true,
+          },
         },
       },
     });
-
-    // The !! operator converts the value to a boolean
-    // If registration exists (not null/undefined), it returns true
-    // If registration doesn't exist (null/undefined), it returns false
-    return !!registration;
   }
 
-  async getTeamsLookingForMembers(hackathonId: string) {
+  async getTeamsLookingForMembers(hackathonId: string,userId: string) {
     return await this.prisma.team.findMany({
       where: {
         hackathonId,
         lookingForMembers: true,
+        createdById: {
+          not: userId,
+        }
       },
       include: {
         TeamMember: {
@@ -254,19 +266,19 @@ export class TeamService {
     });
   }
 
-  async getTeamRequests(teamId: string, requestingUserId: string) {
+  async getTeamRequestsByTeam(teamId: string, requestingUserId: string) {
     // Check if the requesting user is a team leader
-    const teamMember = await this.prisma.teamMember.findFirst({
-      where: {
-        teamId,
-        userId: requestingUserId,
-        isLeader: true,
-      },
-    });
+    // const teamMember = await this.prisma.teamMember.findFirst({
+    //   where: {
+    //     teamId,
+    //     userId: requestingUserId,
+    //     isLeader: true,
+    //   },
+    // });
 
-    if (!teamMember) {
-      throw new UnauthorizedException('Only team leaders can view team requests');
-    }
+    // if (!teamMember) {
+    //   throw new UnauthorizedException('Only team leaders can view team requests');
+    // }
 
     return await this.prisma.teamRequest.findMany({
       where: {
@@ -274,6 +286,46 @@ export class TeamService {
         expiresAt: {
           gt: new Date(),
         },
+        isSentByTeam: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+            type: true,
+            institutionName: true,
+            biography: true,
+            Skill: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getTeamRequestsByParticipants(teamId: string, requestingUserId: string) {
+    // Check if the requesting user is a team leader
+    // const teamMember = await this.prisma.teamMember.findFirst({
+    //   where: {
+    //     teamId,
+    //     userId: requestingUserId,
+    //     isLeader: true,
+    //   },
+    // });
+
+    // if (!teamMember) {
+    //   throw new UnauthorizedException('Only team leaders can view team requests');
+    // }
+
+    return await this.prisma.teamRequest.findMany({
+      where: {
+        teamId,
+        expiresAt: {
+          gt: new Date(),
+        },
+        isSentByTeam: false
       },
       include: {
         user: {
@@ -352,6 +404,65 @@ export class TeamService {
       },
     });
   }
+
+  async acceptTeamRequestbyParticipant(teamId: string, userId: string){
+
+    const currentMembers = await this.prisma.teamMember.count({
+      where: {
+        teamId,
+      },
+    });
+
+
+
+    const team = await this.prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      include: {
+        Hackathon: true,
+      },
+    });
+
+
+
+    if (team && currentMembers >= team.Hackathon.maxTeamSize) {
+      throw new UnauthorizedException('Team size limit reached');
+    }
+
+    // Check if the request exists
+    const request = await this.prisma.teamRequest.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId,
+        },
+      },
+    });
+
+    console.log("------------------------------------------------")
+    console.log(userId)
+    console.log(teamId)
+    console.log(request)
+    console.log("------------------------------------------------")
+
+    if (!request) {
+      throw new NotFoundException('Team request not found');
+    }
+
+    // Delete the request
+    await this.deleteTeamReq(userId, teamId);
+
+    // Create the team member
+    return this.prisma.teamMember.create({
+      data: {
+        teamId,
+        userId,
+        isLeader: false,
+      },
+    });
+  }
+
 
   async rejectTeamRequest(teamId: string, userId: string, requestingUserId: string) {
     // Check if the requesting user is a team leader
@@ -449,4 +560,152 @@ export class TeamService {
       },
     });
   }
+
+  // async findByHackathonAndCreator(hackathonId: string, createdById: string): Promise<Team> {
+  //   const team = await this.prisma.team.findUnique({
+  //     where: {
+  //       hackathonId_createdById: {
+  //         hackathonId,
+  //         createdById,
+  //       },
+  //     },
+  //   });
+
+  //   if (!team) {
+  //     throw new NotFoundException('Team not found');
+  //   }
+
+  //   return team;
+  // } 
+
+  async deleteTeam(teamId: string, userId: string){
+
+    const team = await this.getTeamById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    // 2. Check if the user is the team leader
+    if (team.createdById !== userId) {
+      throw new ForbiddenException('You are not allowed to update this team');
+    }
+
+    const result = await this.prisma.team.delete({
+      where:{
+        id:teamId
+      }
+    })
+
+    if(!result){
+      throw new NotFoundException('Team not found'); 
+    }
+    return  result;
+  }
+
+
+   // Get team by team member user ID and hackathon ID
+  async getTeamByMemberAndHackathon(memberId: string, hackathonId: string) {
+    try {
+      const team = await this.prisma.team.findFirst({
+        where: {
+          hackathonId: hackathonId,
+          TeamMember: {
+            some: {
+              userId: memberId,
+            },
+          },
+        },
+        // include: {
+        //   User: {
+        //     select: {
+        //       id: true,
+        //       name: true,
+        //       email: true,
+        //       profileImageUrl: true,
+        //     },
+        //   },
+        //   Hackathon: {
+        //     select: {
+        //       id: true,
+        //       title: true,
+        //       status: true,
+        //       startDate: true,
+        //       endDate: true,
+        //     },
+        //   },
+        //   TeamMember: {
+        //     include: {
+        //       User: {
+        //         select: {
+        //           id: true,
+        //           name: true,
+        //           email: true,
+        //           profileImageUrl: true,
+        //           githubUrl: true,
+        //           linkedinUrl: true,
+        //           Skill: {
+        //             select: {
+        //               id: true,
+        //               name: true,
+        //             },
+        //           },
+        //         },
+        //       },
+        //     },
+        //     orderBy: {
+        //       joinedAt: 'asc',
+        //     },
+        //   },
+        //   TeamRequest: {
+        //     include: {
+        //       user: {
+        //         select: {
+        //           id: true,
+        //           name: true,
+        //           email: true,
+        //           profileImageUrl: true,
+        //           Skill: {
+        //             select: {
+        //               id: true,
+        //               name: true,
+        //             },
+        //           },
+        //         },
+        //       },
+        //     },
+        //     where: {
+        //       expiresAt: {
+        //         gt: new Date(),
+        //       },
+        //     },
+        //   },
+        //   Submission: {
+        //     select: {
+        //       id: true,
+        //       title: true,
+        //       description: true,
+        //       githubUrl: true,
+        //       demoUrl: true,
+        //       videoUrl: true,
+        //       submittedAt: true,
+        //     },
+        //   },
+        // },
+      });
+
+      if (!team) {
+        throw new NotFoundException(
+          `No team found for user ${memberId} in hackathon ${hackathonId}`
+        );
+      }
+
+      return team;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new Error(`Failed to fetch team: ${error.message}`);
+    }
+  }
+
 }

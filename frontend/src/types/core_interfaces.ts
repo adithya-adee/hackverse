@@ -224,8 +224,8 @@ export interface HackathonRegistration {
   hackathonId: string;
   registeredAt: string;
 
-  Hackathon?: Hackathon;
-  User?: User;
+  Hackathon: Hackathon;
+  User: User;
 }
 
 export interface HackathonTag {

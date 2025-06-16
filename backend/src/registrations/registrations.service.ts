@@ -70,4 +70,65 @@ export class RegistrationsService {
       throw new NotFoundException('Registration not found');
     }
   }
+
+
+  async checkRegistration(
+    userId: string,
+    hackathonId: string,
+  ): Promise<boolean> {
+    const registration = await this.prisma.hackathonRegistration.findUnique({
+      where: {
+        userId_hackathonId: {
+          userId,
+          hackathonId,
+        },
+      },
+    });
+
+    // The !! operator converts the value to a boolean
+    // If registration exists (not null/defined), it returns true
+    // If registration doesn't exist (null/undefined), it returns false
+    return !!registration;
+  }
+
+  // async getAllRegistered(hackathonId: string) {
+
+  //   return this.prisma.hackathonRegistration.findMany({
+  //     where: { hackathonId },
+  //     include: {
+  //         User: true,
+  //     },
+  //   });
+  // }
+  async getAllRegistered(hackathonId: string, currentUserId: string) {
+    // Step 1: Get all users already in teams for this hackathon
+    const usersInTeams = await this.prisma.teamMember.findMany({
+      where: {
+        Team: {
+          hackathonId,
+        },
+      },
+      select: {
+        userId: true,
+      },
+    });
+
+    const userIdsToExclude = [
+      ...new Set(usersInTeams.map((u) => u.userId).concat(currentUserId)),
+    ];
+
+    // Step 2: Return all registered users not in a team and not the current user
+    return this.prisma.hackathonRegistration.findMany({
+      where: {
+        hackathonId,
+        userId: {
+          notIn: userIdsToExclude,
+        },
+      },
+      include: {
+        User: true,
+      },
+    });
+  }
+
 }

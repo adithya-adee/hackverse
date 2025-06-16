@@ -12,6 +12,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 300,
     }),
 
+    //for a perticular user
     getTeamRequests: builder.query<TeamRequest[], void>({
       query: () => ({
         url: "/team/all-team-reqs",

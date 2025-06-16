@@ -190,6 +190,8 @@ model Team {
   Hackathon         Hackathon     @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   TeamMember        TeamMember[]
   TeamRequest       TeamRequest[]
+
+  @@unique([hackathonId,createdById])
 }
 
 model TeamMember {
@@ -204,12 +206,13 @@ model TeamMember {
 }
 
 model TeamRequest {
-  teamId      String   @db.Uuid
-  userId      String   @db.Uuid
-  requestedAt DateTime @default(now()) @db.Timestamp(6)
-  expiresAt   DateTime @db.Timestamp(6)
-  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId       String   @db.Uuid
+  userId       String   @db.Uuid
+  isSentByTeam Boolean @default(true)
+  requestedAt  DateTime @default(now()) @db.Timestamp(6)
+  expiresAt    DateTime @db.Timestamp(6)
+  team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([teamId, userId])
 }

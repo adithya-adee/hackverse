@@ -10,13 +10,14 @@ import {
   NotFoundException,
   UnauthorizedException,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamService } from './team.service';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
-import { RoleType } from '@prisma/client';
+import { RoleType, Team } from '@prisma/client';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UpdateTeamDto } from './dto/update-team.dto';
 
@@ -47,7 +48,6 @@ export class TeamController {
     @Request() req: { user: { userId: string } },
     @Body() updateTeamDto: UpdateTeamDto,
   ){
-    console.log("BODY",updateTeamDto);
     const userId = req.user.userId;
     return this.teamsService.updateTeam(updateTeamDto, userId);
   }
@@ -57,29 +57,42 @@ export class TeamController {
   @Post('team-req')
   @UseGuards(JwtAuthGuard)
   createTeamReq(
-    @Body() {userId, teamId}
+    @Body() {userId, teamId, isSentByTeam}
   ) {
-    console.log("---------------body---------")
-    console.log(userId,teamId);
-    console.log("---------------body---------")
-    return this.teamsService.createTeamReq({userId,teamId});
+    return this.teamsService.createTeamReq({userId,teamId,isSentByTeam});
   }
 
-  // Get all team requests for current user
-  @Get('all-team-reqs')
+  // Get all team requests for current user by team
+  @Get('all-team-reqs-by-team')
   @UseGuards(JwtAuthGuard)
-  getAllTeamReq(@Request() req: { user: { userId: string } }) {
-    return this.teamsService.getAllTeamReq(req.user.userId);
+  getAllTeamReqByTeam(@Request() req: { user: { userId: string } }) {
+    return this.teamsService.getAllTeamReqbyTeam(req.user.userId);
   }
 
-  // Check registration status
-  @Get(':hackathonId/registration')
+  @Get('all-team-reqs-by-user')
   @UseGuards(JwtAuthGuard)
-  checkRegistration(
-    @Request() req: { user: { userId: string } },
-    @Param('hackathonId') hackathonId: string,
-  ) {
-    return this.teamsService.checkRegistration(req.user.userId, hackathonId);
+  getAllTeamReqByUser(@Request() req: { user: { userId: string } }) {
+    return this.teamsService.getAllTeamReqbyUser(req.user.userId);
+  }
+
+  //Get team details from createdByid and hackathonID
+  // @Get('by-creator-hackathon')
+  // @UseGuards(JwtAuthGuard)
+  // async getTeamByHackathonAndCreator(
+  //   @Query('hackathonId') hackathonId: string,
+  //   @Query('createdById') createdById: string,
+  // ): Promise<Team> {
+  //   return this.teamsService.findByHackathonAndCreator(hackathonId, createdById);
+  // }
+
+  //Get team details from memberID and hackathonID
+  @Get('by-member-hackathon')
+  @UseGuards(JwtAuthGuard)
+  async getTeamByMemberAndHackathon(
+    @Query('hackathonId') hackathonId: string,
+    @Query('memberId') memberId: string,
+  ): Promise<Team> {
+    return this.teamsService.getTeamByMemberAndHackathon(memberId,hackathonId);
   }
 
   // Get all teams
@@ -100,14 +113,28 @@ export class TeamController {
 
   // Get teams looking for members for a specific hackathon
   @Get('hackathon/:hackathonId/looking-for-members')
-  getTeamsLookingForMembers(@Param('hackathonId') hackathonId: string) {
-    return this.teamsService.getTeamsLookingForMembers(hackathonId);
+  @UseGuards(JwtAuthGuard)
+  getTeamsLookingForMembers(
+    @Request() req: { user: { userId: string } },
+    @Param('hackathonId') hackathonId: string,
+  ) {
+    return this.teamsService.getTeamsLookingForMembers(hackathonId , req.user.userId);
   }
+
 
   // Get a specific team by ID
   @Get(':teamId')
   getTeamById(@Param('teamId') teamId: string) {
     return this.teamsService.getTeamById(teamId);
+  }
+
+  @Delete(':teamId')
+  @UseGuards(JwtAuthGuard)
+  async deleteTeam(
+    @Request() req: { user: { userId: string } },
+    @Param('teamId') teamId: string,
+  ){
+    return this.teamsService.deleteTeam(teamId,req.user.userId);
   }
 
   // Get all members of a team
@@ -116,18 +143,28 @@ export class TeamController {
     return this.teamsService.getTeamMembers(teamId);
   }
 
-  // Get all pending requests for a team
-  @Get(':teamId/requests')
+  // Get all pending requests for a team by a team
+  @Get(':teamId/requests-by-team')
   @UseGuards(JwtAuthGuard)
-  getTeamRequests(
+  getTeamRequestsByTeam(
     @Request() req: { user: { userId: string } },
     @Param('teamId') teamId: string,
   ) {
-    return this.teamsService.getTeamRequests(teamId, req.user.userId);
+    return this.teamsService.getTeamRequestsByTeam(teamId, req.user.userId);
+  }
+
+  // Get all pending requests for a team by participants
+  @Get(':teamId/requests-by-participants')
+  @UseGuards(JwtAuthGuard)
+  getTeamRequestsByParticipants(
+    @Request() req: { user: { userId: string } },
+    @Param('teamId') teamId: string,
+  ) {
+    return this.teamsService.getTeamRequestsByParticipants(teamId, req.user.userId);
   }
 
   // Accept a team request
-  @Post(':teamId/accept-request/:userId')
+  @Post(':teamId/accept-request-by-team/:userId')
   @UseGuards(JwtAuthGuard)
   acceptTeamRequest(
     @Request() req: { user: { userId: string } },
@@ -135,6 +172,15 @@ export class TeamController {
     @Param('userId') userId: string,
   ) {
     return this.teamsService.acceptTeamRequest(teamId, userId, req.user.userId);
+  }
+
+  @Post(':teamId/accept-request-by-part/:userId')
+  @UseGuards(JwtAuthGuard)
+  acceptTeamRequestbyParticipant(
+    @Param('teamId') teamId: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.teamsService.acceptTeamRequestbyParticipant(teamId, userId);
   }
 
   // Reject a team request
@@ -147,6 +193,8 @@ export class TeamController {
   ) {
     return this.teamsService.rejectTeamRequest(teamId, userId, req.user.userId);
   }
+
+
 
 
 }
