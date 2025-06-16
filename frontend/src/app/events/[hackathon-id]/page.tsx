@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   Calendar,
@@ -15,13 +15,13 @@ import {
   Share2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import Link from "next/link";
 import { toast } from "sonner";
 import { useGetHackathonDetailsQuery } from "@/apiSlice/hackathonApiSlice";
 import { FindHackathonDto } from "@/types/core_interfaces";
 import { useCheckRegistrationQuery } from "@/apiSlice/registrationsApiSlice";
 import { useRouter } from "next/navigation";
 import Loading from "@/app/loading";
+import Cookies from "js-cookie";
 
 const Page = () => {
   const params = useParams();
@@ -29,11 +29,25 @@ const Page = () => {
 
   const router = useRouter();
 
+  const userCookie = Cookies.get("user");
+  const user: { id: string } | null = userCookie
+    ? JSON.parse(userCookie)
+    : null;
+  const [isOrganiser, setIsOrganizer] = useState<boolean>(false);
+
   const {
     data: hackathonDetails,
     isError: hackathonError,
     isLoading: hackathonLoading,
   } = useGetHackathonDetailsQuery(hackathonId);
+
+  console.log(hackathonDetails);
+
+  useEffect(() => {
+    if (user && user?.id == hackathonDetails?.createdBy?.id) {
+      setIsOrganizer(true);
+    }
+  }, [user]);
 
   const { data: isRegistered, isLoading: checkingRegister } =
     useCheckRegistrationQuery(hackathonId);
@@ -52,7 +66,9 @@ const Page = () => {
   };
   const handleClick = async () => {
     if (isRegistered) {
-      console.log(isRegistered);
+      console.log(isOrganiser);
+      router.push(`/events/${hackathonId}/view-analytics`);
+    } else if (isRegistered) {
       router.push(`/events/${hackathonId}/register/team`);
     } else {
       router.push(`/events/${hackathonId}/register`);
@@ -400,7 +416,11 @@ const Page = () => {
                   className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
                   {hackathon.status === "UPCOMING"
-                    ? "Register Now"
+                    ? isRegistered
+                      ? isOrganiser
+                        ? "View Analytics"
+                        : "View Team Details"
+                      : "Register Now"
                     : hackathon.status === "LIVE"
                       ? "Join Now"
                       : "View Results"}
