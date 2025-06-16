@@ -118,7 +118,6 @@ export default function AdminDashboard() {
     setSearchQuery,
     refreshDashboard,
   };
-  // console.log(dashboardData);
 
   return (
     <motion.div

@@ -11,7 +11,7 @@ interface HackathonsTabProps {
 export default function HackathonsTab({ data }: HackathonsTabProps) {
   const { hackathonData, hackathonLoading, hackathonError, refetchHackathons } =
     data;
-  console.log("Hackathons Tab");
+
   return (
     <Card className="shadow-lg border-0">
       <CardHeader>
