@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateTeamReqDto {
   @IsString()
@@ -8,4 +8,7 @@ export class CreateTeamReqDto {
   @IsString()
   @IsNotEmpty()
   userId: string;
+
+  @IsBoolean()
+  isSentByTeam: boolean;
 }

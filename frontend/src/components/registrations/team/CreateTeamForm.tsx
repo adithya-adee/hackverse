@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { createTeamSchema } from "@/schemas/team";
 import type { CreateTeamValues } from "@/schemas/team";
 import { motion } from "motion/react";
-import { UsersRoundIcon, Edit } from "lucide-react";
+import { UsersRoundIcon, Edit, Loader2, Loader2Icon } from "lucide-react";
 import {
   buttonVariants,
   containerVariants,
@@ -18,9 +18,12 @@ import {
 } from "@/lib/animation";
 import {
   useCreateTeamMutation,
+  useGetTeamByHackathonMemberQuery,
   useUpdateTeamMutation,
 } from "@/apiSlice/teamApiSlice";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 interface Props {
   hackathonId: string;
@@ -38,6 +41,19 @@ export default function CreateTeamForm({
   const [isEditing, setIsEditing] = useState(true);
   const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
   const [updateTeam, { isLoading: isupdatingTeam }] = useUpdateTeamMutation();
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  // const { data: TeamData, isLoading: fetchingTeamData } =
+  //   useGetTeamByHackathonCreatorQuery({
+  //     createdById: user.id,
+  //     hackathonId: hackathonId,
+  //   });
+
+  const { data: TeamData, isLoading: fetchingTeamData } =
+    useGetTeamByHackathonMemberQuery({
+      memberId: user.id,
+      hackathonId: hackathonId,
+    });
 
   const form = useForm<CreateTeamValues>({
     resolver: zodResolver(createTeamSchema),
@@ -50,25 +66,49 @@ export default function CreateTeamForm({
     },
   });
 
+  useEffect(() => {
+    if (TeamData) {
+      const teamfeilds: Array<keyof CreateTeamValues> = [
+        "name",
+        "description",
+        "hackathonId",
+        "lookingForMembers",
+        "requiredSkills",
+      ];
+
+      teamfeilds.forEach((feild) => {
+        if (TeamData[feild]) {
+          form.setValue(feild, TeamData[feild]);
+        }
+      });
+
+      setIsTeamCreated(true);
+      setTeamId(TeamData.id);
+      setIsEditing(false);
+    }
+  }, [TeamData, form.setValue]);
+
   const onSubmit = async (data: CreateTeamValues) => {
     try {
       setIsSubmitting(true);
       if (isTeamCreated) {
-        const response = await updateTeam({ teamId, ...data }).unwrap();
+        console.log("UPdatinggggggggggggg");
+        console.log(data);
+        const response = await updateTeam({ teamId: teamId, ...data }).unwrap();
         setIsEditing(false);
+        setTeamId(response.id);
         console.log("updated------->", response);
       } else {
         const response = await createTeam(data).unwrap();
         setTeamId(response.id);
         setIsTeamCreated(true);
         setIsEditing(false);
-        console.log(response);
+        console.log("created------->", response);
       }
-
       toast.success("Team created successfully!");
     } catch (error) {
-      console.error("Failed to create team:", error);
-      toast.error("Failed to create team. Please try again.");
+      console.error("Failed", error);
+      toast.error("Failed, Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -78,9 +118,16 @@ export default function CreateTeamForm({
     setIsEditing(true);
   };
 
-  //TODO:Restrict to only 1 team per participant per hackathon....
-  //TODO:make default values filled with team created even on refresh...
-
+  if (fetchingTeamData) {
+    return (
+      <div className="flex justify-center items-center align-middle">
+        <Button className="bg-blue-500" size="sm" disabled>
+          <Loader2Icon className="animate-spin" />
+          loading team details...
+        </Button>
+      </div>
+    );
+  }
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -88,7 +135,7 @@ export default function CreateTeamForm({
       transition={{ duration: 0.5 }}
       className="p-2 "
     >
-      <div className="h-full">
+      <div className="relative">
         <div className="bg-transparent text-[var(--primary-9)] items-center justify-between">
           <div className="text-xl font-semibold flex items-center">
             <UsersRoundIcon className="h-5 w-5 mr-2" />
@@ -97,9 +144,8 @@ export default function CreateTeamForm({
           {isTeamCreated && !isEditing && (
             <Button
               onClick={handleEdit}
-              variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className=" -right-0 z-10 absolute items-center gap-2"
             >
               <Edit className="h-4 w-4" />
               Edit
@@ -220,14 +266,17 @@ export default function CreateTeamForm({
                           repeat: Infinity,
                           ease: "linear",
                         }}
-                        className="h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"
                       />
                     ) : null}
-                    {isSubmitting
-                      ? "Wait"
-                      : isTeamCreated
-                        ? "Update Team"
-                        : "Create Team"}
+                    {isSubmitting ? (
+                      <div>
+                        <p> Wait... </p>
+                      </div>
+                    ) : isTeamCreated ? (
+                      "Update Team"
+                    ) : (
+                      "Create Team"
+                    )}
                   </Button>
                 </motion.div>
               )}

@@ -1,6 +1,7 @@
 "use client";
+
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   Calendar,
@@ -18,11 +19,15 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useGetHackathonDetailsQuery } from "@/apiSlice/hackathonApiSlice";
 import { FindHackathonDto } from "@/types/core_interfaces";
+import { useCheckRegistrationQuery } from "@/apiSlice/registrationsApiSlice";
+import { useRouter } from "next/navigation";
 import Loading from "@/app/loading";
 
 const Page = () => {
   const params = useParams();
   const hackathonId = params["hackathon-id"];
+
+  const router = useRouter();
 
   const {
     data: hackathonDetails,
@@ -30,6 +35,8 @@ const Page = () => {
     isLoading: hackathonLoading,
   } = useGetHackathonDetailsQuery(hackathonId);
 
+  const { data: isRegistered, isLoading: checkingRegister } =
+    useCheckRegistrationQuery(hackathonId);
   const hackathon: FindHackathonDto = hackathonDetails;
   const [activeTab, setActiveTab] = useState(0);
 
@@ -43,6 +50,14 @@ const Page = () => {
       minute: "2-digit",
     });
   };
+  const handleClick = async () => {
+    if (isRegistered) {
+      console.log(isRegistered);
+      router.push(`/events/${hackathonId}/register/team`);
+    } else {
+      router.push(`/events/${hackathonId}/register`);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const statusStyles = {
@@ -50,6 +65,10 @@ const Page = () => {
       LIVE: "bg-green-100 text-green-800",
       COMPLETED: "bg-gray-100 text-gray-800",
     };
+
+    {
+      checkingRegister && <div>Checking for registration</div>;
+    }
 
     return (
       <motion.span
@@ -372,20 +391,20 @@ const Page = () => {
                 {/* Register button */}
 
                 {/* FIXNOW: navigate to teams if user is registered already  */}
-                <Link href={`/events/${hackathonId}/register`}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    {hackathon.status === "UPCOMING"
-                      ? "Register Now"
-                      : hackathon.status === "LIVE"
-                        ? "Join Now"
-                        : "View Results"}
-                  </motion.button>
-                </Link>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleClick}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  {hackathon.status === "UPCOMING"
+                    ? "Register Now"
+                    : hackathon.status === "LIVE"
+                      ? "Join Now"
+                      : "View Results"}
+                </motion.button>
 
                 {/* Share button */}
                 <motion.button

@@ -12,10 +12,11 @@ import { useLazyIsRegisteredQuery } from "@/apiSlice/userApiSlice";
 import { useCreateTeamRequestMutation } from "@/apiSlice/teamApiSlice";
 interface Props {
   hackathonId: string;
+  teamId: string | undefined;
+  setTeamId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-function CreateTeamSection({ hackathonId }: Props) {
-  const [teamId, setTeamId] = useState<string | undefined>("null");
+function CreateTeamSection({ hackathonId, teamId, setTeamId }: Props) {
   const [memberEmail, setMemberEmail] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [triggerCheck, result] = useLazyIsRegisteredQuery();
@@ -28,12 +29,17 @@ function CreateTeamSection({ hackathonId }: Props) {
     setIsSubmitting(true);
     console.log("Email submitted:", memberEmail);
     const res = await triggerCheck({ memberEmail }).unwrap();
+    console.log(res);
     console.log(res.isRegistered);
     if (res.isRegistered == false) {
       toast.error("This email address is not registered to our Application");
     } else {
       const userId = res.user.id;
-      const createdReq = await createTeamRequest({ userId, teamId });
+      const createdReq = await createTeamRequest({
+        userId,
+        teamId,
+        isSentByTeam: true,
+      });
       toast.success(`Team joining request is sent to ${res.user.name}`);
     }
     setIsSubmitting(false);

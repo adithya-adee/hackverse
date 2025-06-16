@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-
+import { User } from "@/types/core_interfaces";
 
 interface Team {
   id: string;
@@ -58,7 +58,7 @@ export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
   const [joiningTeam, setJoiningTeam] = useState<string | null>(null);
 
   // Get current user from Redux store
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user: User = useSelector((state: RootState) => state.auth.user);
 
   // Fetch teams looking for members from API
   const {
@@ -80,9 +80,8 @@ export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
     setJoiningTeam(teamId);
 
     try {
-      await createTeamRequest({
-        teamId,
-      }).unwrap();
+      const userId = user.id;
+      await createTeamRequest({ userId, teamId, isSentByTeam: false }).unwrap();
 
       toast.success("Join request sent successfully");
     } catch (error) {
@@ -167,7 +166,7 @@ export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
               initial="hidden"
               animate="visible"
             >
-              {filteredTeams.map(({ team, index }: { team: Team, index: number }) => (
+              {filteredTeams.map((team: Team, index: number) => (
                 <motion.div
                   className="shadow-sm rounded-2xl bg-[var(--primary-2)]"
                   key={team.id}
@@ -214,21 +213,23 @@ export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
                             <span>Required Skills:</span>
                           </div>
                           <div className="flex flex-wrap gap-1">
-                            {team.requiredSkills.split(",").map((skill, i) => (
-                              <motion.div
-                                key={i}
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: i * 0.05 }}
-                              >
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs bg-[var(--primary-2)]"
+                            {team.requiredSkills
+                              .split(",")
+                              .map((skill: any, i: number) => (
+                                <motion.div
+                                  key={i}
+                                  initial={{ scale: 0.8, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  transition={{ delay: i * 0.05 }}
                                 >
-                                  {skill.trim()}
-                                </Badge>
-                              </motion.div>
-                            ))}
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-[var(--primary-2)]"
+                                  >
+                                    {skill.trim()}
+                                  </Badge>
+                                </motion.div>
+                              ))}
                           </div>
                         </div>
                       )}
@@ -270,7 +271,9 @@ export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
                         >
                           <Button
                             onClick={() => handleJoinTeam(team.id)}
-                            disabled={joiningTeam === team.id || isCreatingRequest}
+                            disabled={
+                              joiningTeam === team.id || isCreatingRequest
+                            }
                             className="bg-[var(--primary-10)] text-white"
                           >
                             {joiningTeam === team.id ? (

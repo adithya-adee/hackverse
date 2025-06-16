@@ -8,12 +8,15 @@ import {
   HttpStatus,
   HttpCode,
   UseGuards,
+  Request,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegistrationsService } from './registrations.service';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 import { CreateRegistrationDto } from './dto/create-registration.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('registrations')
 export class RegistrationsController {
@@ -28,14 +31,42 @@ export class RegistrationsController {
     );
   }
 
+
+
+  @Get('submission')
+  getSubmissionCount() {
+    return this.registrationsService.getSubmissionCount();
+  }
+
+  //Registrations for a perticular user
   @Get('user/:userId')
   findUserRegistrations(@Param('userId') userId: string) {
     return this.registrationsService.getRegisteredHackathons(userId);
   }
 
-  @Get('submission')
-  getSubmissionCount() {
-    return this.registrationsService.getSubmissionCount();
+  // Check registration status for current user
+  @Get('check/:hackathonId')
+  @UseGuards(JwtAuthGuard)
+  checkRegistration(
+    @Request() req: { user: { userId: string } },
+    @Param('hackathonId') hackathonId: string,
+    ) {
+    return this.registrationsService.checkRegistration(req.user.userId, hackathonId);
+  }
+
+
+  //fetch all the users registered for a perticular hackathon
+  @Get('all/:hackathonId')
+  @UseGuards(JwtAuthGuard)
+  async getAllRegisterUsers(
+    @Request() req: { user: { userId: string } },
+    @Param('hackathonId') hackathonId: string,
+  ){
+    const isRegistered = await this.registrationsService.checkRegistration(req.user.userId,hackathonId);
+    if(!isRegistered){
+      throw new NotFoundException('Registration not found');
+    }
+    return this.registrationsService.getAllRegistered(hackathonId,req.user.userId);
   }
 
   @Delete(':userId/:hackathonId')

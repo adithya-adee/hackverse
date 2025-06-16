@@ -13,6 +13,8 @@ function Page(props: Props) {
   const [activeTab, setActiveTab] = useState<"Create Team" | "Join Team">(
     "Create Team",
   );
+
+  const [teamId, setTeamId] = useState<string | undefined>("null");
   const params = useParams();
   const hackathonId = params["hackathon-id"] as string;
 
@@ -38,6 +40,8 @@ function Page(props: Props) {
               >
                 Create Team
               </motion.button>
+
+              {/*TODO: On clicking this button the team if created will get deleted with a warning box */}
               <motion.button
                 type="button"
                 onClick={(e) => {
@@ -58,7 +62,11 @@ function Page(props: Props) {
           </div>
           <div className="shadow-lg rounded-2xl border-t-[1px] bg-[var(--primary-1)] p-2 my-4 ">
             {activeTab == "Create Team" && (
-              <CreateTeamSection hackathonId={hackathonId} />
+              <CreateTeamSection
+                hackathonId={hackathonId}
+                teamId={teamId}
+                setTeamId={setTeamId}
+              />
             )}
             {activeTab == "Join Team" && (
               <JoinTeamView hackathonId={hackathonId} />
@@ -66,8 +74,12 @@ function Page(props: Props) {
           </div>
         </div>
         <div className="col-span-2 shadow-lg border-t-[1px] rounded-2xl bg-[var(--primary-1)] p-2 my-4 h-screen ">
-          {activeTab == "Create Team" && <RightSectionCreate />}
-          {activeTab == "Join Team" && <RightSectionJoin />}
+          {activeTab == "Create Team" && (
+            <RightSectionCreate hackathonId={hackathonId} teamId={teamId} />
+          )}
+          {activeTab == "Join Team" && (
+            <RightSectionJoin hackathonId={hackathonId} />
+          )}
         </div>
       </div>
     </div>
