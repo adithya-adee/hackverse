@@ -70,6 +70,7 @@ import {
   useGetSubmissionsByOrganizerQuery,
   useGetParticipantsByOrganizerQuery,
 } from "@/apiSlice/userApiSlice";
+import PathAnimationLoader from "@/app/loading";
 
 // Dashboard Page Component with all inline components
 export default function OrganizerDashboard() {
@@ -231,6 +232,14 @@ export default function OrganizerDashboard() {
     teamsLoading ||
     submissionsLoading ||
     participantsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary-5)] via-[var(--primary-3)] to-[var(--primary-1)]">
+        <PathAnimationLoader />
+      </div>
+    );
+  }
 
   return (
     <motion.div

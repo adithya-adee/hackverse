@@ -9,6 +9,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: "/users/profile",
         method: "GET",
       }),
+      providesTags: ["UserProfile", "Skills"],
       keepUnusedDataFor: 300,
     }),
 
@@ -18,6 +19,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: "/team/all-team-reqs",
         method: "GET",
       }),
+      providesTags: ["TeamRequests"],
       keepUnusedDataFor: 150,
       transformResponse: (response: TeamRequest[] | null) => response || [],
     }),
@@ -45,6 +47,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
           },
         };
       },
+      invalidatesTags: ["UserProfile"],
     }),
 
     registerTeam: builder.mutation({
@@ -60,6 +63,25 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: { skills },
       }),
+      invalidatesTags: ["Skills"],
+    }),
+    deleteSkills: builder.mutation({
+      query: ({ skillId }) => ({
+        url: `/users/skills`,
+        method: "DELETE",
+        body: { id: skillId },
+      }),
+      invalidatesTags: ["Skills"],
+    }),
+    deleteUserSkill: builder.mutation<
+      { Skill: { id: string; name: string }[] },
+      { userId: string; skillId: string }
+    >({
+      query: ({ userId, skillId }) => ({
+        url: `/users/${userId}/skills/${skillId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Skills"],
     }),
 
     getHackathonsByOrganizer: builder.query({
@@ -67,13 +89,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: "/users/organizer/hackathons",
         method: "GET",
       }),
+      providesTags: ["OrganizerData"],
     }),
-
     getTeamsByOrganizer: builder.query({
       query: () => ({
         url: "/users/organizer/teams",
         method: "GET",
       }),
+      providesTags: ["OrganizerData"],
     }),
 
     getSubmissionsByOrganizer: builder.query({
@@ -81,6 +104,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: "/users/organizer/submissions",
         method: "GET",
       }),
+      providesTags: ["OrganizerData"],
     }),
 
     getParticipantsByOrganizer: builder.query({
@@ -88,6 +112,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: "/users/organizer/participants",
         method: "GET",
       }),
+      providesTags: ["OrganizerData"],
     }),
   }),
 });
@@ -98,9 +123,11 @@ export const {
   useUpdateUserProfileMutation,
   useRegisterTeamMutation,
   useUpdateSkillsMutation,
+  useDeleteSkillsMutation,
   useGetHackathonsByOrganizerQuery,
   useGetTeamsByOrganizerQuery,
   useGetSubmissionsByOrganizerQuery,
   useGetParticipantsByOrganizerQuery,
   useLazyIsRegisteredQuery,
+  useDeleteUserSkillMutation,
 } = userApiSlice;

@@ -12,12 +12,9 @@ import {
   Calendar,
   MapPin,
   Search,
-  Filter,
-  Download,
   BarChart,
   RefreshCcw,
   Eye,
-  PencilLine,
   User,
   Loader2,
   CheckCircle,
@@ -72,7 +69,6 @@ import {
   useGetParticipantsByHackathonIdQuery,
 } from "@/apiSlice/hackathonApiSlice";
 
-// Types
 interface HackathonData {
   id: string;
   title: string;
@@ -168,28 +164,48 @@ export default function HackathonAnalytics() {
     isLoading: isHackathonLoading,
     error: hackathonError,
     refetch: refetchHackathon,
-  } = useGetHackathonByIdQuery(hackathonId);
+  } = useGetHackathonByIdQuery(hackathonId) as {
+    data: HackathonData | undefined;
+    isLoading: boolean;
+    error: unknown;
+    refetch: () => Promise<unknown>;
+  };
 
   const {
     data: teamsData = [],
     isLoading: isTeamsLoading,
     error: teamsError,
     refetch: refetchTeams,
-  } = useGetTeamsByHackathonIdQuery(hackathonId);
+  } = useGetTeamsByHackathonIdQuery(hackathonId) as {
+    data: Team[];
+    isLoading: boolean;
+    error: unknown;
+    refetch: () => Promise<unknown>;
+  };
 
   const {
     data: submissionsData = [],
     isLoading: isSubmissionsLoading,
     error: submissionsError,
     refetch: refetchSubmissions,
-  } = useGetSubmissionsByHackathonIdQuery(hackathonId);
+  } = useGetSubmissionsByHackathonIdQuery(hackathonId) as {
+    data: Submission[];
+    isLoading: boolean;
+    error: unknown;
+    refetch: () => Promise<unknown>;
+  };
 
   const {
     data: participantsData = [],
     isLoading: isParticipantsLoading,
     error: participantsError,
     refetch: refetchParticipants,
-  } = useGetParticipantsByHackathonIdQuery(hackathonId);
+  } = useGetParticipantsByHackathonIdQuery(hackathonId) as {
+    data: Participant[];
+    isLoading: boolean;
+    error: unknown;
+    refetch: () => Promise<unknown>;
+  };
 
   // Check if the current user is authorized to view this dashboard
   const user = useSelector((state: RootState) => state.auth.user);
@@ -1264,7 +1280,7 @@ function getInitials(name: string): string {
 function calculateAverageTeamSize(teams: Team[]): string {
   if (teams.length === 0) return "0";
   const totalMembers = teams.reduce(
-    (sum, team) => sum + team.TeamMember.length,
+    (sum: number, team: Team) => sum + team.TeamMember.length,
     0
   );
   return (totalMembers / teams.length).toFixed(1);

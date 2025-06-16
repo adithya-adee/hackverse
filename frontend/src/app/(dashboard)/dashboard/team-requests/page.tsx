@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useGetTeamRequestsQuery } from "@/apiSlice/userApiSlice";
 import { TeamRequest } from "@/types/core_interfaces";
 import { formatDateTime, getUserInitials } from "@/lib/formatters";
+import Loading from "@/app/loading";
 
 interface TeamRequestProps {
   teamId: string;
@@ -165,7 +166,7 @@ function RequestTable({
               ) : (
                 team_request.map((request, index) => {
                   const statusConfig = getStatusConfig(
-                    request.team?.Hackathon?.status,
+                    request.team?.Hackathon?.status
                   );
 
                   return (
@@ -193,7 +194,7 @@ function RequestTable({
                             <AvatarFallback className="bg-gradient-to-br from-[var(--primary-9)] to-[var(--primary-8)] text-white text-xs font-semibold">
                               {getUserInitials(
                                 request.user?.name,
-                                request.user?.email,
+                                request.user?.email
                               )}
                             </AvatarFallback>
                           </Avatar>
@@ -277,13 +278,8 @@ function TeamRequestsPage() {
   // Add loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)] flex flex-col items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-[var(--primary-9)] border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-[var(--primary-11)] text-lg">
-            Loading team requests...
-          </p>
-        </div>
+      <div className="h-screen flex items-center justify-center">
+        <Loading />
       </div>
     );
   }
