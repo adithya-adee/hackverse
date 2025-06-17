@@ -20,6 +20,7 @@ function CreateTeamSection({ hackathonId, teamId, setTeamId }: Props) {
   const [memberEmail, setMemberEmail] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [triggerCheck, result] = useLazyIsRegisteredQuery();
+  const [isLeader, setIsLeader] = useState<boolean>(false);
 
   const [createTeamRequest, { isLoading: isRequestCreating }] =
     useCreateTeamRequestMutation();
@@ -65,6 +66,7 @@ function CreateTeamSection({ hackathonId, teamId, setTeamId }: Props) {
           hackathonId={hackathonId}
           teamId={teamId}
           setTeamId={setTeamId}
+          setIsLeader={setIsLeader}
         />
       </div>
       <div className="p-2 my-2 mx-auto">

@@ -5,19 +5,34 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { createTeamSchema } from "@/schemas/team";
 import type { CreateTeamValues } from "@/schemas/team";
 import { motion } from "motion/react";
-import { UsersRoundIcon, Edit, Loader2, Loader2Icon } from "lucide-react";
 import {
-  buttonVariants,
-  containerVariants,
-  itemVariants,
-} from "@/lib/animation";
+  UsersRoundIcon,
+  Edit,
+  Loader2,
+  Loader2Icon,
+  Delete,
+  AlertTriangle,
+} from "lucide-react";
+import { buttonVariants, itemVariants } from "@/lib/animation";
 import {
   useCreateTeamMutation,
+  useDeleteTeamMutation,
   useGetTeamByHackathonMemberQuery,
   useUpdateTeamMutation,
 } from "@/apiSlice/teamApiSlice";
@@ -29,31 +44,40 @@ interface Props {
   hackathonId: string;
   teamId: string | undefined;
   setTeamId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setIsLeader: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CreateTeamForm({
   hackathonId,
   teamId,
   setTeamId,
+  setIsLeader,
 }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTeamCreated, setIsTeamCreated] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
   const [updateTeam, { isLoading: isupdatingTeam }] = useUpdateTeamMutation();
+
   const user = useSelector((state: RootState) => state.auth.user);
 
-  // const { data: TeamData, isLoading: fetchingTeamData } =
-  //   useGetTeamByHackathonCreatorQuery({
-  //     createdById: user.id,
-  //     hackathonId: hackathonId,
-  //   });
+  //REMOVE: when middleware is there
+  // if (!user || user === null) {
+  //   window.location.replace("/");
+  // }
+
+  const [deletTeam, { isLoading: deleting }] = useDeleteTeamMutation();
 
   const { data: TeamData, isLoading: fetchingTeamData } =
     useGetTeamByHackathonMemberQuery({
       memberId: user.id,
       hackathonId: hackathonId,
     });
+
+  console.log("-------------------------------------------");
+  console.log(TeamData);
+  console.log("-------------------------------------------");
 
   const form = useForm<CreateTeamValues>({
     resolver: zodResolver(createTeamSchema),
@@ -82,6 +106,9 @@ export default function CreateTeamForm({
         }
       });
 
+      if (TeamData.createdById == user.id) setIsLeader(true);
+
+      console.log(setIsLeader, "ISsssssssssssss");
       setIsTeamCreated(true);
       setTeamId(TeamData.id);
       setIsEditing(false);
@@ -92,8 +119,6 @@ export default function CreateTeamForm({
     try {
       setIsSubmitting(true);
       if (isTeamCreated) {
-        console.log("UPdatinggggggggggggg");
-        console.log(data);
         const response = await updateTeam({ teamId: teamId, ...data }).unwrap();
         setIsEditing(false);
         setTeamId(response.id);
@@ -118,6 +143,29 @@ export default function CreateTeamForm({
     setIsEditing(true);
   };
 
+  const handleDeleteConfirm = async () => {
+    try {
+      const rel = await deletTeam(teamId).unwrap();
+      toast.success("Team deleted successfully");
+      setIsTeamCreated(false);
+      setTeamId(undefined);
+      setIsEditing(true);
+      // Reset form to default values
+      form.reset({
+        name: "",
+        description: "",
+        hackathonId: hackathonId,
+        lookingForMembers: false,
+        requiredSkills: "",
+      });
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error("Failed to delete team. Please try again.");
+    } finally {
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   if (fetchingTeamData) {
     return (
       <div className="flex justify-center items-center align-middle">
@@ -128,6 +176,7 @@ export default function CreateTeamForm({
       </div>
     );
   }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -142,14 +191,66 @@ export default function CreateTeamForm({
             Create Your Team
           </div>
           {isTeamCreated && !isEditing && (
-            <Button
-              onClick={handleEdit}
-              size="sm"
-              className=" -right-0 z-10 absolute items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              Edit
-            </Button>
+            <div className="">
+              <Button
+                onClick={handleEdit}
+                size="sm"
+                className=" right-2 z-10 absolute items-center hover:bg-yellow-300 gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit
+              </Button>
+
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="right-0 -top-7 z-10 absolute items-center gap-2 hover:bg-red-400"
+                    disabled={deleting}
+                  >
+                    {deleting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Delete className="h-4 w-4" />
+                    )}
+                    {deleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-red-500" />
+                      Delete Team
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this team? This action
+                      cannot be undone. All team data including members and
+                      project information will be permanently removed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteConfirm}
+                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                      disabled={deleting}
+                    >
+                      {deleting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Deleting...
+                        </>
+                      ) : (
+                        "Delete Team"
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </div>
         <div className="p-6">

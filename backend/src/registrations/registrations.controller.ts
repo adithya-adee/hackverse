@@ -16,7 +16,6 @@ import { RegistrationsService } from './registrations.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 import { CreateRegistrationDto } from './dto/create-registration.dto';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('registrations')
 export class RegistrationsController {
@@ -51,6 +50,8 @@ export class RegistrationsController {
     @Request() req: { user: { userId: string } },
     @Param('hackathonId') hackathonId: string,
     ) {
+    console.log("registercheck")
+    console.log(hackathonId)
     return this.registrationsService.checkRegistration(req.user.userId, hackathonId);
   }
 

@@ -41,14 +41,26 @@ const Page = () => {
     isLoading: hackathonLoading,
   } = useGetHackathonDetailsQuery(hackathonId);
 
+  const {
+    data: isRegistered,
+    isLoading: checkingRegister,
+    error: registrationError,
+  } = useCheckRegistrationQuery(hackathonId);
+
+  // Add error handling
+  if (registrationError) {
+    console.error("Registration check failed:", registrationError);
+  }
+
+  console.log(hackathonId);
+  console.log(isRegistered);
+
   useEffect(() => {
     if (user && user?.id == hackathonDetails?.createdBy?.id) {
       setIsOrganizer(true);
     }
   }, [user]);
 
-  const { data: isRegistered, isLoading: checkingRegister } =
-    useCheckRegistrationQuery(hackathonId);
   const hackathon: FindHackathonDto = hackathonDetails;
   const [activeTab, setActiveTab] = useState(0);
 
@@ -62,9 +74,11 @@ const Page = () => {
       minute: "2-digit",
     });
   };
+
   const handleClick = async () => {
-    if (isRegistered) {
-      console.log(isOrganiser);
+    console.log(isOrganiser);
+    console.log(isRegistered);
+    if (isOrganiser) {
       router.push(`/events/${hackathonId}/view-analytics`);
     } else if (isRegistered) {
       router.push(`/events/${hackathonId}/register/team`);

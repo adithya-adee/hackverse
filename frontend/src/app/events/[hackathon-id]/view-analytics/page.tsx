@@ -209,6 +209,11 @@ export default function HackathonAnalytics() {
 
   // Check if the current user is authorized to view this dashboard
   const user = useSelector((state: RootState) => state.auth.user);
+
+  if (!user || user === null) {
+    window.location.replace("/");
+  }
+
   const isAuthorized = useMemo(() => {
     if (!hackathonData || !user) return false;
     return (
@@ -245,7 +250,7 @@ export default function HackathonAnalytics() {
     // Calculate days until start/end
     const daysRemaining = Math.max(
       0,
-      Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 3600 * 24))
+      Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 3600 * 24)),
     );
 
     return {
@@ -266,11 +271,11 @@ export default function HackathonAnalytics() {
     let filtered = teamsData;
     if (teamFilter === "with-submissions") {
       filtered = teamsData.filter((team) =>
-        submissionsData.some((sub) => sub.teamId === team.id)
+        submissionsData.some((sub) => sub.teamId === team.id),
       );
     } else if (teamFilter === "without-submissions") {
       filtered = teamsData.filter(
-        (team) => !submissionsData.some((sub) => sub.teamId === team.id)
+        (team) => !submissionsData.some((sub) => sub.teamId === team.id),
       );
     }
 
@@ -280,7 +285,7 @@ export default function HackathonAnalytics() {
       (team) =>
         team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (team.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
-          false)
+          false),
     );
   }, [teamsData, submissionsData, searchQuery, teamFilter]);
 
@@ -292,7 +297,7 @@ export default function HackathonAnalytics() {
         submission.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.description
           ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
+          .includes(searchQuery.toLowerCase()),
     );
   }, [submissionsData, searchQuery]);
 
@@ -302,7 +307,7 @@ export default function HackathonAnalytics() {
     return participantsData.filter(
       (participant) =>
         participant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        participant.email.toLowerCase().includes(searchQuery.toLowerCase())
+        participant.email.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [participantsData, searchQuery]);
 
@@ -439,7 +444,7 @@ export default function HackathonAnalytics() {
                   <Calendar className="w-3 h-3 mr-1" />
                   {format(
                     new Date(hackathonData.startDate),
-                    "MMM d, yyyy"
+                    "MMM d, yyyy",
                   )} - {format(new Date(hackathonData.endDate), "MMM d, yyyy")}
                 </Badge>
                 <Badge
@@ -614,7 +619,7 @@ export default function HackathonAnalytics() {
                       <p className="text-[var(--primary-11)]">
                         {formatDistanceToNow(
                           new Date(hackathonData.createdAt),
-                          { addSuffix: true }
+                          { addSuffix: true },
                         )}
                       </p>
                     </div>
@@ -631,7 +636,7 @@ export default function HackathonAnalytics() {
                           <span className="text-sm font-medium">
                             {format(
                               new Date(hackathonData.registrationDate),
-                              "MMM d, yyyy"
+                              "MMM d, yyyy",
                             )}
                           </span>
                         </div>
@@ -639,7 +644,7 @@ export default function HackathonAnalytics() {
                           value={getTimelineProgress(
                             hackathonData.registrationDate,
                             hackathonData.startDate,
-                            hackathonData.endDate
+                            hackathonData.endDate,
                           )}
                           className="h-2 bg-[var(--primary-4)]"
                         />
@@ -650,7 +655,7 @@ export default function HackathonAnalytics() {
                           <span className="text-sm font-medium">
                             {format(
                               new Date(hackathonData.startDate),
-                              "MMM d, yyyy"
+                              "MMM d, yyyy",
                             )}
                           </span>
                         </div>
@@ -658,7 +663,7 @@ export default function HackathonAnalytics() {
                           value={getTimelineProgress(
                             hackathonData.startDate,
                             hackathonData.startDate,
-                            hackathonData.endDate
+                            hackathonData.endDate,
                           )}
                           className="h-2 bg-[var(--primary-4)]"
                         />
@@ -669,7 +674,7 @@ export default function HackathonAnalytics() {
                           <span className="text-sm font-medium">
                             {format(
                               new Date(hackathonData.endDate),
-                              "MMM d, yyyy"
+                              "MMM d, yyyy",
                             )}
                           </span>
                         </div>
@@ -770,7 +775,7 @@ export default function HackathonAnalytics() {
                               <p className="text-lg font-medium">
                                 {
                                   teamsData.filter(
-                                    (team) => team.TeamMember.length === 1
+                                    (team) => team.TeamMember.length === 1,
                                   ).length
                                 }
                               </p>
@@ -824,7 +829,7 @@ export default function HackathonAnalytics() {
                         key={team.id}
                         team={team}
                         hasSubmission={submissionsData.some(
-                          (sub) => sub.teamId === team.id
+                          (sub) => sub.teamId === team.id,
                         )}
                       />
                     ))}
@@ -970,7 +975,7 @@ export default function HackathonAnalytics() {
                           <TableCell className="text-right">
                             {formatDistanceToNow(
                               new Date(participant.registeredAt),
-                              { addSuffix: true }
+                              { addSuffix: true },
                             )}
                           </TableCell>
                         </TableRow>
@@ -1296,7 +1301,7 @@ function calculateAverageTeamSize(teams: Team[]): string {
   if (teams.length === 0) return "0";
   const totalMembers = teams.reduce(
     (sum: number, team: Team) => sum + team.TeamMember.length,
-    0
+    0,
   );
   return (totalMembers / teams.length).toFixed(1);
 }
@@ -1304,7 +1309,7 @@ function calculateAverageTeamSize(teams: Team[]): string {
 function getTimelineProgress(
   date: string,
   startDate: string,
-  endDate: string
+  endDate: string,
 ): number {
   const now = new Date().getTime();
   const targetDate = new Date(date).getTime();

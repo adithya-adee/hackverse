@@ -32,10 +32,12 @@ function Page() {
   const { data: user, isLoading: isLoadingUser } = useGetUserDetailsQuery();
   const { data: hackathon, isLoading: isLoadingHackathon } =
     useGetHackathonDetailsQuery(hackathonId);
-  const [updateProfile, { isLoading: isUpdating }] =
+  const [updateProfile, { isLoading: isUpdating, isError: updateError }] =
     useUpdateUserProfileMutation();
-  const [registerForHackathon, { isLoading: isRegistering }] =
-    useRegisterForHackathonMutation();
+  const [
+    registerForHackathon,
+    { isLoading: isRegistering, isError: registrationErrror },
+  ] = useRegisterForHackathonMutation();
 
   const form = useForm<UserDetailsFormValues>({
     resolver: zodResolver(userDetailsSchema),
@@ -319,7 +321,11 @@ function Page() {
                   className="w-full px-4 py-3"
                 >
                   {typeOptions.map((option) => (
-                    <option key={option} value={option}>
+                    <option
+                      className="bg-[var(--primary-2)] text-[var(--primary-12)]"
+                      key={option}
+                      value={option}
+                    >
                       {option}
                     </option>
                   ))}

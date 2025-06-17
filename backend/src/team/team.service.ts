@@ -162,20 +162,115 @@ export class TeamService {
     });
   }
 
-  async getTeamsLookingForMembers(hackathonId: string,userId: string) {
-    return await this.prisma.team.findMany({
+
+// Option 1: Database-level filtering (More efficient for large datasets)
+// async getTeamsLookingForMembers(hackathonId: string, userId: string) {
+//   const teams = await this.prisma.$queryRaw`
+//     SELECT 
+//       t.*,
+//       h.id as hackathon_id,
+//       h.title as hackathon_title,
+//       h."maxTeamSize" as max_team_size,
+//       u.id as creator_id,
+//       u.name as creator_name,
+//       COALESCE(tm_count.member_count, 0) as member_count,
+//       (COALESCE(tm_count.member_count, 0) + 1) as current_size,
+//       (h."maxTeamSize" - (COALESCE(tm_count.member_count, 0) + 1)) as available_spots
+//     FROM "Team" t
+//     INNER JOIN "Hackathon" h ON t."hackathonId" = h.id
+//     INNER JOIN "User" u ON t."createdById" = u.id
+//     LEFT JOIN (
+//       SELECT "teamId", COUNT(*) as member_count
+//       FROM "TeamMember"
+//       GROUP BY "teamId"
+//     ) tm_count ON t.id = tm_count."teamId"
+//     WHERE 
+//       t."hackathonId" = ${hackathonId}::uuid
+//       AND t."lookingForMembers" = true
+//       AND t."createdById" != ${userId}::uuid
+//       AND (COALESCE(tm_count.member_count, 0) + 1) < h."maxTeamSize"
+//     ORDER BY t."createdAt" DESC
+//   `;
+
+//   // Get detailed team member information for the filtered teams
+//   const teamIds = teams.map((team: any) => team.id);
+  
+//   if (teamIds.length === 0) {
+//     return [];
+//   }
+
+//   const detailedTeams = await this.prisma.team.findMany({
+//     where: {
+//       id: {
+//         in: teamIds,
+//       },
+//     },
+//     include: {
+//       TeamMember: {
+//         include: {
+//           User: {
+//             select: {
+//               id: true,
+//               name: true,
+//               profileImageUrl: true,
+//             },
+//           },
+//         },
+//       },
+//       Hackathon: {
+//         select: {
+//           id: true,
+//           title: true,
+//           maxTeamSize: true,
+//         },
+//       },
+//       User: {
+//         select: {
+//           id: true,
+//           name: true,
+//         },
+//       },
+//       _count: {
+//         select: {
+//           TeamMember: true,
+//         },
+//       },
+//     },
+//     orderBy: {
+//       createdAt: 'desc',
+//     },
+//   });
+
+//   // Transform the data to include additional computed fields
+//   return detailedTeams.map((team) => ({
+//     ...team,
+//     currentSize: team._count.TeamMember + 1, // Include creator in count
+//     maxSize: team.Hackathon.maxTeamSize,
+//     availableSpots: team.Hackathon.maxTeamSize - (team._count.TeamMember + 1),
+//     isAcceptingMembers: team.lookingForMembers && (team._count.TeamMember + 1) < team.Hackathon.maxTeamSize,
+//     fillPercentage: Math.round(((team._count.TeamMember + 1) / team.Hackathon.maxTeamSize) * 100),
+//   }));
+// }
+
+
+
+
+  // Alternative Option 2: Pure Prisma approach (Simpler but potentially less efficient)
+  async getTeamsLookingForMembers(hackathonId: string, userId: string) {
+    const teams = await this.prisma.team.findMany({
       where: {
         hackathonId,
         lookingForMembers: true,
         createdById: {
           not: userId,
-        }
+        },
       },
       include: {
         TeamMember: {
           include: {
             User: {
               select: {
+                id: true,
                 name: true,
                 profileImageUrl: true,
               },
@@ -195,8 +290,38 @@ export class TeamService {
             name: true,
           },
         },
+        _count: {
+          select: {
+            TeamMember: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
+
+    // Filter out teams that have reached maximum capacity
+    const availableTeams = teams.filter((team) => {
+      const maxTeamSize = team.Hackathon.maxTeamSize;
+      const currentMemberCount = team._count.TeamMember;
+      
+      // Add 1 to account for the team creator (createdById)
+      const totalTeamSize = currentMemberCount + 1;
+      
+      // Only include teams that have space for more members
+      return totalTeamSize < maxTeamSize;
+    });
+
+    // Transform the data to include additional computed fields for frontend
+    return availableTeams.map((team) => ({
+      ...team,
+      currentSize: team._count.TeamMember + 1, // Include creator in count
+      maxSize: team.Hackathon.maxTeamSize,
+      availableSpots: team.Hackathon.maxTeamSize - (team._count.TeamMember + 1),
+      isAcceptingMembers: true, // These are all available teams
+      fillPercentage: Math.round(((team._count.TeamMember + 1) / team.Hackathon.maxTeamSize) * 100),
+    }));
   }
 
   async getTeamById(teamId: string) {
@@ -561,22 +686,6 @@ export class TeamService {
     });
   }
 
-  // async findByHackathonAndCreator(hackathonId: string, createdById: string): Promise<Team> {
-  //   const team = await this.prisma.team.findUnique({
-  //     where: {
-  //       hackathonId_createdById: {
-  //         hackathonId,
-  //         createdById,
-  //       },
-  //     },
-  //   });
-
-  //   if (!team) {
-  //     throw new NotFoundException('Team not found');
-  //   }
-
-  //   return team;
-  // } 
 
   async deleteTeam(teamId: string, userId: string){
 
@@ -614,83 +723,7 @@ export class TeamService {
               userId: memberId,
             },
           },
-        },
-        // include: {
-        //   User: {
-        //     select: {
-        //       id: true,
-        //       name: true,
-        //       email: true,
-        //       profileImageUrl: true,
-        //     },
-        //   },
-        //   Hackathon: {
-        //     select: {
-        //       id: true,
-        //       title: true,
-        //       status: true,
-        //       startDate: true,
-        //       endDate: true,
-        //     },
-        //   },
-        //   TeamMember: {
-        //     include: {
-        //       User: {
-        //         select: {
-        //           id: true,
-        //           name: true,
-        //           email: true,
-        //           profileImageUrl: true,
-        //           githubUrl: true,
-        //           linkedinUrl: true,
-        //           Skill: {
-        //             select: {
-        //               id: true,
-        //               name: true,
-        //             },
-        //           },
-        //         },
-        //       },
-        //     },
-        //     orderBy: {
-        //       joinedAt: 'asc',
-        //     },
-        //   },
-        //   TeamRequest: {
-        //     include: {
-        //       user: {
-        //         select: {
-        //           id: true,
-        //           name: true,
-        //           email: true,
-        //           profileImageUrl: true,
-        //           Skill: {
-        //             select: {
-        //               id: true,
-        //               name: true,
-        //             },
-        //           },
-        //         },
-        //       },
-        //     },
-        //     where: {
-        //       expiresAt: {
-        //         gt: new Date(),
-        //       },
-        //     },
-        //   },
-        //   Submission: {
-        //     select: {
-        //       id: true,
-        //       title: true,
-        //       description: true,
-        //       githubUrl: true,
-        //       demoUrl: true,
-        //       videoUrl: true,
-        //       submittedAt: true,
-        //     },
-        //   },
-        // },
+        }
       });
 
       if (!team) {
@@ -708,4 +741,20 @@ export class TeamService {
     }
   }
 
+
+  async isLeader(teamId: string, userId: string){
+    const team = await this.prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const isLeader = team?.createdById === userId;
+
+    return isLeader;
+  }
 }

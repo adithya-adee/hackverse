@@ -59,6 +59,9 @@ export default function JoinTeamView({ hackathonId }: JoinTeamViewProps) {
 
   // Get current user from Redux store
   const user: User = useSelector((state: RootState) => state.auth.user);
+  if (!user || user === null) {
+    window.location.replace("/");
+  }
 
   // Fetch teams looking for members from API
   const {
