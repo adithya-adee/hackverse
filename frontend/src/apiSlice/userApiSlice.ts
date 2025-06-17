@@ -1,6 +1,5 @@
 import { apiSlice } from "@/store/apiSlice";
 import { TeamRequest, type User } from "@/types/core_interfaces";
-import { url } from "inspector";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

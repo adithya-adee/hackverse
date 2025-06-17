@@ -60,12 +60,12 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
     error: requestsErrorByParticipants,
   } = useGetTeamRequestsForATeambyParticipantsQuery(teamId);
 
-  console.log("---------------------------------");
-  console.log(teamId);
-  console.log(teamMembers);
-  console.log(requestsErrorByParticipants);
-  console.log(requestsErrorByteam);
-  console.log("---------------------------------");
+  // console.log("---------------------------------");
+  // console.log(teamId);
+  // console.log(teamMembers);
+  // console.log(requestsErrorByParticipants);
+  // console.log(requestsErrorByteam);
+  // console.log("---------------------------------");
 
   // Accept and reject request mutations
   const [acceptRequest, { isLoading: isAccepting }] =

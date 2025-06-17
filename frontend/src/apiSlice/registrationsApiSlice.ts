@@ -4,10 +4,12 @@ export const registrationApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Check if current user is registered
     checkRegistration: builder.query({
-      query: (hackathonId) => ({
-        url: `/registrations/check/${hackathonId}`,
-        method: "GET",
-      }),
+      query: (hackathonId) => {
+        return {
+          url: `/registrations/check/${hackathonId}`,
+          method: "GET",
+        };
+      },
     }),
 
     //get all registered users for a perticular hacathon

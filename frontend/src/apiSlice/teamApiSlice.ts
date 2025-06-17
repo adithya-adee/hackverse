@@ -39,13 +39,6 @@ export const teamApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // getTeamByHackathonCreator: builder.query({
-    //   query: ({ createdById, hackathonId }) => ({
-    //     url: `team/by-creator-hackathon?createdById=${createdById}&hackathonId=${hackathonId}`,
-    //     method: "GET",
-    //   }),
-    // }),
-
     getTeamByHackathonMember: builder.query({
       query: ({ memberId, hackathonId }) => ({
         url: `team/by-member-hackathon?memberId=${memberId}&hackathonId=${hackathonId}`,
@@ -58,6 +51,10 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         url: `team/${teamId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ({ teamId }) => [
+        { type: "TeamMembers", id: teamId },
+        { type: "TeamRequests", id: teamId },
+      ],
     }),
 
     // Get all members of a specific team
@@ -157,6 +154,13 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         { type: "TeamRequests", id: teamId },
       ],
     }),
+
+    isLeader: builder.query({
+      query: (teamId) => ({
+        url: `team/isLeader/${teamId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -176,4 +180,5 @@ export const {
   useGetUserTeamRequestsByTeamQuery,
   useGetUserTeamRequestsByUserQuery,
   useGetTeamByHackathonMemberQuery,
+  useIsLeaderQuery,
 } = teamApiSlice;

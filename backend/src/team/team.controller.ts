@@ -75,15 +75,6 @@ export class TeamController {
     return this.teamsService.getAllTeamReqbyUser(req.user.userId);
   }
 
-  //Get team details from createdByid and hackathonID
-  // @Get('by-creator-hackathon')
-  // @UseGuards(JwtAuthGuard)
-  // async getTeamByHackathonAndCreator(
-  //   @Query('hackathonId') hackathonId: string,
-  //   @Query('createdById') createdById: string,
-  // ): Promise<Team> {
-  //   return this.teamsService.findByHackathonAndCreator(hackathonId, createdById);
-  // }
 
   //Get team details from memberID and hackathonID
   @Get('by-member-hackathon')
@@ -118,6 +109,7 @@ export class TeamController {
     @Request() req: { user: { userId: string } },
     @Param('hackathonId') hackathonId: string,
   ) {
+    console.log("hittted")
     return this.teamsService.getTeamsLookingForMembers(hackathonId , req.user.userId);
   }
 
@@ -192,6 +184,17 @@ export class TeamController {
     @Param('userId') userId: string,
   ) {
     return this.teamsService.rejectTeamRequest(teamId, userId, req.user.userId);
+  }
+
+
+  @Get('isLeader/:teamId')
+  @UseGuards(JwtAuthGuard)
+  isLeader(
+    @Request() req: { user: { userId: string } },
+    @Param('teamId') teamId: string,
+  ){
+    console.log(teamId);
+    return this.teamsService.isLeader(teamId,req.user.userId);
   }
 
 
