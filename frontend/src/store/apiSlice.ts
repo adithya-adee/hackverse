@@ -9,7 +9,6 @@ export const apiSlice = createApi({
     prepareHeaders: (headers) => {
       const token = Cookies.get("token");
       if (token) {
-        console.log("token exists");
         headers.set("Authorization", `Bearer ${token}`);
         console.log("headers set");
       }

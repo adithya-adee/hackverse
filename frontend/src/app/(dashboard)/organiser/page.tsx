@@ -20,6 +20,7 @@ import { HackathonTab } from "@/components/dashboard/organiser/hackathons/Hackah
 import { TeamsTab } from "@/components/dashboard/organiser/teams/TeamsTab";
 import { SubmissionsTab } from "@/components/dashboard/organiser/submissions/SubmissionsTab";
 import { ParticipantsTab } from "@/components/dashboard/organiser/participants/ParticipantsTab";
+
 // TODO: Implement setting tab
 // import { SettingsTab } from "@/components/dashboard/organiser/settings/SettingsTab";
 import Loading from "@/app/loading";

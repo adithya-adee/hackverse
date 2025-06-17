@@ -6,8 +6,6 @@ import {
   FiUsers,
   FiExternalLink,
   FiMonitor,
-  FiClock,
-  FiCheck,
   FiCheckCircle,
 } from "react-icons/fi";
 import { HiOutlineStatusOnline, HiOutlineLocationMarker } from "react-icons/hi";

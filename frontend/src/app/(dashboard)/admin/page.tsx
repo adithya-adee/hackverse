@@ -158,7 +158,7 @@ export default function AdminDashboard() {
               Hackathons
             </TabsTrigger>
             <TabsTrigger
-              value=" "
+              value="requests"
               className="py-2 data-[state=active]:bg-[var(--primary-9)] data-[state=active]:text-white"
             >
               <MessageSquare className="h-4 w-4 mr-2" />

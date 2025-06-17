@@ -722,10 +722,6 @@ export default function HackathonAnalytics() {
                             {metrics?.teamCount || 0} teams
                           </span>
                         </div>
-                        <Progress
-                          value={Math.min(100, (metrics?.teamCount || 0) * 10)}
-                          className="h-2 bg-[var(--primary-4)]"
-                        />
                       </div>
 
                       <div>
@@ -1047,6 +1043,7 @@ function TeamCard({
   hasSubmission: boolean;
 }) {
   const [showMembers, setShowMembers] = useState(false);
+  console.log(team);
 
   return (
     <Card className="bg-[var(--primary-2)] hover:shadow-md transition-shadow">
@@ -1247,21 +1244,39 @@ function TeamSizePieChart({
 
   // This is a simple representation - in a real app you'd use a proper chart library
   return (
-    <div className="flex items-end h-20 gap-1">
-      {distribution.map((count, index) => (
-        <div
-          key={index}
-          className="flex-1 bg-[var(--primary-9)] rounded-t"
-          style={{
-            height: `${count ? Math.max(15, (count / Math.max(...distribution)) * 100) : 0}%`,
-            opacity: 0.5 + index / (maxTeamSize * 1.5),
-          }}
-        >
-          {count > 0 && (
-            <div className="text-center text-xs font-medium py-1">{count}</div>
-          )}
-        </div>
-      ))}
+    <div className="space-y-2">
+      <div className="flex items-end h-20 gap-1">
+        {distribution.map((count, index) => (
+          <div
+            key={index}
+            className="flex-1 bg-[var(--primary-9)] rounded-t flex flex-col justify-end"
+            style={{
+              height: `${count ? Math.max(15, (count / Math.max(...distribution)) * 100) : 0}%`,
+              opacity: 0.5 + index / (maxTeamSize * 1.5),
+            }}
+          >
+            {count > 0 && (
+              <div className="text-center text-xs font-medium py-1 text-white">
+                {count}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {/* X-axis labels */}
+      <div className="flex gap-1">
+        {distribution.map((_, index) => (
+          <div
+            key={index}
+            className="flex-1 text-center text-xs text-[var(--muted-foreground)]"
+          >
+            {index + 1}
+          </div>
+        ))}
+      </div>
+      <div className="text-center text-xs text-[var(--muted-foreground)] mt-1">
+        Team Size
+      </div>
     </div>
   );
 }

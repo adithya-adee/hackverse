@@ -263,7 +263,16 @@ export class HackathonsService {
         hackathonId,
       },
       include: {
-        TeamMember: true,
+        TeamMember: {
+          include: {
+            User: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
 

@@ -35,10 +35,6 @@ function RightSectionCreate({ hackathonId, teamId }: Props) {
     useCreateTeamRequestMutation();
 
   const onSendTeamRequest = async (userId: string) => {
-    console.log("----------------------------");
-    console.log(userId);
-    console.log(teamId);
-    console.log("----------------------------");
     const createdReq = await createTeamRequest({
       userId,
       teamId,
@@ -234,7 +230,7 @@ function RightSectionCreate({ hackathonId, teamId }: Props) {
                     </CardContent>
                   </div>
                 </motion.div>
-              ),
+              )
             )}
           </motion.div>
         )}
