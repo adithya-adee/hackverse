@@ -2,12 +2,18 @@
 
 import React, { useEffect } from "react";
 import { HackathonCard } from "@/components/root components/HackathonCard";
-import { useGetAllHackathonsQuery } from "@/apiSlice/adminApiSlice";
-import { Loader } from "@/components/ui/loader";
 import { Hackathon, HackathonTag } from "@/types/core_interfaces";
 import { toast } from "sonner";
 import { Calendar, Plus, RefreshCcw } from "lucide-react";
 import Link from "next/link";
+import { useGetAllEventsQuery } from "@/apiSlice/hackathonApiSlice";
+import Loading from "../loading";
+
+interface Event extends Hackathon {
+  _count: {
+    HackathonRegistration: number;
+  };
+}
 
 function Page() {
   const {
@@ -15,10 +21,10 @@ function Page() {
     isLoading: hackathonLoading,
     error: hackathonError,
     refetch: refetchHackathons,
-  } = useGetAllHackathonsQuery(undefined);
+  } = useGetAllEventsQuery(undefined);
 
   // Access the hackathons array from the response property
-  const hackathons = hackathonsData?.response;
+  const hackathons: Event[] = hackathonsData;
 
   // Show toast notification when there's an error
   useEffect(() => {
@@ -28,17 +34,17 @@ function Page() {
   }, [hackathonError]);
 
   if (hackathonLoading) {
-    return <Loader />;
+    return <Loading />;
   }
 
   // Check if there are no hackathons or if there was an error
   const noHackathons = !hackathons || hackathons.length === 0 || hackathonError;
 
   return (
-    <div className="pt-16 min-h-screen w-full bg-gradient-to-br from-[var(--primary-5)] via-[var(--primary-3)] to-[var(--primary-1)]">
+    <div className="pt-10 min-h-screen w-full bg-gradient-to-br from-[var(--primary-5)] via-[var(--primary-3)] to-[var(--primary-1)]">
       <div className="w-full">
         {/* search bar */}
-        <div className="bg-[var(--primary-2)] h-30 w-full"></div>
+        {/* <div className="bg-[var(--primary-2)] h-30 w-full"></div> */}
 
         {/* hackathons list */}
         <div className="mt-24 md:mx-38">
@@ -85,31 +91,26 @@ function Page() {
           ) : (
             <div className="flex justify-center items-center min-h-screen">
               <div className="md:m-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-24">
-                {hackathons.map((hackathon: Hackathon) => (
-                  <HackathonCard
-                    key={hackathon.id}
-                    id={hackathon.id}
-                    title={hackathon.title}
-                    description={hackathon.description || ""}
-                    bannerImageUrl={hackathon.bannerImageUrl || ""}
-                    startDate={hackathon.startDate}
-                    mode={hackathon.mode || "ONLINE"}
-                    maxTeamSize={hackathon.maxTeamSize}
-                    // tags={
-                    //   hackathon.HackathonTag?.map(
-                    //     (tag: HackathonTag) => tag.name,
-                    // ) || []
-                    // }
-                    createdById={hackathon.createdById}
-                    tags={hackathon.HackathonTag || []}
-                    // registeredParticipants={
-                    //   hackathon._count?.HackathonRegistration || 0
-                    // }
-                    registeredParticipants={
-                      hackathon.HackathonRegistration?.length || 0
-                    }
-                  />
-                ))}
+                {hackathons
+                  .slice()
+                  .reverse()
+                  .map((hackathon: Event) => (
+                    <HackathonCard
+                      key={hackathon.id}
+                      id={hackathon.id}
+                      title={hackathon.title}
+                      description={hackathon.description || ""}
+                      bannerImageUrl={hackathon.bannerImageUrl || ""}
+                      startDate={hackathon.startDate}
+                      mode={hackathon.mode || "ONLINE"}
+                      maxTeamSize={hackathon.maxTeamSize}
+                      createdById={hackathon.createdById}
+                      tags={hackathon.HackathonTag || []}
+                      registeredParticipants={
+                        hackathon._count?.HackathonRegistration || 0
+                      }
+                    />
+                  ))}
               </div>
             </div>
           )}

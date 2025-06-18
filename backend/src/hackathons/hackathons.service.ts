@@ -28,6 +28,22 @@ export class HackathonsService {
     return { response, count };
   }
 
+  async getAllHackathonEvents() {
+    const response = await this.prisma.hackathon.findMany({
+      include: {
+        HackathonTab: true,
+        HackathonTag: true,
+        _count: {
+          select: {
+            HackathonRegistration: true,
+          },
+        },
+      },
+    });
+
+    return response;
+  }
+
   async getAllUpcomingHackathons(): Promise<UpcomingHackathonDto[]> {
     const response = await this.prisma.hackathon.findMany({
       where: {

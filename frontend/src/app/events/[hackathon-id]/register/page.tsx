@@ -88,6 +88,11 @@ function Page() {
         return;
       }
 
+      if (!user || !user.id) {
+        toast.error("Error user information");
+        return;
+      }
+
       const updated_user = await updateProfile({
         id: user?.id,
         data,

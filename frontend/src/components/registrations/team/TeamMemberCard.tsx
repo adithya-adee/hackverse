@@ -21,6 +21,8 @@ import {
 } from "@/apiSlice/teamApiSlice";
 import { TeamMember, TeamRequest } from "@/types/core_interfaces";
 
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
 interface UserInfo {
   mem: boolean;
   user: {
@@ -38,10 +40,11 @@ interface UserInfo {
 }
 
 interface TeamMemberCardProps {
+  isTeamLeader: boolean;
   teamId: string;
 }
 
-const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
+const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
   const {
     data: teamMembers = [],
     isLoading: isLoadingMembers,
@@ -59,13 +62,6 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
     isLoading: isLoadingRequestsByParticipants,
     error: requestsErrorByParticipants,
   } = useGetTeamRequestsForATeambyParticipantsQuery(teamId);
-
-  // console.log("---------------------------------");
-  // console.log(teamId);
-  // console.log(teamMembers);
-  // console.log(requestsErrorByParticipants);
-  // console.log(requestsErrorByteam);
-  // console.log("---------------------------------");
 
   // Accept and reject request mutations
   const [acceptRequest, { isLoading: isAccepting }] =
@@ -132,33 +128,31 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
   //   );
   // }
 
-  if (membersError || requestsErrorByParticipants || requestsErrorByteam) {
-    const error =
-      membersError || requestsErrorByteam || requestsErrorByParticipants;
+  // if (membersError || requestsErrorByParticipants || requestsErrorByteam) {
+  //   const error =
+  //     membersError || requestsErrorByteam || requestsErrorByParticipants;
 
-    if (process.env.NODE_ENV === "development") {
-      console.error("Team data load error:", error);
-    }
+  //   if (process.env.NODE_ENV === "development") {
+  //     console.error("Team data load error:", error);
+  //   }
 
-    return (
-      <div className="text-center py-12">
-        <div className="bg-red-100 text-red-700/50 px-6 py-4 rounded-lg inline-block shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">
-            Error loading team data
-          </h3>
-          <p className="text-sm">
-            Something went wrong while loading team members or requests.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  //   return (
+  //     <div className="text-center py-12">
+  //       <div className="bg-red-100 text-red-700/50 px-6 py-4 rounded-lg inline-block shadow-sm">
+  //         <h3 className="text-lg font-semibold mb-2"></h3>
+  //         <p className="text-sm">
+  //           Something went wrong while loading team members or requests.
+  //         </p>
+  //         <button
+  //           onClick={() => window.location.reload()}
+  //           className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+  //         >
+  //           Retry
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const UserCard = ({
     user,
@@ -174,11 +168,12 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-4">
           <div className="relative">
-            <img
-              src={user.profileImageUrl}
-              alt={user.name}
-              className="w-16 h-16 rounded-full object-cover ring-2 ring-blue-100"
-            />
+            <Avatar className="w-16 h-16 ring-2 ring-blue-100">
+              <AvatarImage src={user.profileImageUrl} alt={user.name} />
+              <AvatarFallback>
+                {user.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             {isLeader && (
               <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
                 <Crown className="w-3 h-3 text-white" />
@@ -305,13 +300,28 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
         {/* Team Requests Section */}
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-yellow-100 p-2 rounded-lg">
-              <Clock className="w-3 h-3 text-yellow-600" />
-            </div>
-            <h2 className="text-xl font-bold text-[var(--primary-12)]">
-              Pending Requests (
-              {teamRequestsByTeam.length + teamRequestsByParticipants.length})
-            </h2>
+            {isTeamLeader ? (
+              <>
+                <div className="bg-yellow-100 p-2 rounded-lg">
+                  <Clock className="w-3 h-3 text-yellow-600" />
+                </div>
+                <h2 className="text-xl font-bold text-[var(--primary-12)]">
+                  Pending Requests (
+                  {teamRequestsByTeam.length +
+                    teamRequestsByParticipants.length}
+                  )
+                </h2>
+              </>
+            ) : (
+              <>
+                <div className="bg-yellow-100 p-2 rounded-lg">
+                  <Clock className="w-3 h-3 text-yellow-600" />
+                </div>
+                <h2 className="text-xl font-bold text-[var(--primary-12)]">
+                  Pending Requests By Team ({teamRequestsByTeam.length})
+                </h2>
+              </>
+            )}
           </div>
 
           {teamRequestsByTeam.length > 0 && (
@@ -324,7 +334,7 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
                   type: request.user?.type || "UNSPECIFIED",
                   institutionName: request.user?.institutionName || "",
                   profileImageUrl:
-                    request.user?.profileImageUrl || "/default-avatar.png",
+                    request.user?.profileImageUrl || "Unkown Url",
                   Skill: request.user?.Skill || [],
                 };
 
@@ -349,49 +359,13 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
                         )}
                       </div>
                     }
-                    // actions={
-                    //   <div className="space-y-3">
-                    //     <div className="text-xs text-gray-500">
-                    //       <div>
-                    //         Requested: {formatDate(request.requestedAt)}
-                    //       </div>
-                    //       <div>Expires: {formatDate(request.expiresAt)}</div>
-                    //     </div>
-                    //     <div className="flex gap-2">
-                    //       <button
-                    //         onClick={() => handleAcceptRequest(request.userId)}
-                    //         disabled={isAccepting}
-                    //         className="flex-1 bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    //       >
-                    //         {isAccepting ? (
-                    //           <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    //         ) : (
-                    //           <Check className="w-4 h-4" />
-                    //         )}
-                    //         Accept
-                    //       </button>
-                    //       <button
-                    //         onClick={() => handleRejectRequest(request.userId)}
-                    //         disabled={isRejecting}
-                    //         className="flex-1 bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    //       >
-                    //         {isRejecting ? (
-                    //           <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    //         ) : (
-                    //           <X className="w-4 h-4" />
-                    //         )}
-                    //         Reject
-                    //       </button>
-                    //     </div>
-                    //   </div>
-                    // }
                   />
                 );
               })}
             </div>
           )}
 
-          {teamRequestsByParticipants.length > 0 && (
+          {teamRequestsByParticipants.length > 0 && isTeamLeader && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {teamRequestsByParticipants.map((request: TeamRequest) => {
                 // Create a userWithDefaults object with fallback values to handle type safety
@@ -468,19 +442,20 @@ const TeamMembercard = ({ teamId }: TeamMemberCardProps) => {
             </div>
           )}
 
-          {!teamRequestsByTeam && !teamRequestsByParticipants && (
-            <div className="text-center py-12">
-              <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="w-10 h-10 text-gray-400" />
+          {teamRequestsByTeam.length == 0 &&
+            teamRequestsByParticipants.length == 0 && (
+              <div className="text-center py-12">
+                <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-medium text-gray-500 mb-2">
+                  No Pending Requests
+                </h3>
+                <p className="text-gray-400">
+                  All team requests have been processed.
+                </p>
               </div>
-              <h3 className="text-xl font-medium text-gray-500 mb-2">
-                No Pending Requests
-              </h3>
-              <p className="text-gray-400">
-                All team requests have been processed.
-              </p>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

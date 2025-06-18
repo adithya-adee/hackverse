@@ -19,11 +19,13 @@ import { SkillsSection } from "@/components/dashboard/profile/SkillSection";
 import { PendingRequestsSection } from "@/components/dashboard/profile/PendingRequestSection";
 import { RolesSection } from "@/components/dashboard/profile/RolesSection";
 import {
-  useGetTeamRequestsQuery,
+  useGetTeamRequestByTeamQuery,
+  useGetTeamRequestsByUserQuery,
   useGetUserDetailsQuery,
   useUpdateUserProfileMutation,
 } from "@/apiSlice/userApiSlice";
 import Loading from "@/app/loading";
+import { useGetUserTeamRequestsByTeamQuery } from "@/apiSlice/teamApiSlice";
 
 // const statsInitial = {
 //   totalHackathonsParticipated: 3,
@@ -42,9 +44,15 @@ const UserDetailsUpdatePage = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const { data: user, isLoading, error, refetch } = useGetUserDetailsQuery();
-  const { data: pendingTeamRequests } = useGetTeamRequestsQuery();
+  const { data: pendingTeamRequestsByUser } = useGetTeamRequestsByUserQuery();
+  const { data: pendingTeamRequestsByTeam } = useGetTeamRequestByTeamQuery();
   const [updateProfile, { isLoading: isUpdating }] =
     useUpdateUserProfileMutation();
+
+  const pendingTeamRequests = [
+    ...(pendingTeamRequestsByUser ?? []),
+    ...(pendingTeamRequestsByTeam ?? []),
+  ];
 
   const handleProfileSave = async (data: UserDetailsFormValues) => {
     try {
@@ -54,7 +62,12 @@ const UserDetailsUpdatePage = () => {
         })
       );
 
-      await updateProfile({ id: user?.id, data: apiData }).unwrap();
+      if (!user?.id) {
+        toast.error("Error fetching user details");
+        return;
+      }
+
+      await updateProfile({ id: user.id, data: apiData }).unwrap();
 
       toast.success("Profile updated successfully", {
         icon: <CheckCircle className="h-5 w-5 text-green-500" />,

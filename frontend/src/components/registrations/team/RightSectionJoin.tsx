@@ -146,7 +146,7 @@ function RightSectionJoin({ hackathonId }: Props) {
       toast.error("something went wrong.");
     }
     toast.success("Team Request accepted.");
-    router.push(`/team`);
+    router.refresh();
   };
 
   const handleRejectRequest = async (teamID: string, userID: string) => {
