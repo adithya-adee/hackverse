@@ -754,19 +754,30 @@ export class TeamService {
     }
   }
 
-  async isLeader(teamId: string, userId: string) {
-    const team = await this.prisma.team.findUnique({
-      where: {
-        id: teamId,
-      },
-    });
 
-    if (!team) {
-      throw new NotFoundException('Team not found');
+  async removeFromTeam(teamId: string, userId: string) {
+    try {
+      const team = await this.getTeamById(teamId);
+      if (!team) {
+        throw new NotFoundException(`No team found for teamID ${teamId}`);
+      }
+
+      const delMem = await this.prisma.teamMember.delete({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId
+          }
+        }
+      });
+
+      return delMem;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new Error(`Failed to remove from team: ${error.message}`);
     }
-
-    const isLeader = team?.createdById === userId;
-
-    return isLeader;
   }
+
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { JSX } from "react";
+import React, { JSX, useState } from "react";
 import {
   Check,
   X,
@@ -10,7 +10,22 @@ import {
   Code,
   Calendar,
   Clock,
+  Loader2,
+  Delete,
+  AlertTriangle,
+  Trash,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   useGetTeamMembersQuery,
@@ -18,14 +33,17 @@ import {
   useRejectTeamRequestMutation,
   useGetTeamRequestsForATeamByTeamQuery,
   useGetTeamRequestsForATeambyParticipantsQuery,
+  useRemoveMemberMutation,
 } from "@/apiSlice/teamApiSlice";
 import { TeamMember, TeamRequest } from "@/types/core_interfaces";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 interface UserInfo {
   mem: boolean;
   user: {
+    Uid: string;
     name: string;
     email: string;
     type: string;
@@ -37,6 +55,7 @@ interface UserInfo {
   joinedAt: string;
   badge: JSX.Element;
   actions?: JSX.Element;
+  kick: boolean;
 }
 
 interface TeamMemberCardProps {
@@ -45,6 +64,7 @@ interface TeamMemberCardProps {
 }
 
 const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const {
     data: teamMembers = [],
     isLoading: isLoadingMembers,
@@ -62,6 +82,21 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
     isLoading: isLoadingRequestsByParticipants,
     error: requestsErrorByParticipants,
   } = useGetTeamRequestsForATeambyParticipantsQuery(teamId);
+
+  const [removeMember, { isLoading: removing }] = useRemoveMemberMutation();
+
+  const handleRemoveConfirm = async (userId: string) => {
+    try {
+      console.log(teamId, userId);
+      const rel = await removeMember({ teamId, userId }).unwrap();
+      toast.success("Left Team successfully");
+    } catch (error) {
+      console.error("failed:", error);
+      toast.error("Failed to remove from team. Please try again.");
+    } finally {
+      setIsLeaveDialogOpen(false);
+    }
+  };
 
   // Accept and reject request mutations
   const [acceptRequest, { isLoading: isAccepting }] =
@@ -161,6 +196,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
     badge,
     actions,
     mem,
+    kick,
   }: UserInfo) => (
     <div
       className={` ${mem ? "dark:bg-white/5 bg-green-100 " : "bg-yellow-50 dark:bg-white/5"}  w-full rounded-xl shadow-lg border p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
@@ -246,6 +282,56 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
         {actions && (
           <div className="mt-4 pt-4 border-t border-gray-200">{actions}</div>
         )}
+
+        {!isLeader && kick && (
+          <AlertDialog
+            open={isLeaveDialogOpen}
+            onOpenChange={setIsLeaveDialogOpen}
+          >
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                className="-right-2 -top-4 z-10 absolute items-center gap-2 hover:bg-red-400"
+                disabled={removing}
+              >
+                {removing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash className="w-4 h-4" />
+                )}
+                {removing ? "removing..." : "kick"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                  Kick
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to Kick ? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleRemoveConfirm(user.Uid)}
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                  disabled={removing}
+                >
+                  {removing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      removing...
+                    </>
+                  ) : (
+                    "Kick"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </div>
   );
@@ -267,6 +353,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
             {teamMembers.map((member: TeamMember) => {
               // Ensure user object has all required properties with defaults
               const userWithDefaults = {
+                Uid: member.User?.id || "",
                 name: member.User?.name || "Unknown User",
                 email: member.User?.email || "No email provided",
                 type: member.User?.type || "UNSPECIFIED",
@@ -291,6 +378,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
                       </span>
                     </div>
                   }
+                  kick={true}
                 />
               );
             })}
@@ -329,6 +417,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
               {teamRequestsByTeam.map((request: TeamRequest) => {
                 // Create a userWithDefaults object with fallback values to handle type safety
                 const userWithDefaults = {
+                  Uid: request.user?.id || " ",
                   name: request.user?.name || "Unknown User",
                   email: request.user?.email || "No email provided",
                   type: request.user?.type || "UNSPECIFIED",
@@ -359,6 +448,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
                         )}
                       </div>
                     }
+                    kick={false}
                   />
                 );
               })}
@@ -370,6 +460,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
               {teamRequestsByParticipants.map((request: TeamRequest) => {
                 // Create a userWithDefaults object with fallback values to handle type safety
                 const userWithDefaults = {
+                  Uid: request.user?.id || " ",
                   name: request.user?.name || "Unknown User",
                   email: request.user?.email || "No email provided",
                   type: request.user?.type || "UNSPECIFIED",
@@ -383,6 +474,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
                   <UserCard
                     key={request.userId}
                     mem={false}
+                    kick={false}
                     user={userWithDefaults} // Pass the type-safe user object
                     joinedAt={request.requestedAt}
                     badge={

@@ -34,6 +34,7 @@ import {
   useCreateTeamMutation,
   useDeleteTeamMutation,
   useGetTeamByHackathonMemberQuery,
+  useRemoveMemberMutation,
   useUpdateTeamMutation,
 } from "@/apiSlice/teamApiSlice";
 import { toast } from "sonner";
@@ -46,6 +47,8 @@ interface Props {
   setTeamId: React.Dispatch<React.SetStateAction<string | undefined>>;
   isLeader: boolean;
   setIsLeader: React.Dispatch<React.SetStateAction<boolean>>;
+  isTeamCreated: boolean;
+  setIsTeamCreated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CreateTeamForm({
@@ -54,11 +57,14 @@ export default function CreateTeamForm({
   setTeamId,
   isLeader,
   setIsLeader,
+  isTeamCreated,
+  setIsTeamCreated,
 }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTeamCreated, setIsTeamCreated] = useState(false);
+  // const [isTeamCreated, setIsTeamCreated] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
   const [updateTeam, { isLoading: isupdatingTeam }] = useUpdateTeamMutation();
 
@@ -70,16 +76,13 @@ export default function CreateTeamForm({
   // }
 
   const [deletTeam, { isLoading: deleting }] = useDeleteTeamMutation();
+  const [removeMember, { isLoading: removing }] = useRemoveMemberMutation();
 
   const { data: TeamData, isLoading: fetchingTeamData } =
     useGetTeamByHackathonMemberQuery({
       memberId: user.id,
       hackathonId: hackathonId,
     });
-
-  console.log("-------------------------------------------");
-  console.log(TeamData);
-  console.log("-------------------------------------------");
 
   const form = useForm<CreateTeamValues>({
     resolver: zodResolver(createTeamSchema),
@@ -102,14 +105,11 @@ export default function CreateTeamForm({
         "lookingForMembers",
         "requiredSkills",
       ];
-
       teamfeilds.forEach((feild) => {
         if (TeamData[feild]) {
           form.setValue(feild, TeamData[feild]);
         }
       });
-
-      console.log(setIsLeader, "ISsssssssssssss");
       setIsTeamCreated(true);
       setTeamId(TeamData.id);
       setIsEditing(false);
@@ -123,13 +123,11 @@ export default function CreateTeamForm({
         const response = await updateTeam({ teamId: teamId, ...data }).unwrap();
         setIsEditing(false);
         setTeamId(response.id);
-        console.log("updated------->", response);
       } else {
         const response = await createTeam(data).unwrap();
         setTeamId(response.id);
         setIsTeamCreated(true);
         setIsEditing(false);
-        console.log("created------->", response);
       }
       toast.success("Team created successfully!");
     } catch (error) {
@@ -164,6 +162,29 @@ export default function CreateTeamForm({
       toast.error("Failed to delete team. Please try again.");
     } finally {
       setIsDeleteDialogOpen(false);
+    }
+  };
+  const handleRemoveConfirm = async () => {
+    try {
+      const userId = user.id;
+      const rel = await removeMember({ teamId, userId }).unwrap();
+      toast.success("Left Team successfully");
+      setIsTeamCreated(false);
+      setTeamId(undefined);
+      setIsEditing(true);
+      // Reset form to default values
+      form.reset({
+        name: "",
+        description: "",
+        hackathonId: hackathonId,
+        lookingForMembers: false,
+        requiredSkills: "",
+      });
+    } catch (error) {
+      console.error("failed:", error);
+      toast.error("Failed to remove from team. Please try again.");
+    } finally {
+      setIsLeaveDialogOpen(false);
     }
   };
 
@@ -253,14 +274,61 @@ export default function CreateTeamForm({
               </AlertDialog>
             </div>
           )}
+          {!isLeader && (
+            <AlertDialog
+              open={isLeaveDialogOpen}
+              onOpenChange={setIsLeaveDialogOpen}
+            >
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  className="right-0 -top-2 z-10 absolute items-center gap-2 hover:bg-red-400"
+                  disabled={removing}
+                >
+                  {removing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Delete className="h-4 w-4" />
+                  )}
+                  {removing ? "leaving..." : "Leave Team"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    Leave Team
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to leave this team? This action cannot
+                    be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRemoveConfirm}
+                    className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                    disabled={removing}
+                  >
+                    {removing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        removing...
+                      </>
+                    ) : (
+                      "Leave Team"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
         <div className="p-6">
           <motion.form
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 flex md:flex gap-4 w-full border-dashed border-blue-300/60 shadow-lg backdrop-blur-sm border-2 p-6 rounded-2xl"
-            // variants={containerVariants}
-            // initial="hidden"
-            // animate="visible"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
