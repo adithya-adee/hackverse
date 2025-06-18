@@ -186,13 +186,12 @@ export class TeamController {
     return this.teamsService.rejectTeamRequest(teamId, userId, req.user.userId);
   }
 
-  @Get('isLeader/:teamId')
+  @Delete(':teamId/remove-from-team/:userId')
   @UseGuards(JwtAuthGuard)
-  isLeader(
-    @Request() req: { user: { userId: string } },
+  removeFromTeam(
     @Param('teamId') teamId: string,
-  ) {
-    console.log(teamId);
-    return this.teamsService.isLeader(teamId, req.user.userId);
+    @Param('userId') userId: string,
+  ){
+    return this.teamsService.removeFromTeam(teamId,userId);
   }
 }

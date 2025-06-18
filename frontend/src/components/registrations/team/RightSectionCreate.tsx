@@ -22,9 +22,16 @@ import { toast } from "sonner";
 interface Props {
   hackathonId: string;
   teamId: string | undefined;
+  isLeader: boolean;
+  isTeamCreated: boolean;
 }
 
-function RightSectionCreate({ hackathonId, teamId }: Props) {
+function RightSectionCreate({
+  hackathonId,
+  teamId,
+  isLeader,
+  isTeamCreated,
+}: Props) {
   const {
     data: registrations,
     isLoading,
@@ -98,10 +105,9 @@ function RightSectionCreate({ hackathonId, teamId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="w-full h-full bg-background/50 backdrop-blur-sm rounded-lg border">
+      <div className="w-full h-full">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-6">
-            <Users className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">Registered Participants</h3>
           </div>
           <div className="space-y-4">
@@ -216,21 +222,23 @@ function RightSectionCreate({ hackathonId, teamId }: Props) {
                       </div>
 
                       <div className="absolute right-2 bottom-4 ">
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            onSendTeamRequest?.(registration.User.id)
-                          }
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        >
-                          <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          Invite
-                        </Button>
+                        {isLeader && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              onSendTeamRequest?.(registration.User.id)
+                            }
+                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          >
+                            <UserPlus className="h-3.5 w-3.5 mr-1" />
+                            Invite
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </div>
                 </motion.div>
-              )
+              ),
             )}
           </motion.div>
         )}

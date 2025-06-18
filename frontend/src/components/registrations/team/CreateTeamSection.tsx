@@ -10,17 +10,30 @@ import { Label } from "@/components/ui/label";
 import { Send, User, Mail } from "lucide-react";
 import { useLazyIsRegisteredQuery } from "@/apiSlice/userApiSlice";
 import { useCreateTeamRequestMutation } from "@/apiSlice/teamApiSlice";
+
 interface Props {
   hackathonId: string;
   teamId: string | undefined;
   setTeamId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  isLeader: boolean;
+  setIsLeader: React.Dispatch<React.SetStateAction<boolean>>;
+  isTeamCreated: boolean;
+  setIsTeamCreated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function CreateTeamSection({ hackathonId, teamId, setTeamId }: Props) {
+function CreateTeamSection({
+  hackathonId,
+  teamId,
+  setTeamId,
+  isLeader,
+  setIsLeader,
+  isTeamCreated,
+  setIsTeamCreated,
+}: Props) {
   const [memberEmail, setMemberEmail] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [triggerCheck, result] = useLazyIsRegisteredQuery();
-  const [isLeader, setIsLeader] = useState<boolean>(false);
+  // const [isLeader, setIsLeader] = useState<boolean>(false);
 
   const [createTeamRequest, { isLoading: isRequestCreating }] =
     useCreateTeamRequestMutation();
@@ -68,6 +81,8 @@ function CreateTeamSection({ hackathonId, teamId, setTeamId }: Props) {
           setTeamId={setTeamId}
           isLeader={isLeader}
           setIsLeader={setIsLeader}
+          isTeamCreated={isTeamCreated}
+          setIsTeamCreated={setIsTeamCreated}
         />
       </div>
       <div className="p-2 my-2 mx-auto">

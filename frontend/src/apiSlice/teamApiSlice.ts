@@ -155,11 +155,12 @@ export const teamApiSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-    isLeader: builder.query({
-      query: (teamId) => ({
-        url: `team/isLeader/${teamId}`,
-        method: "GET",
+    removeMember: builder.mutation({
+      query: ({ teamId, userId }) => ({
+        url: `/team/${teamId}/remove-from-team/${userId}`,
+        method: "DELETE",
       }),
+      invalidatesTags: ({ teamId }) => [{ type: "TeamMembers", id: teamId }],
     }),
   }),
 });
@@ -180,5 +181,5 @@ export const {
   useGetUserTeamRequestsByTeamQuery,
   useGetUserTeamRequestsByUserQuery,
   useGetTeamByHackathonMemberQuery,
-  useIsLeaderQuery,
+  useRemoveMemberMutation,
 } = teamApiSlice;
