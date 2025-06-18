@@ -65,7 +65,7 @@ function UserProfileAvatar({ user }: Props) {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    router.push("/sign-in");
+    router.replace("/sign-in");
   };
 
   return (

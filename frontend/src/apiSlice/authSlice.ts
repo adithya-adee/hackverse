@@ -35,28 +35,22 @@ const authSlice = createSlice({
         user: any;
         access_token: string;
         userStats: any;
-      }>,
+      }>
     ) => {
       console.log(action.payload);
       const { user, access_token, userStats } = action.payload;
       state.user = user;
       state.token = access_token;
       state.isLoggedIn = !!user && !!access_token;
-      Cookies.set("user", JSON.stringify(user), { expires: 7, secure: true });
+      Cookies.set("user", JSON.stringify(user), { expires: 7 });
       Cookies.set("token", access_token, {
         expires: 7,
-        secure: true,
-        sameSite: "strict",
       });
       Cookies.set("isLoggedIn", "true", {
         expires: 7,
-        secure: true,
-        sameSite: "strict",
       });
       Cookies.set("userStats", JSON.stringify(userStats), {
         expires: 7,
-        secure: true,
-        sameSite: "strict",
       });
     },
     logoutUser: (state) => {

@@ -14,40 +14,14 @@ import { Users, Calendar, Mail, Check, X } from "lucide-react";
 
 import { HackathonStatus } from "@/types/core_enum";
 import { Button } from "@/components/ui/button";
-import { useGetTeamRequestsQuery } from "@/apiSlice/userApiSlice";
+import {
+  useGetTeamRequestsByUserQuery,
+  useGetTeamRequestByTeamQuery,
+} from "@/apiSlice/userApiSlice";
 import { TeamRequest } from "@/types/core_interfaces";
 import { formatDateTime, getUserInitials } from "@/lib/formatters";
 import Loading from "@/app/loading";
-
-interface TeamRequestProps {
-  teamId: string;
-  userId: string;
-  requestedAt: string;
-  expiresAt: string;
-  user: {
-    name: string;
-    email: string;
-    profileImageUrl: string;
-  };
-  team: {
-    id: string;
-    name: string;
-    description?: string;
-    hackathonId: string;
-    createdById: string;
-    lookingForMembers: boolean;
-    requiredSkills?: string;
-    createdAt: string;
-    updatedAt: string;
-    Hackathon: {
-      id: string;
-      title: string;
-      startDate?: string;
-      endDate?: string;
-      status?: HackathonStatus;
-    };
-  };
-}
+import { useMemo } from "react";
 
 function getStatusConfig(status?: string) {
   switch (status) {
@@ -119,18 +93,6 @@ function RequestTable({
                     Hackathon
                   </div>
                 </TableHead>
-                {/* <TableHead className="font-bold text-[var(--primary-12)] py-4 px-6">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Requested
-                  </div>
-                </TableHead>
-                <TableHead className="font-bold text-[var(--primary-12)] py-4 px-6">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Expires
-                  </div>
-                </TableHead> */}
                 <TableHead className="font-bold text-[var(--primary-12)] py-4 px-6 text-center">
                   <div className="flex items-center justify-center gap-2">
                     Status
@@ -171,7 +133,7 @@ function RequestTable({
 
                   return (
                     <TableRow
-                      key={request.userId + request.teamId}
+                      key={request.userId + request.teamId + index}
                       className="border-b border-[var(--primary-4)] hover:bg-[var(--primary-2)]/80 transition-all duration-200 group"
                     >
                       <TableCell className="py-4 px-6">
@@ -223,18 +185,6 @@ function RequestTable({
                         </div>
                       </TableCell>
 
-                      {/* <TableCell className="py-4 px-6 text-[var(--primary-12)]">
-                        <div className="font-mono text-sm">
-                          {formatDateTime(request.requestedAt)}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-4 px-6 text-[var(--primary-12)]">
-                        <div className="font-mono text-sm">
-                          {formatDateTime(request.expiresAt)}
-                        </div>
-                      </TableCell> */}
-
                       <TableCell className="py-4 px-6 text-center">
                         <div className="hover:scale-105 transition-transform duration-200">
                           <Badge
@@ -273,9 +223,38 @@ function RequestTable({
 }
 
 function TeamRequestsPage() {
-  const { data: team_request, isLoading, error } = useGetTeamRequestsQuery();
+  const {
+    data: team_request_by_team,
+    isLoading: isLoadingTRT,
+    error: errorTRT,
+  } = useGetTeamRequestByTeamQuery();
+  const {
+    data: team_request_by_user,
+    isLoading: isLoadingTRU,
+    error: errorTRU,
+  } = useGetTeamRequestsByUserQuery();
 
-  // Add loading state
+  console.log(team_request_by_team);
+  console.log(team_request_by_user);
+
+  const isLoading = isLoadingTRT || isLoadingTRU;
+  const error = errorTRT || errorTRU;
+
+  // Merge and deduplicate requests by userId+teamId
+  const team_request = useMemo(() => {
+    const all = [
+      ...(Array.isArray(team_request_by_team) ? team_request_by_team : []),
+      ...(Array.isArray(team_request_by_user) ? team_request_by_user : []),
+    ];
+    const seen = new Set();
+    return all.filter((req) => {
+      const key = req.userId + req.teamId;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [team_request_by_team, team_request_by_user]);
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -284,7 +263,6 @@ function TeamRequestsPage() {
     );
   }
 
-  // Add error state
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-4)] to-[var(--primary-2)] flex flex-col items-center justify-center">
@@ -294,8 +272,8 @@ function TeamRequestsPage() {
             Error Loading Team Requests
           </h2>
           <p className="text-red-600 mb-4">
-            {error instanceof Error
-              ? error.message
+            {typeof error === "object" && error && "message" in error
+              ? (error as any).message
               : "An unknown error occurred"}
           </p>
           <button
@@ -322,15 +300,7 @@ function TeamRequestsPage() {
       </div>
 
       <div className="w-full">
-        <RequestTable
-          team_request={
-            team_request
-              ? Array.isArray(team_request)
-                ? team_request
-                : [team_request]
-              : undefined
-          }
-        />
+        <RequestTable team_request={team_request} />
       </div>
     </div>
   );

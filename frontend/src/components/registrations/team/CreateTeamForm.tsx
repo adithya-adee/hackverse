@@ -44,6 +44,7 @@ interface Props {
   hackathonId: string;
   teamId: string | undefined;
   setTeamId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  isLeader: boolean;
   setIsLeader: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -51,6 +52,7 @@ export default function CreateTeamForm({
   hackathonId,
   teamId,
   setTeamId,
+  isLeader,
   setIsLeader,
 }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,6 +94,7 @@ export default function CreateTeamForm({
 
   useEffect(() => {
     if (TeamData) {
+      if (TeamData.createdById == user.id) setIsLeader(true);
       const teamfeilds: Array<keyof CreateTeamValues> = [
         "name",
         "description",
@@ -105,8 +108,6 @@ export default function CreateTeamForm({
           form.setValue(feild, TeamData[feild]);
         }
       });
-
-      if (TeamData.createdById == user.id) setIsLeader(true);
 
       console.log(setIsLeader, "ISsssssssssssss");
       setIsTeamCreated(true);
@@ -190,7 +191,7 @@ export default function CreateTeamForm({
             <UsersRoundIcon className="h-5 w-5 mr-2" />
             Create Your Team
           </div>
-          {isTeamCreated && !isEditing && (
+          {isTeamCreated && isLeader && !isEditing && (
             <div className="">
               <Button
                 onClick={handleEdit}
@@ -371,7 +372,7 @@ export default function CreateTeamForm({
                     ) : null}
                     {isSubmitting ? (
                       <div>
-                        <p> Wait... </p>
+                        <div> Wait... </div>
                       </div>
                     ) : isTeamCreated ? (
                       "Update Team"

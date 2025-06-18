@@ -15,7 +15,6 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamService } from './team.service';
-import { CreateTeamReqDto } from './dto/create-team-req.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { RoleType, Team } from '@prisma/client';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -23,7 +22,7 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Controller('team')
 export class TeamController {
-  constructor(private readonly teamsService: TeamService) { }
+  constructor(private readonly teamsService: TeamService) {}
 
   @Get('count')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -47,19 +46,16 @@ export class TeamController {
   updateTeam(
     @Request() req: { user: { userId: string } },
     @Body() updateTeamDto: UpdateTeamDto,
-  ){
+  ) {
     const userId = req.user.userId;
     return this.teamsService.updateTeam(updateTeamDto, userId);
   }
 
-
   // Create a team request (join a team)
   @Post('team-req')
   @UseGuards(JwtAuthGuard)
-  createTeamReq(
-    @Body() {userId, teamId, isSentByTeam}
-  ) {
-    return this.teamsService.createTeamReq({userId,teamId,isSentByTeam});
+  createTeamReq(@Body() { userId, teamId, isSentByTeam }) {
+    return this.teamsService.createTeamReq({ userId, teamId, isSentByTeam });
   }
 
   // Get all team requests for current user by team
@@ -75,7 +71,6 @@ export class TeamController {
     return this.teamsService.getAllTeamReqbyUser(req.user.userId);
   }
 
-
   //Get team details from memberID and hackathonID
   @Get('by-member-hackathon')
   @UseGuards(JwtAuthGuard)
@@ -83,7 +78,7 @@ export class TeamController {
     @Query('hackathonId') hackathonId: string,
     @Query('memberId') memberId: string,
   ): Promise<Team> {
-    return this.teamsService.getTeamByMemberAndHackathon(memberId,hackathonId);
+    return this.teamsService.getTeamByMemberAndHackathon(memberId, hackathonId);
   }
 
   // Get all teams
@@ -109,10 +104,12 @@ export class TeamController {
     @Request() req: { user: { userId: string } },
     @Param('hackathonId') hackathonId: string,
   ) {
-    console.log("hittted")
-    return this.teamsService.getTeamsLookingForMembers(hackathonId , req.user.userId);
+    console.log('hittted');
+    return this.teamsService.getTeamsLookingForMembers(
+      hackathonId,
+      req.user.userId,
+    );
   }
-
 
   // Get a specific team by ID
   @Get(':teamId')
@@ -125,8 +122,8 @@ export class TeamController {
   async deleteTeam(
     @Request() req: { user: { userId: string } },
     @Param('teamId') teamId: string,
-  ){
-    return this.teamsService.deleteTeam(teamId,req.user.userId);
+  ) {
+    return this.teamsService.deleteTeam(teamId, req.user.userId);
   }
 
   // Get all members of a team
@@ -152,7 +149,10 @@ export class TeamController {
     @Request() req: { user: { userId: string } },
     @Param('teamId') teamId: string,
   ) {
-    return this.teamsService.getTeamRequestsByParticipants(teamId, req.user.userId);
+    return this.teamsService.getTeamRequestsByParticipants(
+      teamId,
+      req.user.userId,
+    );
   }
 
   // Accept a team request
@@ -186,18 +186,13 @@ export class TeamController {
     return this.teamsService.rejectTeamRequest(teamId, userId, req.user.userId);
   }
 
-
   @Get('isLeader/:teamId')
   @UseGuards(JwtAuthGuard)
   isLeader(
     @Request() req: { user: { userId: string } },
     @Param('teamId') teamId: string,
-  ){
+  ) {
     console.log(teamId);
-    return this.teamsService.isLeader(teamId,req.user.userId);
+    return this.teamsService.isLeader(teamId, req.user.userId);
   }
-
-
-
-
 }

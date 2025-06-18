@@ -12,17 +12,24 @@ export const userApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 300,
     }),
 
-    //for a perticular user
-    getTeamRequests: builder.query<TeamRequest[], void>({
+    getTeamRequestsByUser: builder.query<TeamRequest[], void>({
       query: () => ({
-        url: "/team/all-team-reqs",
+        url: "/team/all-team-reqs-by-user",
         method: "GET",
       }),
       providesTags: ["TeamRequests"],
-      keepUnusedDataFor: 150,
+      keepUnusedDataFor: 300,
       transformResponse: (response: TeamRequest[] | null) => response || [],
     }),
-
+    getTeamRequestByTeam: builder.query<TeamRequest[], void>({
+      query: () => ({
+        url: "/team/all-team-reqs-by-team",
+        method: "GET",
+      }),
+      providesTags: ["TeamRequests"],
+      keepUnusedDataFor: 300,
+      transformResponse: (response: TeamRequest[] | null) => response || [],
+    }),
     isRegistered: builder.query<
       { isRegistered: boolean; user: User },
       { memberEmail: string }
@@ -33,29 +40,31 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    updateUserProfile: builder.mutation({
-      query: ({ id, data }) => {
-        console.log("updating user...", id);
-        console.log("Sending update data:", data);
-        return {
-          url: `/users/${id}/profile`,
-          method: "PATCH",
-          body: data,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
-      },
+    updateUserProfile: builder.mutation<
+      User,
+      { id: string; data: Partial<User> }
+    >({
+      query: ({ id, data }) => ({
+        url: `/users/${id}/profile`,
+        method: "PATCH",
+        body: data,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["UserProfile"],
     }),
 
-    registerTeam: builder.mutation({
-      query: ({ hackathonId, teamData }) => ({
-        url: `/hackathons/${hackathonId}/teams`,
-        method: "POST",
-        body: teamData,
-      }),
-    }),
+    registerTeam: builder.mutation<any, { hackathonId: string; teamData: any }>(
+      {
+        query: ({ hackathonId, teamData }) => ({
+          url: `/hackathons/${hackathonId}/teams`,
+          method: "POST",
+          body: teamData,
+        }),
+      }
+    ),
+
     updateSkills: builder.mutation<void, { userId: string; skills: string[] }>({
       query: ({ userId, skills }) => ({
         url: `/users/${userId}/skills`,
@@ -64,7 +73,8 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Skills"],
     }),
-    deleteSkills: builder.mutation({
+
+    deleteSkills: builder.mutation<void, { skillId: string }>({
       query: ({ skillId }) => ({
         url: `/users/skills`,
         method: "DELETE",
@@ -72,6 +82,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Skills"],
     }),
+
     deleteUserSkill: builder.mutation<
       { Skill: { id: string; name: string }[] },
       { userId: string; skillId: string }
@@ -83,14 +94,15 @@ export const userApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Skills"],
     }),
 
-    getHackathonsByOrganizer: builder.query({
+    getHackathonsByOrganizer: builder.query<any[], void>({
       query: () => ({
         url: "/users/organizer/hackathons",
         method: "GET",
       }),
       providesTags: ["OrganizerData"],
     }),
-    getTeamsByOrganizer: builder.query({
+
+    getTeamsByOrganizer: builder.query<any[], void>({
       query: () => ({
         url: "/users/organizer/teams",
         method: "GET",
@@ -98,7 +110,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       providesTags: ["OrganizerData"],
     }),
 
-    getSubmissionsByOrganizer: builder.query({
+    getSubmissionsByOrganizer: builder.query<any[], void>({
       query: () => ({
         url: "/users/organizer/submissions",
         method: "GET",
@@ -106,7 +118,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       providesTags: ["OrganizerData"],
     }),
 
-    getParticipantsByOrganizer: builder.query({
+    getParticipantsByOrganizer: builder.query<any[], void>({
       query: () => ({
         url: "/users/organizer/participants",
         method: "GET",
@@ -118,7 +130,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetUserDetailsQuery,
-  useGetTeamRequestsQuery,
   useUpdateUserProfileMutation,
   useRegisterTeamMutation,
   useUpdateSkillsMutation,
@@ -129,4 +140,6 @@ export const {
   useGetParticipantsByOrganizerQuery,
   useLazyIsRegisteredQuery,
   useDeleteUserSkillMutation,
+  useGetTeamRequestByTeamQuery,
+  useGetTeamRequestsByUserQuery,
 } = userApiSlice;

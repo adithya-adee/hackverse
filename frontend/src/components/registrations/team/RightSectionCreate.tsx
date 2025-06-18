@@ -148,7 +148,7 @@ function RightSectionCreate({ hackathonId, teamId }: Props) {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-4 max-h-[calc(100vh-200px)] pr-2"
+            className="space-y-4 max-h-[calc(100vh-200px)]  pr-2"
           >
             {registrations.map(
               (registration: HackathonRegistration, index: number) => (

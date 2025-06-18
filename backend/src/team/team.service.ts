@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateTeamReqDto } from './dto/create-team-req.dto';
@@ -7,7 +12,7 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
 export class TeamService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getTeamCount() {
     const respone = await this.prisma.team.count();
@@ -29,6 +34,12 @@ export class TeamService {
         teamId: team.id,
         userId,
         isLeader: true,
+      },
+    });
+
+    await this.prisma.teamRequest.deleteMany({
+      where: {
+        userId,
       },
     });
 
@@ -54,7 +65,7 @@ export class TeamService {
         name: data.name,
         description: data.description,
         requiredSkills: data.requiredSkills,
-        lookingForMembers: data.lookingForMembers
+        lookingForMembers: data.lookingForMembers,
       },
     });
 
@@ -94,7 +105,9 @@ export class TeamService {
     });
 
     if (existingRequest) {
-      throw new UnauthorizedException('You have already requested to join this team');
+      throw new UnauthorizedException(
+        'You have already requested to join this team',
+      );
     }
 
     // Calculate expiration date (2 days from now)
@@ -104,7 +117,7 @@ export class TeamService {
     return await this.prisma.teamRequest.create({
       data: {
         ...data,
-        isSentByTeam:data.isSentByTeam,
+        isSentByTeam: data.isSentByTeam,
         expiresAt,
       },
     });
@@ -162,98 +175,94 @@ export class TeamService {
     });
   }
 
+  // Option 1: Database-level filtering (More efficient for large datasets)
+  // async getTeamsLookingForMembers(hackathonId: string, userId: string) {
+  //   const teams = await this.prisma.$queryRaw`
+  //     SELECT
+  //       t.*,
+  //       h.id as hackathon_id,
+  //       h.title as hackathon_title,
+  //       h."maxTeamSize" as max_team_size,
+  //       u.id as creator_id,
+  //       u.name as creator_name,
+  //       COALESCE(tm_count.member_count, 0) as member_count,
+  //       (COALESCE(tm_count.member_count, 0) + 1) as current_size,
+  //       (h."maxTeamSize" - (COALESCE(tm_count.member_count, 0) + 1)) as available_spots
+  //     FROM "Team" t
+  //     INNER JOIN "Hackathon" h ON t."hackathonId" = h.id
+  //     INNER JOIN "User" u ON t."createdById" = u.id
+  //     LEFT JOIN (
+  //       SELECT "teamId", COUNT(*) as member_count
+  //       FROM "TeamMember"
+  //       GROUP BY "teamId"
+  //     ) tm_count ON t.id = tm_count."teamId"
+  //     WHERE
+  //       t."hackathonId" = ${hackathonId}::uuid
+  //       AND t."lookingForMembers" = true
+  //       AND t."createdById" != ${userId}::uuid
+  //       AND (COALESCE(tm_count.member_count, 0) + 1) < h."maxTeamSize"
+  //     ORDER BY t."createdAt" DESC
+  //   `;
 
-// Option 1: Database-level filtering (More efficient for large datasets)
-// async getTeamsLookingForMembers(hackathonId: string, userId: string) {
-//   const teams = await this.prisma.$queryRaw`
-//     SELECT 
-//       t.*,
-//       h.id as hackathon_id,
-//       h.title as hackathon_title,
-//       h."maxTeamSize" as max_team_size,
-//       u.id as creator_id,
-//       u.name as creator_name,
-//       COALESCE(tm_count.member_count, 0) as member_count,
-//       (COALESCE(tm_count.member_count, 0) + 1) as current_size,
-//       (h."maxTeamSize" - (COALESCE(tm_count.member_count, 0) + 1)) as available_spots
-//     FROM "Team" t
-//     INNER JOIN "Hackathon" h ON t."hackathonId" = h.id
-//     INNER JOIN "User" u ON t."createdById" = u.id
-//     LEFT JOIN (
-//       SELECT "teamId", COUNT(*) as member_count
-//       FROM "TeamMember"
-//       GROUP BY "teamId"
-//     ) tm_count ON t.id = tm_count."teamId"
-//     WHERE 
-//       t."hackathonId" = ${hackathonId}::uuid
-//       AND t."lookingForMembers" = true
-//       AND t."createdById" != ${userId}::uuid
-//       AND (COALESCE(tm_count.member_count, 0) + 1) < h."maxTeamSize"
-//     ORDER BY t."createdAt" DESC
-//   `;
+  //   // Get detailed team member information for the filtered teams
+  //   const teamIds = teams.map((team: any) => team.id);
 
-//   // Get detailed team member information for the filtered teams
-//   const teamIds = teams.map((team: any) => team.id);
-  
-//   if (teamIds.length === 0) {
-//     return [];
-//   }
+  //   if (teamIds.length === 0) {
+  //     return [];
+  //   }
 
-//   const detailedTeams = await this.prisma.team.findMany({
-//     where: {
-//       id: {
-//         in: teamIds,
-//       },
-//     },
-//     include: {
-//       TeamMember: {
-//         include: {
-//           User: {
-//             select: {
-//               id: true,
-//               name: true,
-//               profileImageUrl: true,
-//             },
-//           },
-//         },
-//       },
-//       Hackathon: {
-//         select: {
-//           id: true,
-//           title: true,
-//           maxTeamSize: true,
-//         },
-//       },
-//       User: {
-//         select: {
-//           id: true,
-//           name: true,
-//         },
-//       },
-//       _count: {
-//         select: {
-//           TeamMember: true,
-//         },
-//       },
-//     },
-//     orderBy: {
-//       createdAt: 'desc',
-//     },
-//   });
+  //   const detailedTeams = await this.prisma.team.findMany({
+  //     where: {
+  //       id: {
+  //         in: teamIds,
+  //       },
+  //     },
+  //     include: {
+  //       TeamMember: {
+  //         include: {
+  //           User: {
+  //             select: {
+  //               id: true,
+  //               name: true,
+  //               profileImageUrl: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //       Hackathon: {
+  //         select: {
+  //           id: true,
+  //           title: true,
+  //           maxTeamSize: true,
+  //         },
+  //       },
+  //       User: {
+  //         select: {
+  //           id: true,
+  //           name: true,
+  //         },
+  //       },
+  //       _count: {
+  //         select: {
+  //           TeamMember: true,
+  //         },
+  //       },
+  //     },
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //   });
 
-//   // Transform the data to include additional computed fields
-//   return detailedTeams.map((team) => ({
-//     ...team,
-//     currentSize: team._count.TeamMember + 1, // Include creator in count
-//     maxSize: team.Hackathon.maxTeamSize,
-//     availableSpots: team.Hackathon.maxTeamSize - (team._count.TeamMember + 1),
-//     isAcceptingMembers: team.lookingForMembers && (team._count.TeamMember + 1) < team.Hackathon.maxTeamSize,
-//     fillPercentage: Math.round(((team._count.TeamMember + 1) / team.Hackathon.maxTeamSize) * 100),
-//   }));
-// }
-
-
-
+  //   // Transform the data to include additional computed fields
+  //   return detailedTeams.map((team) => ({
+  //     ...team,
+  //     currentSize: team._count.TeamMember + 1, // Include creator in count
+  //     maxSize: team.Hackathon.maxTeamSize,
+  //     availableSpots: team.Hackathon.maxTeamSize - (team._count.TeamMember + 1),
+  //     isAcceptingMembers: team.lookingForMembers && (team._count.TeamMember + 1) < team.Hackathon.maxTeamSize,
+  //     fillPercentage: Math.round(((team._count.TeamMember + 1) / team.Hackathon.maxTeamSize) * 100),
+  //   }));
+  // }
 
   // Alternative Option 2: Pure Prisma approach (Simpler but potentially less efficient)
   async getTeamsLookingForMembers(hackathonId: string, userId: string) {
@@ -305,10 +314,10 @@ export class TeamService {
     const availableTeams = teams.filter((team) => {
       const maxTeamSize = team.Hackathon.maxTeamSize;
       const currentMemberCount = team._count.TeamMember;
-      
+
       // Add 1 to account for the team creator (createdById)
       const totalTeamSize = currentMemberCount + 1;
-      
+
       // Only include teams that have space for more members
       return totalTeamSize < maxTeamSize;
     });
@@ -320,7 +329,9 @@ export class TeamService {
       maxSize: team.Hackathon.maxTeamSize,
       availableSpots: team.Hackathon.maxTeamSize - (team._count.TeamMember + 1),
       isAcceptingMembers: true, // These are all available teams
-      fillPercentage: Math.round(((team._count.TeamMember + 1) / team.Hackathon.maxTeamSize) * 100),
+      fillPercentage: Math.round(
+        ((team._count.TeamMember + 1) / team.Hackathon.maxTeamSize) * 100,
+      ),
     }));
   }
 
@@ -430,7 +441,10 @@ export class TeamService {
     });
   }
 
-  async getTeamRequestsByParticipants(teamId: string, requestingUserId: string) {
+  async getTeamRequestsByParticipants(
+    teamId: string,
+    requestingUserId: string,
+  ) {
     // Check if the requesting user is a team leader
     // const teamMember = await this.prisma.teamMember.findFirst({
     //   where: {
@@ -450,7 +464,7 @@ export class TeamService {
         expiresAt: {
           gt: new Date(),
         },
-        isSentByTeam: false
+        isSentByTeam: false,
       },
       include: {
         user: {
@@ -469,7 +483,11 @@ export class TeamService {
     });
   }
 
-  async acceptTeamRequest(teamId: string, userId: string, requestingUserId: string) {
+  async acceptTeamRequest(
+    teamId: string,
+    userId: string,
+    requestingUserId: string,
+  ) {
     // Check if the requesting user is a team leader
     const teamMember = await this.prisma.teamMember.findFirst({
       where: {
@@ -530,15 +548,12 @@ export class TeamService {
     });
   }
 
-  async acceptTeamRequestbyParticipant(teamId: string, userId: string){
-
+  async acceptTeamRequestbyParticipant(teamId: string, userId: string) {
     const currentMembers = await this.prisma.teamMember.count({
       where: {
         teamId,
       },
     });
-
-
 
     const team = await this.prisma.team.findUnique({
       where: {
@@ -548,8 +563,6 @@ export class TeamService {
         Hackathon: true,
       },
     });
-
-
 
     if (team && currentMembers >= team.Hackathon.maxTeamSize) {
       throw new UnauthorizedException('Team size limit reached');
@@ -565,11 +578,11 @@ export class TeamService {
       },
     });
 
-    console.log("------------------------------------------------")
-    console.log(userId)
-    console.log(teamId)
-    console.log(request)
-    console.log("------------------------------------------------")
+    console.log('------------------------------------------------');
+    console.log(userId);
+    console.log(teamId);
+    console.log(request);
+    console.log('------------------------------------------------');
 
     if (!request) {
       throw new NotFoundException('Team request not found');
@@ -588,8 +601,11 @@ export class TeamService {
     });
   }
 
-
-  async rejectTeamRequest(teamId: string, userId: string, requestingUserId: string) {
+  async rejectTeamRequest(
+    teamId: string,
+    userId: string,
+    requestingUserId: string,
+  ) {
     // Check if the requesting user is a team leader
     const teamMember = await this.prisma.teamMember.findFirst({
       where: {
@@ -686,9 +702,7 @@ export class TeamService {
     });
   }
 
-
-  async deleteTeam(teamId: string, userId: string){
-
+  async deleteTeam(teamId: string, userId: string) {
     const team = await this.getTeamById(teamId);
     if (!team) {
       throw new NotFoundException('Team not found');
@@ -700,19 +714,18 @@ export class TeamService {
     }
 
     const result = await this.prisma.team.delete({
-      where:{
-        id:teamId
-      }
-    })
+      where: {
+        id: teamId,
+      },
+    });
 
-    if(!result){
-      throw new NotFoundException('Team not found'); 
+    if (!result) {
+      throw new NotFoundException('Team not found');
     }
-    return  result;
+    return result;
   }
 
-
-   // Get team by team member user ID and hackathon ID
+  // Get team by team member user ID and hackathon ID
   async getTeamByMemberAndHackathon(memberId: string, hackathonId: string) {
     try {
       const team = await this.prisma.team.findFirst({
@@ -723,12 +736,12 @@ export class TeamService {
               userId: memberId,
             },
           },
-        }
+        },
       });
 
       if (!team) {
         throw new NotFoundException(
-          `No team found for user ${memberId} in hackathon ${hackathonId}`
+          `No team found for user ${memberId} in hackathon ${hackathonId}`,
         );
       }
 
@@ -741,8 +754,7 @@ export class TeamService {
     }
   }
 
-
-  async isLeader(teamId: string, userId: string){
+  async isLeader(teamId: string, userId: string) {
     const team = await this.prisma.team.findUnique({
       where: {
         id: teamId,

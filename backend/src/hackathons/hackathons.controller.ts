@@ -27,6 +27,11 @@ export class HackathonsController {
     return this.hackathonsService.getAllHackathons();
   }
 
+  @Get('events')
+  findAllEvents() {
+    return this.hackathonsService.getAllHackathonEvents();
+  }
+
   @Get('upcoming')
   findUpcomingHackathons() {
     console.log('upcoming');
