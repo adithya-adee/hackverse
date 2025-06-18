@@ -55,7 +55,24 @@ export const UniverseLoader: React.FC<UniverseLoaderProps> = ({
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [visibleChars, setVisibleChars] = useState(0);
+  const [stars, setStars] = useState<
+    { x: number; y: number; size: number; opacity: number; duration: number }[]
+  >([]);
   const orbitingCodesRef = useRef<HTMLDivElement>(null);
+
+  // Generate stars once in useEffect to avoid hydration mismatch
+  useEffect(() => {
+    const newStars = Array(50)
+      .fill(0)
+      .map(() => ({
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2 + 1,
+        opacity: Math.random() * 0.5 + 0.3,
+        duration: Math.random() * 3 + 2,
+      }));
+    setStars(newStars);
+  }, []);
 
   // Create orbiting code particles
   useEffect(() => {
@@ -173,25 +190,25 @@ export const UniverseLoader: React.FC<UniverseLoaderProps> = ({
 
   return (
     <div className="relative w-full h-full min-h-[400px] overflow-hidden flex flex-col justify-center items-center bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-3)] to-[var(--primary-5)]">
-      {/* Stars background */}
+      {/* Stars background - render only on client */}
       <div className="absolute inset-0 z-0">
-        {[...Array(50)].map((_, i) => (
+        {stars.map((star, i) => (
           <motion.div
             key={i}
             className="absolute bg-white rounded-full z-0"
             style={{
-              width: Math.random() * 2 + 1 + "px",
-              height: Math.random() * 2 + 1 + "px",
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
-              opacity: Math.random() * 0.5 + 0.3,
+              width: star.size + "px",
+              height: star.size + "px",
+              left: star.x + "%",
+              top: star.y + "%",
+              opacity: star.opacity,
             }}
             animate={{
-              opacity: [0.3, 0.8, 0.3],
+              opacity: [star.opacity, star.opacity + 0.5, star.opacity],
               scale: [1, 1.2, 1],
             }}
             transition={{
-              duration: Math.random() * 3 + 2,
+              duration: star.duration,
               repeat: Infinity,
               ease: "easeInOut",
             }}

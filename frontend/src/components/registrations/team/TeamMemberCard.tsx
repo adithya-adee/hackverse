@@ -1,5 +1,6 @@
 "use client";
-import React, { JSX, useState } from "react";
+
+import React, { JSX, useState, useEffect } from "react";
 import {
   Check,
   X,
@@ -64,6 +65,8 @@ interface TeamMemberCardProps {
 }
 
 const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
+  // Move dialog state to component level to avoid conditional rendering issues
+  const [dialogUserId, setDialogUserId] = useState<string | null>(null);
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const {
     data: teamMembers = [],
@@ -126,12 +129,15 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
     }
   };
 
+  // Fixed date formatting to avoid locale inconsistencies
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    try {
+      // Use fixed format that doesn't depend on locale
+      const date = new Date(dateString);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    } catch (e) {
+      return "Invalid date";
+    }
   };
 
   const isExpiringSoon = (expiresAt: string) => {
@@ -284,58 +290,28 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
         )}
 
         {!isLeader && kick && (
-          <AlertDialog
-            open={isLeaveDialogOpen}
-            onOpenChange={setIsLeaveDialogOpen}
+          <Button
+            size="sm"
+            className="-right-2 -top-4 z-10 absolute items-center gap-2 hover:bg-red-400"
+            disabled={removing}
+            onClick={() => {
+              setDialogUserId(user.Uid);
+              setIsLeaveDialogOpen(true);
+            }}
           >
-            <AlertDialogTrigger asChild>
-              <Button
-                size="sm"
-                className="-right-2 -top-4 z-10 absolute items-center gap-2 hover:bg-red-400"
-                disabled={removing}
-              >
-                {removing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash className="w-4 h-4" />
-                )}
-                {removing ? "removing..." : "kick"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                  Kick
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to Kick ? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => handleRemoveConfirm(user.Uid)}
-                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                  disabled={removing}
-                >
-                  {removing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      removing...
-                    </>
-                  ) : (
-                    "Kick"
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            {removing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash className="w-4 h-4" />
+            )}
+            {removing ? "removing..." : "kick"}
+          </Button>
         )}
       </div>
     </div>
   );
 
+  // Add a single AlertDialog that's always in the DOM
   return (
     <div className="bg-[var(--primary-1)] p-6">
       <div className="max-w-7xl mx-auto">
@@ -550,6 +526,43 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
             )}
         </div>
       </div>
+
+      {/* Include single AlertDialog instead of conditional ones */}
+      <AlertDialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Kick
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to Kick? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (dialogUserId) {
+                  handleRemoveConfirm(dialogUserId);
+                }
+                setDialogUserId(null);
+              }}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={removing}
+            >
+              {removing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  removing...
+                </>
+              ) : (
+                "Kick"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -223,106 +223,35 @@ export default function CreateTeamForm({
                 Edit
               </Button>
 
-              <AlertDialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
+              <Button
+                size="sm"
+                className="right-0 -top-7 z-10 absolute items-center gap-2 hover:bg-red-400"
+                disabled={deleting}
+                onClick={() => setIsDeleteDialogOpen(true)}
               >
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="right-0 -top-7 z-10 absolute items-center gap-2 hover:bg-red-400"
-                    disabled={deleting}
-                  >
-                    {deleting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Delete className="h-4 w-4" />
-                    )}
-                    {deleting ? "Deleting..." : "Delete"}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                      Delete Team
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this team? This action
-                      cannot be undone. All team data including members and
-                      project information will be permanently removed.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteConfirm}
-                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                      disabled={deleting}
-                    >
-                      {deleting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Deleting...
-                        </>
-                      ) : (
-                        "Delete Team"
-                      )}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                {deleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Delete className="h-4 w-4" />
+                )}
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
             </div>
           )}
           {!isLeader && (
-            <AlertDialog
-              open={isLeaveDialogOpen}
-              onOpenChange={setIsLeaveDialogOpen}
+            <Button
+              size="sm"
+              className="right-0 -top-2 z-10 absolute items-center gap-2 hover:bg-red-400"
+              disabled={removing}
+              onClick={() => setIsLeaveDialogOpen(true)}
             >
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  className="right-0 -top-2 z-10 absolute items-center gap-2 hover:bg-red-400"
-                  disabled={removing}
-                >
-                  {removing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Delete className="h-4 w-4" />
-                  )}
-                  {removing ? "leaving..." : "Leave Team"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-red-500" />
-                    Leave Team
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to leave this team? This action cannot
-                    be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleRemoveConfirm}
-                    className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                    disabled={removing}
-                  >
-                    {removing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        removing...
-                      </>
-                    ) : (
-                      "Leave Team"
-                    )}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              {removing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Delete className="h-4 w-4" />
+              )}
+              {removing ? "leaving..." : "Leave Team"}
+            </Button>
           )}
         </div>
         <div className="p-6">
@@ -454,6 +383,75 @@ export default function CreateTeamForm({
           </motion.form>
         </div>
       </div>
+
+      {/* Always render dialogs but control their visibility with state */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Delete Team
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this team? This action cannot be
+              undone. All team data including members and project information
+              will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={deleting}
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Team"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Leave Team
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave this team? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={removing}
+            >
+              {removing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  removing...
+                </>
+              ) : (
+                "Leave Team"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

@@ -63,7 +63,9 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         url: `/team/${teamId}/members`,
         method: "GET",
       }),
-      providesTags: (teamId) => [{ type: "TeamMembers", id: teamId }],
+      providesTags: (result, error, teamId) => [
+        { type: "TeamMembers", id: teamId },
+      ],
     }),
 
     // Get all pending requests for a team
@@ -126,7 +128,7 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         url: `/team/${teamId}/accept-request-by-team/${userId}`,
         method: "POST",
       }),
-      invalidatesTags: ({ teamId }) => [
+      invalidatesTags: (result, error, { teamId }) => [
         { type: "TeamMembers", id: teamId },
         { type: "TeamRequests", id: teamId },
       ],
@@ -160,7 +162,9 @@ export const teamApiSlice = apiSlice.injectEndpoints({
         url: `/team/${teamId}/remove-from-team/${userId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ({ teamId }) => [{ type: "TeamMembers", id: teamId }],
+      invalidatesTags: (result, error, { teamId }) => [
+        { type: "TeamMembers", id: teamId },
+      ],
     }),
   }),
 });
