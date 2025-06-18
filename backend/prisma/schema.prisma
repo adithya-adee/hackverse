@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Feedback {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submissionId String     @db.Uuid
+  comment      String
+  createdById  String     @db.Uuid
+  createdAt    DateTime   @default(now()) @db.Timestamp(6)
+  createdBy    String     @db.Uuid
+  Submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model Hackathon {
+  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                     String
+  description               String?
+  location                  String?
+  mode                      HackathonMode?              @default(ONLINE)
+  maxTeamSize               Int                         @default(4)
+  minTeamSize               Int                         @default(1)
+  createdById               String                      @db.Uuid
+  registrationDate          DateTime                    @db.Timestamp(6)
+  startDate                 DateTime                    @db.Timestamp(6)
+  endDate                   DateTime                    @db.Timestamp(6)
+  status                    HackathonStatus             @default(UPCOMING)
+  bannerImageUrl            String?
+  createdAt                 DateTime                    @default(now()) @db.Timestamp(6)
+  updatedAt                 DateTime                    @default(now()) @db.Timestamp(6)
+  User                      User                        @relation(fields: [createdById], references: [id], onDelete: NoAction)
+  HackathonModerator        HackathonModerator[]
+  HackathonModeratorRequest HackathonModeratorRequest[]
+  HackathonRegistration     HackathonRegistration[]
+  HackathonTab              HackathonTab[]
+  HackathonTag              HackathonTag[]
+  Submission                Submission[]
+  Team                      Team[]
+}
+
+model HackathonTab {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hackathonId String    @db.Uuid
+  title       String
+  content     String
+  order       Int
+  isVisible   Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @default(now()) @db.Timestamp(6)
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+
+  @@unique([hackathonId, order])
+  @@index([hackathonId])
+}
+
+model HackathonModerator {
+  userId      String    @db.Uuid
+  hackathonId String    @db.Uuid
+  assignedAt  DateTime  @default(now()) @db.Timestamp(6)
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hackathonId])
+}
+
+model HackathonModeratorRequest {
+  userId      String    @db.Uuid
+  hackathonId String    @db.Uuid
+  assignedAt  DateTime  @default(now()) @db.Timestamp(6)
+  expiresAt   DateTime  @db.Timestamp(6)
+  status      String    @default("PENDING")
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hackathonId])
+}
+
+model HackathonRegistration {
+  userId       String    @db.Uuid
+  hackathonId  String    @db.Uuid
+  registeredAt DateTime  @default(now()) @db.Timestamp(6)
+  Hackathon    Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hackathonId])
+}
+
+model HackathonTag {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  hackathonId String    @db.Uuid
+  Hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+
+  @@unique([hackathonId, name])
+}
+
+model Message {
+  id                            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId                      String   @db.Uuid
+  receiverId                    String   @db.Uuid
+  content                       String
+  isRead                        Boolean  @default(false)
+  createdAt                     DateTime @default(now()) @db.Timestamp(6)
+  User_Message_receiverIdToUser User     @relation("Message_receiverIdToUser", fields: [receiverId], references: [id], onDelete: Cascade)
+  User_Message_senderIdToUser   User     @relation("Message_senderIdToUser", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Rating {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submissionId String     @db.Uuid
+  raterId      String     @db.Uuid
+  category     String
+  score        Float
+  comment      String?
+  createdAt    DateTime   @default(now()) @db.Timestamp(6)
+  Submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, raterId, category])
+}
+
+model Role {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        RoleType
+  description String?
+  createdAt   DateTime      @default(now()) @db.Timestamp(6)
+  RoleRequest RoleRequest[]
+  UserRole    UserRole[]
+}
+
+model RoleRequest {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String        @db.Uuid
+  roleId        String        @db.Uuid
+  status        RequestStatus @default(PENDING)
+  reason        String
+  supportingUrl String?
+  reviewedById  String?       @db.Uuid
+  reviewNotes   String?
+  createdAt     DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime      @default(now()) @db.Timestamp(6)
+  Role          Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  User          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  User      User[]   @relation("SkillToUser")
+}
+
+model Submission {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  teamId      String     @db.Uuid
+  hackathonId String     @db.Uuid
+  createdById String     @db.Uuid
+  title       String
+  description String
+  githubUrl   String?
+  demoUrl     String?
+  videoUrl    String?
+  imageUrls   String[]
+  submittedAt DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime   @default(now()) @db.Timestamp(6)
+  Feedback    Feedback[]
+  Rating      Rating[]
+  User        User       @relation(fields: [createdById], references: [id], onDelete: NoAction)
+  Hackathon   Hackathon  @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  Team        Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+model Team {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  description       String?
+  hackathonId       String        @db.Uuid
+  createdById       String        @db.Uuid
+  lookingForMembers Boolean       @default(false)
+  registered        Boolean       @default(false)
+  requiredSkills    String?
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @default(now()) @db.Timestamp(6)
+  Submission        Submission[]
+  User              User          @relation(fields: [createdById], references: [id], onDelete: NoAction)
+  Hackathon         Hackathon     @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  TeamMember        TeamMember[]
+  TeamRequest       TeamRequest[]
+
+  @@unique([hackathonId,createdById])
+}
+
+model TeamMember {
+  teamId   String   @db.Uuid
+  userId   String   @db.Uuid
+  isLeader Boolean  @default(false)
+  joinedAt DateTime @default(now()) @db.Timestamp(6)
+  Team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+}
+
+model TeamRequest {
+  teamId       String   @db.Uuid
+  userId       String   @db.Uuid
+  isSentByTeam Boolean @default(true)
+  requestedAt  DateTime @default(now()) @db.Timestamp(6)
+  expiresAt    DateTime @db.Timestamp(6)
+  team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+}
+
+model User {
+  id                               String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                             String
+  email                            String                      @unique
+  phoneNo                          String?                     @unique @db.VarChar(10)
+  password                         String?
+  institutionName                  String?
+  type                             UserType                    @default(STUDENT)
+  gender                           Sex                         @default(UNSPECIFIED)
+  biography                        String?
+  profileImageUrl                  String?
+  resumeUrl                        String?
+  githubUrl                        String?
+  linkedinUrl                      String?
+  createdAt                        DateTime                    @default(now()) @db.Timestamp(6)
+  updatedAt                        DateTime                    @default(now()) @db.Timestamp(6)
+  Hackathon                        Hackathon[]
+  HackathonModerator               HackathonModerator[]
+  HackathonModeratorRequest        HackathonModeratorRequest[]
+  HackathonRegistration            HackathonRegistration[]
+  Message_Message_receiverIdToUser Message[]                   @relation("Message_receiverIdToUser")
+  Message_Message_senderIdToUser   Message[]                   @relation("Message_senderIdToUser")
+  RoleRequest                      RoleRequest[]
+  Submission                       Submission[]
+  Team                             Team[]
+  TeamMember                       TeamMember[]
+  TeamRequest                      TeamRequest[]
+  UserRole                         UserRole[]
+  Skill                            Skill[]                     @relation("SkillToUser")
+}
+
+model UserRole {
+  userId     String   @db.Uuid
+  roleId     String   @db.Uuid
+  assignedAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @default(now()) @db.Timestamp(6)
+  Role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+enum HackathonStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+}
+
+enum HackathonMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RoleType {
+  PARTICIPANT
+  ORGANIZER
+  RECRUITER
+  MODERATOR
+  ADMIN
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  UNSPECIFIED
+}
+
+enum UserType {
+  STUDENT
+  PROFESSIONAL
+  OTHERS
+}

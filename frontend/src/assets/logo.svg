@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="filter0_d_0_1" x="-50" y="-43" width="134.312" height="120" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="3"/>
+      <feGaussianBlur stdDeviation="15"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"/>
+    </filter>
+    <filter id="filter1_d_0_1" x="-32.3118" y="-43" width="134.312" height="120" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="3"/>
+      <feGaussianBlur stdDeviation="15"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"/>
+    </filter>
+    <linearGradient id="paint0_linear_0_1" x1="-0.266658" y1="10.1544" x2="35.0702" y2="10.1544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1885F2"/>
+      <stop offset="1" stop-color="#01E193"/>
+    </linearGradient>
+    <linearGradient id="paint1_linear_0_1" x1="16.9321" y1="10.1544" x2="52.2687" y2="10.1544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1885F2"/>
+      <stop offset="1" stop-color="#01E193"/>
+    </linearGradient>
+    <linearGradient id="textGradientWhite" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#01E193" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#1885F2" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Inline styles are valid for SVG, but .main and text classes are not used in the SVG below.
+       If you want to add text, use <text> elements directly with style or fill attributes. -->
+
+  <!-- Main icon group -->
+  <g transform="translate(190, 60) scale(3.8)">
+    <g filter="url(#filter0_d_0_1)">
+      <path d="M12 0C10.3124 0 8.36487 0.8067 6.92893 2.24264L2.24264 6.92893C0.8067 8.36487 0 10.3124 0 12.3431C0 16.5719 3.42809 20 7.65687 20C9.6876 20 11.6351 19.1933 13.0711 17.7573L16.3126 14.5158C16.3126 14.5157 16.3127 14.5159 16.3126 14.5158L25.7573 5.07107C26.4431 4.38527 27.3733 4 28.3431 4C28.9569 4 29.5353 4.15119 30.0432 4.41835C31.1873 5.02017 32.9034 5.44009 33.8174 4.526C34.3922 3.95124 34.5043 3.03821 33.9507 2.44306C32.5526 0.940132 30.5577 0 28.3431 0C26.3124 0 24.3649 0.8067 22.9289 2.24264L10.2427 14.9289C9.55687 15.6147 8.62673 16 7.65687 16C5.63723 16 4 14.3628 4 12.3431C4 11.3733 4.38527 10.4431 5.07107 9.75733L9.75733 5.07107C10.4431 4.38527 11.3733 4 12.3431 4C12.9569 4 13.5353 4.15119 14.0432 4.41837C15.1873 5.02021 16.9034 5.44017 17.8175 4.52608C18.3923 3.95131 18.5043 3.03827 17.9507 2.44311C16.5527 0.940158 14.5577 0 12.3431 0Z" fill="url(#paint0_linear_0_1)"/>
+    </g>
+
+    <g filter="url(#filter1_d_0_1)">
+      <path d="M26.2427 14.9289C25.5569 15.6147 24.6267 16 23.6569 16C23.0432 16 22.4649 15.8489 21.9571 15.5818C20.813 14.9801 19.097 14.5603 18.1829 15.4743C17.6081 16.0491 17.4961 16.9623 18.0498 17.5574C19.4478 19.0601 21.4426 20 23.6569 20C25.6876 20 27.6351 19.1933 29.0711 17.7573L41.7573 5.07107C42.4431 4.38527 43.3733 4 44.3431 4C46.3628 4 48 5.63723 48 7.65687C48 8.62673 47.6147 9.55687 46.9289 10.2427L42.2427 14.9289C41.5569 15.6147 40.6267 16 39.6569 16C39.0432 16 38.4648 15.8488 37.9569 15.5817C36.8128 14.9799 35.0968 14.56 34.1827 15.4741C33.6079 16.0489 33.4959 16.962 34.0495 17.5571C35.4475 19.06 37.4424 20 39.6569 20C41.6876 20 43.6351 19.1933 45.0711 17.7573L49.7573 13.0711C51.1933 11.6351 52 9.6876 52 7.65687C52 3.42809 48.5719 0 44.3431 0C42.3124 0 40.3649 0.8067 38.9289 2.24264L26.2427 14.9289Z" fill="url(#paint1_linear_0_1)"/>
+    </g>
+
+    <g filter="url(#filter1_d_0_1)">
+      <rect x="10" y="8.5" width="30" height="3" fill="url(#paint0_linear_0_1)" rx="1.5" ry="1.5"/>
+    </g>
+  </g>
+</svg>
