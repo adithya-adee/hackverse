@@ -238,7 +238,7 @@ function RightSectionCreate({
                     </CardContent>
                   </div>
                 </motion.div>
-              ),
+              )
             )}
           </motion.div>
         )}

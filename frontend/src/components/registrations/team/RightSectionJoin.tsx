@@ -204,7 +204,9 @@ function RightSectionJoin({ hackathonId }: Props) {
           <div>
             {loadingUserRequests ? (
               <div className="flex justify-center py-4">
-                <div className="text-sm text-gray-600"></div>
+                <div className="text-sm text-gray-600">
+                  Loading User Requests
+                </div>
               </div>
             ) : AllRequestsByUser && AllRequestsByUser.length > 0 ? (
               AllRequestsByUser.map((request: TeamRequest, index: number) => (
