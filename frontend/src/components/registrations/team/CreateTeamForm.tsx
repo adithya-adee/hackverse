@@ -28,6 +28,7 @@ import {
   Loader2Icon,
   Delete,
   AlertTriangle,
+  DoorOpenIcon,
 } from "lucide-react";
 import { buttonVariants, itemVariants } from "@/lib/animation";
 import {
@@ -238,7 +239,7 @@ export default function CreateTeamForm({
               </Button>
             </div>
           )}
-          {!isLeader && (
+          {!isLeader && isTeamCreated && (
             <Button
               size="sm"
               className="right-0 -top-2 z-10 absolute items-center gap-2 hover:bg-red-400"
@@ -248,7 +249,7 @@ export default function CreateTeamForm({
               {removing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Delete className="h-4 w-4" />
+                <DoorOpenIcon className="h-4 w-4" />
               )}
               {removing ? "leaving..." : "Leave Team"}
             </Button>

@@ -154,7 +154,7 @@ function RightSectionCreate({
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-4 max-h-[calc(100vh-200px)]  pr-2"
+            className="space-y-4 max-h-[calc(100vh-200px)] h-[500px] overflow-y-auto p-2 scrollbar-hide"
           >
             {registrations.map(
               (registration: HackathonRegistration, index: number) => (
@@ -184,7 +184,7 @@ function RightSectionCreate({
                             <div className="flex items-center gap-1 mt-1">
                               <Badge
                                 variant={
-                                  registration.User.type === "STUDENT"
+                                  registration.User.type === "PROFESSIONAL"
                                     ? "default"
                                     : "secondary"
                                 }

@@ -7,17 +7,14 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Code, Users, Trophy, Calendar } from "lucide-react";
 
-interface Props {}
-
-function Page(props: Props) {
-  const {} = props;
-
+function Page() {
   return (
-    <div className="min-h-screen overflow-hidden">
+    <div className="scrollbar-hide overflow-hidden">
       {/* Hero Section */}
-      <section className="relative">
+
+      <section className="relative overflow-auto scrollbar-hide">
         {/* Background Gradient with Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-2)] to-[var(--primary-3)] z-0">
+        <div className=" absolute inset-0 bg-gradient-to-br from-[var(--primary-1)] via-[var(--primary-2)] to-[var(--primary-3)] z-0">
           <div className="absolute inset-0 opacity-5">
             <svg
               className="h-full w-full"
@@ -228,8 +225,6 @@ function Page(props: Props) {
           </svg>
         </div>
       </section>
-
-      {/* You can continue with other sections below the hero */}
     </div>
   );
 }
