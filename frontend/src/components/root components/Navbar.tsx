@@ -61,7 +61,7 @@ function Navbar() {
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
-            <Logo className="lg:w-48 md:w-32 sm:w-22 h-25" />
+            <Logo className="lg:w-48 md:w-32 sm:w-22 h-20" />
           </Link>
 
           {/* Desktop Navigation */}

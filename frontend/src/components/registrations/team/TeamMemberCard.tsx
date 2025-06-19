@@ -205,7 +205,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
     kick,
   }: UserInfo) => (
     <div
-      className={` ${mem ? "dark:bg-white/5 bg-green-100 " : "bg-yellow-50 dark:bg-white/5"}  w-full rounded-xl shadow-lg border p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+      className={` ${mem ? "dark:bg-white/5 bg-green-100 " : "bg-yellow-50 dark:bg-white/5"} w-full rounded-xl shadow-lg border p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-4">
@@ -240,7 +240,7 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
         {badge}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 relative">
         <div className="flex items-center gap-2 text-gray-700">
           <Mail className="w-4 h-4 text-blue-500" />
           <span className="text-sm text-[var(--primary-12)]">{user.email}</span>
@@ -289,10 +289,10 @@ const TeamMembercard = ({ teamId, isTeamLeader }: TeamMemberCardProps) => {
           <div className="mt-4 pt-4 border-t border-gray-200">{actions}</div>
         )}
 
-        {!isLeader && kick && (
+        {!isLeader && isTeamLeader && kick && (
           <Button
             size="sm"
-            className="-right-2 -top-4 z-10 absolute items-center gap-2 hover:bg-red-400"
+            className="-right-8 -top-30 z-10 absolute items-center gap-2 hover:bg-red-400"
             disabled={removing}
             onClick={() => {
               setDialogUserId(user.Uid);
