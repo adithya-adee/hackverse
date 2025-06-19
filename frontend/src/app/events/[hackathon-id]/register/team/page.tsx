@@ -19,13 +19,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AlertTriangle, Loader2, Users, UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import UniverseLoader from "@/components/loader/UniverseLoader";
+import Loading from "@/app/loading";
 
 function Page() {
   // Add hydration-safe state initialization
   const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState<"Create Team" | "Join Team">(
-    "Create Team",
+    "Create Team"
   );
   const [deletTeam, { isLoading: deleting }] = useDeleteTeamMutation();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -41,13 +41,13 @@ function Page() {
     setIsClient(true);
     console.log("This should appear in browser console");
     console.log(
-      "\n\n-----------------------------------------------------------------",
+      "\n\n-----------------------------------------------------------------"
     );
     console.log("isLeader:", isLeader);
     console.log("isTeamCreated:", isTeamCreated);
     console.log("teamId:", teamId);
     console.log(
-      "-----------------------------------------------------------------\n\n",
+      "-----------------------------------------------------------------\n\n"
     );
   }, [isLeader, isTeamCreated, teamId]);
 
@@ -85,11 +85,7 @@ function Page() {
 
   // Prevent hydration mismatch by not rendering until client-side
   if (!isClient) {
-    return (
-      <div>
-        <UniverseLoader />
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

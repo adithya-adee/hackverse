@@ -287,16 +287,82 @@ const Page = () => {
                 transition={{ duration: 0.3 }}
                 className="p-6"
               >
-                <div
-                  className="prose prose-sm text-[var(--primary-11)] 
-                  prose-headings:text-[var(--primary-12)]"
-                >
+                <div className="text-[var(--primary-11)]">
                   {hackathon.tabs === undefined ||
                   !hackathon.tabs[activeTab] ||
                   hackathon.tabs[activeTab].content === undefined ? (
                     <p>No content for this hackathon</p>
                   ) : (
-                    <ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        h1: ({ node, ...props }) => (
+                          <h1
+                            className="text-2xl font-bold mb-2 text-[var(--primary-12)]"
+                            {...props}
+                          />
+                        ),
+                        h2: ({ node, ...props }) => (
+                          <h2
+                            className="text-xl font-semibold mb-2 text-[var(--primary-12)]"
+                            {...props}
+                          />
+                        ),
+                        p: ({ node, ...props }) => (
+                          <p
+                            className="text-muted-foreground leading-relaxed mb-2"
+                            {...props}
+                          />
+                        ),
+                        a: ({ node, ...props }) => (
+                          <a
+                            className="text-blue-600 underline hover:text-blue-800"
+                            {...props}
+                          />
+                        ),
+                        ul: ({ node, ...props }) => (
+                          <ul className="list-disc pl-6 space-y-1" {...props} />
+                        ),
+                        ol: ({ node, ...props }) => (
+                          <ol
+                            className="list-decimal pl-6 space-y-1"
+                            {...props}
+                          />
+                        ),
+                        li: ({ node, ...props }) => (
+                          <li className="ml-2" {...props} />
+                        ),
+                        strong: ({ node, ...props }) => (
+                          <strong
+                            className="text-primary font-semibold"
+                            {...props}
+                          />
+                        ),
+                        em: ({ node, ...props }) => (
+                          <em
+                            className="italic text-[var(--primary-11)]"
+                            {...props}
+                          />
+                        ),
+                        blockquote: ({ node, ...props }) => (
+                          <blockquote
+                            className="border-l-4 pl-4 italic text-gray-500 border-gray-300"
+                            {...props}
+                          />
+                        ),
+                        code: ({ node, ...props }) => (
+                          <code
+                            className="px-1 py-0.5 rounded text-sm font-mono"
+                            {...props}
+                          />
+                        ),
+                        pre: ({ node, ...props }) => (
+                          <pre
+                            className="dark:bg-gray-900 bg-gray-300 text-black  dark:text-white p-4 rounded overflow-x-auto text-sm"
+                            {...props}
+                          />
+                        ),
+                      }}
+                    >
                       {hackathon.tabs[activeTab].content}
                     </ReactMarkdown>
                   )}

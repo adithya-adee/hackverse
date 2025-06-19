@@ -9,7 +9,7 @@ import {
   useRejectTeamRequestMutation,
 } from "@/apiSlice/teamApiSlice";
 import { TeamRequest } from "@/types/core_interfaces"; // Adjust import path as needed
-import { Clock, Clock2Icon, LucideCrown, Tag } from "lucide-react";
+import { Clock2Icon, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -146,7 +146,7 @@ function RightSectionJoin({ hackathonId }: Props) {
       toast.error("something went wrong.");
     }
     toast.success("Team Request accepted.");
-    router.push("/");
+    router.push(`events/${hackathonId}/register/team`);
   };
 
   const handleRejectRequest = async (teamID: string, userID: string) => {
@@ -204,7 +204,9 @@ function RightSectionJoin({ hackathonId }: Props) {
           <div>
             {loadingUserRequests ? (
               <div className="flex justify-center py-4">
-                <div className="text-sm text-gray-600"></div>
+                <div className="text-sm text-gray-600">
+                  Loading User Requests
+                </div>
               </div>
             ) : AllRequestsByUser && AllRequestsByUser.length > 0 ? (
               AllRequestsByUser.map((request: TeamRequest, index: number) => (
