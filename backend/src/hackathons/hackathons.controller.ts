@@ -38,6 +38,20 @@ export class HackathonsController {
     return this.hackathonsService.getAllUpcomingHackathons();
   }
 
+  @Post('create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
+  create(
+    @Request() req: { user: { userId: string } },
+    @Body() createHackathonDto: CreateHackathonDto,
+  ) {
+    const hackathon = this.hackathonsService.createHackathon(
+      req.user.userId,
+      createHackathonDto,
+    );
+    return hackathon;
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.hackathonsService.getHackathonById(id);
@@ -79,19 +93,7 @@ export class HackathonsController {
     );
   }
 
-  @Post('create')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
-  create(
-    @Request() req: { user: { userId: string } },
-    @Body() createHackathonDto: CreateHackathonDto,
-  ) {
-    const hackathon = this.hackathonsService.createHackathon(
-      req.user.userId,
-      createHackathonDto,
-    );
-    return hackathon;
-  }
+
 
   // @Post(':id/tags')
   // @UseGuards(JwtAuthGuard)
