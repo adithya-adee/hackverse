@@ -27,6 +27,7 @@ export const apiSlice = createApi({
     "TeamRequests",
     "TeamMembers",
     "OrganizerData",
+    "RoleRequests",
   ],
   endpoints: (builder) => ({}),
 });

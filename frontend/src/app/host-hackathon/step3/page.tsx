@@ -29,39 +29,31 @@ export default function CreateHackathonStep3() {
   const [create, { isLoading, isError }] = useCreateMutation();
 
   const handleSubmit = async () => {
-    try {
-      const promise = new Promise<string>((resolve, reject) => {
-        const { moderatorEmails, ...data } = formData;
-        console.log("sending data:", data);
-        const data2 = { data };
-        create(data2)
-          .unwrap()
-          .then((result) => {
-            console.log(result);
-            resetFormData();
-            router.push("/events");
-            resolve("Successfully created hackathon!");
-          })
-          .catch((error) => {
-            console.error("Error creating hackathon:", error);
-            reject("Failed to create hackathon. Please try again.");
-          });
+    const { moderatorEmails, ...data } = formData;
+    const payload = { data };
+    console.log("sending data:", data);
+
+    const promise = create(payload)
+      .unwrap()
+      .then((result) => {
+        console.log(result);
+        resetFormData();
+        router.push("/events");
+        return "Successfully created hackathon!";
+      })
+      .catch((error) => {
+        console.error("Error creating hackathon:", error);
+        throw new Error("Failed to create hackathon. Please try again.");
       });
 
-      toast.promise(promise, {
+    try {
+      await toast.promise(promise, {
         loading: "Creating hackathon...",
-        success: (message: string) => message as string,
-        error: (message: string) => message as string,
+        success: (message) => message,
+        error: (err) => err.message || "Something went wrong.",
       });
-      const { moderatorEmails, ...data } = formData;
-      console.log("sending data:", data);
-      const data2 = { data };
-      const result = await create(data2);
-      console.log(result);
-      resetFormData();
-      router.push("/events");
     } catch (error) {
-      console.error("Error creating hackathon:", error);
+      console.error("Toast error:", error);
     }
   };
 

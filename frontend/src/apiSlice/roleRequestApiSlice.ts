@@ -15,6 +15,7 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: () => [{ type: "RoleRequests", id: "LIST" }],
     }),
 
     getRoleRequest: builder.query<RoleRequest[], void>({
@@ -22,6 +23,10 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         url: "/role/getAllReqs",
         method: "GET",
       }),
+      providesTags: (result) =>
+        result
+          ? result.map(({ id }) => ({ type: "RoleRequests", id }))
+          : [{ type: "RoleRequests", id: "LIST" }],
     }),
 
     acceptRoleRequest: builder.mutation<UserRole, string>({
@@ -29,6 +34,9 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         url: `/role/requests/${id}/accept`,
         method: "POST",
       }),
+      invalidatesTags: (result, error, id) => [
+        { type: "RoleRequests", id: id },
+      ],
     }),
 
     rejectRoleRequest: builder.mutation<RoleRequest, string>({
@@ -36,6 +44,9 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         url: `/role/requests/${id}/reject`,
         method: "POST",
       }),
+      invalidatesTags: (result, error, id) => [
+        { type: "RoleRequests", id: id },
+      ],
     }),
 
     updateRoleRequestNotes: builder.mutation<
@@ -47,6 +58,9 @@ export const roleRequestApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: { notes },
       }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "RoleRequests", id },
+      ],
     }),
   }),
 });
