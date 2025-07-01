@@ -7,6 +7,7 @@ import "./globals.css";
 import Navbar from "@/components/root components/Navbar";
 import Footer from "@/components/root components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import { BackendProvider } from "@/contexts/backend-loading-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,16 +34,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          <nav className="object-cover">
-            <Navbar />
-          </nav>
-          <div className="mt-9 w-full">{children}</div>
-          <footer>
-            <Footer />
-          </footer>
-          <Toaster />
-        </Providers>
+        <BackendProvider>
+          <Providers>
+            <nav className="object-cover">
+              <Navbar />
+            </nav>
+            <div className="mt-9 w-full">{children}</div>
+            <footer>
+              <Footer />
+            </footer>
+            <Toaster />
+          </Providers>
+        </BackendProvider>
       </body>
     </html>
   );
