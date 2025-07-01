@@ -25,6 +25,11 @@ import { RoleType } from '@prisma/client';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('check/alive')
+  keepBackendAlive() {
+    return 'Hello World';
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
@@ -45,7 +50,7 @@ export class UsersController {
       const user = await this.usersService.findOneByEmail(memberEmail);
       return { isRegistered: true, user: user };
     } catch (error) {
-      return {isRegistered: false};
+      return { isRegistered: false };
       // return new NotFoundException({isRegistered: false, error});
     }
   }
@@ -54,9 +59,9 @@ export class UsersController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req: { user: { userId: string } }) {
-    console.log("------------------")
-    console.log(req.user.userId)
-    console.log("------------------")
+    console.log('------------------');
+    console.log(req.user.userId);
+    console.log('------------------');
     return this.usersService.findOne(req.user.userId);
   }
 
