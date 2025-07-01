@@ -155,6 +155,11 @@ export class TeamController {
     );
   }
 
+  @Delete('update/expired')
+  deleteExpiredRequests() {
+    return this.teamsService.deleteExpiredRequests();
+  }
+
   // Accept a team request
   @Post(':teamId/accept-request-by-team/:userId')
   @UseGuards(JwtAuthGuard)
@@ -191,7 +196,7 @@ export class TeamController {
   removeFromTeam(
     @Param('teamId') teamId: string,
     @Param('userId') userId: string,
-  ){
-    return this.teamsService.removeFromTeam(teamId,userId);
+  ) {
+    return this.teamsService.removeFromTeam(teamId, userId);
   }
 }

@@ -260,11 +260,9 @@ export class HackathonsService {
       },
     });
 
-    // Registered participants can see limited hackathon data
     return !!isRegistered;
   }
 
-  // New methods for hackathon dashboard
   async getTeamsByHackathonId(hackathonId: string, userId: string) {
     // First check if user has permission to view
     const canView = await this.canViewHackathonData(hackathonId, userId);
@@ -293,6 +291,33 @@ export class HackathonsService {
     });
 
     return teams;
+  }
+
+  async updateHackathonExpiration() {
+    const now = new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Kolkata',
+    });
+
+    try {
+      const res = await this.prisma.hackathon.updateMany({
+        where: {
+          endDate: {
+            lte: new Date(now),
+          },
+          status: {
+            not: 'COMPLETED',
+          },
+        },
+        data: {
+          status: 'COMPLETED',
+        },
+      });
+
+      console.log(`Updated ${res.count} hackathon stats`);
+      return { count: res.count };
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async createHackathon(

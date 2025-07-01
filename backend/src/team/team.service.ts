@@ -175,6 +175,28 @@ export class TeamService {
     });
   }
 
+  async deleteExpiredRequests(): Promise<any> {
+    // Using IST timezone
+    const now = new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Kolkata',
+    });
+
+    try {
+      const result = await this.prisma.teamRequest.deleteMany({
+        where: {
+          expiresAt: {
+            lte: new Date(now),
+          },
+        },
+      });
+      console.log(`Deleted ${result.count} expired team requests`);
+      return { count: result.count };
+    } catch (error) {
+      console.error('Failed to delete expired team requests:', error);
+      throw error;
+    }
+  }
+
   // Option 1: Database-level filtering (More efficient for large datasets)
   // async getTeamsLookingForMembers(hackathonId: string, userId: string) {
   //   const teams = await this.prisma.$queryRaw`
@@ -754,7 +776,6 @@ export class TeamService {
     }
   }
 
-
   async removeFromTeam(teamId: string, userId: string) {
     try {
       const team = await this.getTeamById(teamId);
@@ -766,9 +787,9 @@ export class TeamService {
         where: {
           teamId_userId: {
             teamId,
-            userId
-          }
-        }
+            userId,
+          },
+        },
       });
 
       return delMem;
@@ -779,5 +800,4 @@ export class TeamService {
       throw new Error(`Failed to remove from team: ${error.message}`);
     }
   }
-
 }
