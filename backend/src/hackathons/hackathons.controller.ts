@@ -93,8 +93,6 @@ export class HackathonsController {
     );
   }
 
-
-
   // @Post(':id/tags')
   // @UseGuards(JwtAuthGuard)
   // async createTags(
@@ -143,6 +141,11 @@ export class HackathonsController {
   @Roles(RoleType.ORGANIZER, RoleType.ADMIN)
   delete(@Param('id') id: string) {
     return this.hackathonsService.deleteHackathon(id);
+  }
+
+  @Get('update/status')
+  async updateHackathonStatus() {
+    return this.hackathonsService.updateHackathonExpiration();
   }
 
   @Post(':id/register')
