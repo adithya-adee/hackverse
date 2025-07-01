@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const DEFAULT_API_URL = "http://localhost:3001";
+const DEFAULT_API_URL = "https://hackverse-skj2.onrender.com";
 const HEALTH_CHECK_ENDPOINT = "/users/check/alive";
 
 interface HealthCheckResponse {
@@ -12,6 +12,7 @@ export async function GET() {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL;
 
+    console.log(apiUrl);
     const res = await fetch(`${apiUrl}${HEALTH_CHECK_ENDPOINT}`, {
       headers: {
         Accept: "text/plain",
@@ -20,6 +21,7 @@ export async function GET() {
     });
 
     if (!res.ok) {
+      console.log(res);
       throw new Error(`Health check failed with status: ${res.status}`);
     }
 
