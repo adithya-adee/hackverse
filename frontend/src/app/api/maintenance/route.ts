@@ -15,7 +15,7 @@ export async function GET() {
       fetch(`${apiUrl}/team/update/expired`, {
         method: "DELETE",
       }),
-    ]);
+    ]); 
 
     if (!statusResponse.ok || !expiredResponse.ok) {
       throw new Error("One or more maintenance tasks failed");

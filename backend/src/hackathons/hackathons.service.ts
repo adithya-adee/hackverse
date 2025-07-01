@@ -299,25 +299,22 @@ export class HackathonsService {
     });
 
     try {
-      const result = await this.prisma.$transaction(async (prisma) => {
-        const res = await prisma.hackathon.updateMany({
-          where: {
-            endDate: {
-              lte: new Date(now),
-            },
-            status: {
-              not: 'COMPLETED',
-            },
+      const res = await this.prisma.hackathon.updateMany({
+        where: {
+          endDate: {
+            lte: new Date(now),
           },
-          data: {
-            status: 'COMPLETED',
+          status: {
+            not: 'COMPLETED',
           },
-        });
-
-        return res.count;
+        },
+        data: {
+          status: 'COMPLETED',
+        },
       });
-      console.log(`Updated ${result} hackathon stats`);
-      return { result };
+
+      console.log(`Updated ${res.count} hackathon stats`);
+      return { count: res.count };
     } catch (err) {
       console.error(err);
     }
