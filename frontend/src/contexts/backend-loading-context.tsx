@@ -28,7 +28,7 @@ export const BackendProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const startTime = performance.now();
       const response = await fetch("/api/hello", {
-        signal: AbortSignal.timeout(5000), // 5-second timeout
+        signal: AbortSignal.timeout(120000), // 2-minute timeout
       });
       const endTime = performance.now();
 
