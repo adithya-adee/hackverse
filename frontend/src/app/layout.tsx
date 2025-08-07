@@ -34,18 +34,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <BackendProvider>
-          <Providers>
-            <nav className="object-cover">
-              <Navbar />
-            </nav>
-            <div className="mt-9 w-full">{children}</div>
-            <footer>
-              <Footer />
-            </footer>
-            <Toaster />
-          </Providers>
-        </BackendProvider>
+        {/* <BackendProvider> */}
+        <Providers>
+          <nav className="object-cover">
+            <Navbar />
+          </nav>
+          <div className="mt-9 w-full">{children}</div>
+          <footer>
+            <Footer />
+          </footer>
+          <Toaster />
+        </Providers>
+        {/* </BackendProvider> */}
       </body>
     </html>
   );
